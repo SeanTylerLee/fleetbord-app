@@ -44,7 +44,8 @@
     }
     nav {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 10px;
       margin-bottom: 1em;
     }
   </style>
@@ -66,6 +67,8 @@
   <main id="app" class="hidden">
     <nav id="adminPanel" class="hidden">
       <button onclick="showSection('manageUsers')">Manage Users</button>
+      <button onclick="showSection('messaging')">Messaging</button>
+      <button onclick="showSection('loads')">Load Records</button>
     </nav>
 
     <div id="manageUsers" class="hidden">
@@ -79,18 +82,20 @@
       </select>
       <button onclick="createUser()">Create User</button>
       <div id="userList"></div>
+      <button onclick="showMainMenu()">⬅️ Back</button>
     </div>
 
-    <div id="messaging">
+    <div id="messaging" class="hidden">
       <h2>Messaging</h2>
       <select id="recipientSelect" multiple></select>
       <textarea id="messageInput" placeholder="Type message..."></textarea>
       <input type="file" id="messageImage">
       <button onclick="sendMessage()">Send</button>
       <div id="messagesDiv"></div>
+      <button onclick="showMainMenu()">⬅️ Back</button>
     </div>
 
-    <div id="loads">
+    <div id="loads" class="hidden">
       <h2>Load Records</h2>
       <input type="date" id="loadDate">
       <input type="text" id="ticketNum" placeholder="Ticket Number">
@@ -103,6 +108,7 @@
       <button onclick="saveLoad()">Save Load</button>
       <div id="loadList"></div>
       <button onclick="generatePaySheet()">Generate Pay Sheet CSV</button>
+      <button onclick="showMainMenu()">⬅️ Back</button>
     </div>
   </main>
 
@@ -122,9 +128,7 @@
         document.getElementById('loginSection').classList.add("hidden");
         document.getElementById('roleLabel').classList.remove("hidden");
         document.getElementById('app').classList.remove("hidden");
-        if (["admin", "office"].includes(users[u].role)) {
-          adminPanel.classList.remove("hidden");
-        }
+        adminPanel.classList.remove("hidden");
         populateUsers();
       } else {
         alert("Invalid credentials");
@@ -138,6 +142,10 @@
     function showSection(id) {
       document.querySelectorAll("main > div").forEach(el => el.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
+    }
+
+    function showMainMenu() {
+      document.querySelectorAll("main > div").forEach(el => el.classList.add("hidden"));
     }
 
     function createUser() {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="="en">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -12,25 +12,16 @@
       background: #FAF6F2;
       display: flex; justify-content: center;
     }
-    .container {
-      width: 100%; max-width: 420px;
-    }
+    .container { width: 100%; max-width: 420px; }
     .hidden { display: none; }
     input, select, button, textarea {
-      margin: 0.4rem 0;
-      padding: 0.7rem;
-      font-size: 1rem;
-      width: 100%;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      margin: 0.4rem 0; padding: 0.7rem; font-size: 1rem;
+      width: 100%; box-sizing: border-box;
+      border: 1px solid #ccc; border-radius: 8px;
     }
-    button {
-      background: #007AFF; color: white; border: none;
-    }
+    button { background: #007AFF; color: white; border: none; }
     .panel {
-      background: white;
-      padding: 1.5rem;
+      background: white; padding: 1.5rem;
       border-radius: 16px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.05);
       margin-bottom: 1rem;
@@ -42,25 +33,12 @@
       margin: 0.3rem 0;
       background: #f9f9fc;
     }
-    .logout-btn {
-      background-color: #e33;
-      margin-top: 1rem;
-    }
-    .user-actions {
-      display: flex;
-      gap: 0.3rem;
-      margin-top: 0.4rem;
-    }
+    .logout-btn { background-color: #e33; margin-top: 1rem; }
+    .user-actions { display: flex; gap: 0.3rem; margin-top: 0.4rem; }
     .user-actions button {
-      flex: 1;
-      font-size: 0.9rem;
-      padding: 0.3rem;
+      flex: 1; font-size: 0.9rem; padding: 0.3rem;
     }
-    label {
-      font-weight: bold;
-      margin-top: 0.6rem;
-      display: block;
-    }
+    label { font-weight: bold; margin-top: 0.6rem; display: block; }
   </style>
 </head>
 <body>
@@ -72,6 +50,7 @@
       <input id="loginUsername" placeholder="Username" />
       <input id="loginPassword" type="password" placeholder="Password" />
       <button onclick="login()">Login</button>
+      <button onclick="resetApp()" style="background:#888; margin-top:0.5rem;">Reset App Data</button>
       <p id="loginMessage" style="color:red;"></p>
     </div>
 
@@ -135,7 +114,6 @@
   let users = JSON.parse(localStorage.getItem("users")) || {};
   let loads = JSON.parse(localStorage.getItem("loads")) || {};
   let messages = JSON.parse(localStorage.getItem("messages")) || [];
-
   let currentUser = "";
 
   function login() {
@@ -143,7 +121,7 @@
     const p = document.getElementById("loginPassword").value.trim();
     const msg = document.getElementById("loginMessage");
 
-    if (u === adminUsername && p === adminPassword) {
+    if(u === adminUsername && p === adminPassword) {
       currentUser = u;
       if (!users[u]) {
         users[u] = { password: p, role: "Admin" };
@@ -154,7 +132,7 @@
       return;
     }
 
-    if (users[u] && users[u].password === p) {
+    if(users[u] && users[u].password === p) {
       currentUser = u;
       msg.textContent = "";
       showUserPanel();
@@ -169,14 +147,22 @@
     showPanel("login");
   }
 
+  function resetApp() {
+    if (confirm("Erase all app data?")) {
+      localStorage.clear();
+      alert("Data reset. Reloading...");
+      location.reload();
+    }
+  }
+
   function showPanel(panel) {
     document.getElementById("loginPanel").classList.add("hidden");
     document.getElementById("adminPanel").classList.add("hidden");
     document.getElementById("userPanel").classList.add("hidden");
 
-    if (panel === "login") document.getElementById("loginPanel").classList.remove("hidden");
-    if (panel === "admin") document.getElementById("adminPanel").classList.remove("hidden");
-    if (panel === "user") document.getElementById("userPanel").classList.remove("hidden");
+    if(panel === "login") document.getElementById("loginPanel").classList.remove("hidden");
+    if(panel === "admin") document.getElementById("adminPanel").classList.remove("hidden");
+    if(panel === "user") document.getElementById("userPanel").classList.remove("hidden");
   }
 
   function showAdminPanel() {
@@ -198,55 +184,42 @@
     const role = document.getElementById("newUserRole").value;
     const msg = document.getElementById("userMsg");
 
-    if (!name || !pass) {
+    if(!name || !pass) {
       msg.style.color = "red";
       msg.textContent = "Username and password required.";
       return;
     }
-    if (users[name]) {
+    if(users[name]) {
       msg.style.color = "red";
       msg.textContent = "User already exists.";
-      return;
-    }
-    if (name === adminUsername) {
-      msg.style.color = "red";
-      msg.textContent = "Cannot create another admin.";
       return;
     }
 
     users[name] = { password: pass, role };
     localStorage.setItem("users", JSON.stringify(users));
     msg.style.color = "green";
-    msg.textContent = `User "${name}" added successfully.`;
-    document.getElementById("newUserName").value = "";
-    document.getElementById("newUserPass").value = "";
+    msg.textContent = `User "${name}" added.`;
     renderUserList();
   }
 
   function renderUserList() {
     const container = document.getElementById("userList");
     container.innerHTML = "";
-
-    const ul = document.createElement("ul");
-    for (const username in users) {
-      if (username === adminUsername) continue;
-      const user = users[username];
-      const li = document.createElement("li");
-      li.className = "user-item";
-      li.innerHTML = `
-        <strong>${username}</strong> (${user.role})
+    for (const name in users) {
+      if (name === adminUsername) continue;
+      const div = document.createElement("div");
+      div.className = "user-item";
+      div.innerHTML = `<strong>${name}</strong> (${users[name].role})
         <div class="user-actions">
-          <button onclick="deleteUser('${username}')">Delete</button>
-        </div>
-      `;
-      ul.appendChild(li);
+          <button onclick="deleteUser('${name}')">Delete</button>
+        </div>`;
+      container.appendChild(div);
     }
-    container.appendChild(ul);
   }
 
-  function deleteUser(username) {
-    if (confirm(`Delete user "${username}"?`)) {
-      delete users[username];
+  function deleteUser(name) {
+    if(confirm(`Delete user "${name}"?`)) {
+      delete users[name];
       localStorage.setItem("users", JSON.stringify(users));
       renderUserList();
     }
@@ -257,51 +230,43 @@
     const c = document.getElementById("customer").value.trim();
     const r = document.getElementById("rig").value.trim();
     const l = document.getElementById("lease").value.trim();
-    const p = parseFloat(document.getElementById("price").value.trim()) || 0;
-    const o = parseInt(document.getElementById("overnights").value.trim()) || 0;
-
-    if (!t || !c) return alert("Ticket Number and Customer are required.");
+    const p = parseFloat(document.getElementById("price").value) || 0;
+    const o = parseInt(document.getElementById("overnights").value) || 0;
 
     if (!loads[currentUser]) loads[currentUser] = [];
-
     loads[currentUser].push({ id: Date.now(), t, c, r, l, p, o });
     localStorage.setItem("loads", JSON.stringify(loads));
     renderLoads();
   }
 
   function renderLoads() {
-    const container = document.getElementById("loadList");
-    container.innerHTML = "";
-    const userLoads = loads[currentUser] || [];
-    userLoads.forEach(load => {
+    const list = document.getElementById("loadList");
+    list.innerHTML = "";
+    (loads[currentUser] || []).forEach(load => {
       const div = document.createElement("div");
       div.className = "load-item";
       div.innerHTML = `
-        <strong>Ticket:</strong> ${load.t}<br/>
-        Customer: ${load.c} | Rig: ${load.r} | Lease: ${load.l}<br/>
-        Price: $${load.p.toFixed(2)} | Overnights: ${load.o}<br/>
+        Ticket: ${load.t}, Customer: ${load.c}<br/>
+        Rig: ${load.r}, Lease: ${load.l}<br/>
+        Price: $${load.p.toFixed(2)}, Overnights: ${load.o}<br/>
         <button onclick="deleteLoad(${load.id})" style="background:#e33;">Delete</button>
       `;
-      container.appendChild(div);
+      list.appendChild(div);
     });
   }
 
   function deleteLoad(id) {
-    const userLoads = loads[currentUser] || [];
-    loads[currentUser] = userLoads.filter(l => l.id !== id);
+    loads[currentUser] = (loads[currentUser] || []).filter(l => l.id !== id);
     localStorage.setItem("loads", JSON.stringify(loads));
     renderLoads();
   }
 
   function generateForm() {
     const userLoads = loads[currentUser] || [];
-    if (userLoads.length === 0) return alert("No loads to generate.");
-
-    let totalPrice = 0, totalOvernights = 0;
-
     const formDetails = document.getElementById("formDetails");
+    let totalPrice = 0, totalOvernights = 0;
     formDetails.innerHTML = "<ul>" + userLoads.map(l =>
-      `<li>Ticket: ${l.t} | Price: $${l.p.toFixed(2)} | Overnights: ${l.o}</li>`
+      `<li>Ticket: ${l.t}, Price: $${l.p.toFixed(2)}, Overnights: ${l.o}</li>`
     ).join("") + "</ul>";
 
     userLoads.forEach(l => {
@@ -309,30 +274,28 @@
       totalOvernights += l.o;
     });
 
-    formDetails.innerHTML += `
-      <p><strong>Total Price:</strong> $${totalPrice.toFixed(2)}</p>
-      <p><strong>Total Overnights:</strong> ${totalOvernights}</p>
-    `;
+    formDetails.innerHTML += `<p><strong>Total Price:</strong> $${totalPrice.toFixed(2)}</p>
+      <p><strong>Total Overnights:</strong> ${totalOvernights}</p>`;
 
     document.getElementById("totalsForm").classList.remove("hidden");
   }
 
-  async function sendForm() {
+  function sendForm() {
     const { jsPDF } = window.jspdf;
-    const userLoads = loads[currentUser] || [];
     const doc = new jsPDF();
+    const userLoads = loads[currentUser] || [];
     let y = 10;
-    doc.setFontSize(14);
+
     doc.text("FleetBord Load Summary", 10, y);
     y += 10;
-    doc.setFontSize(12);
-    userLoads.forEach((load, i) => {
-      const line = `${i+1}. Ticket: ${load.t}, Customer: ${load.c}, Price: $${load.p.toFixed(2)}, Overnights: ${load.o}`;
-      doc.text(line, 10, y);
+
+    userLoads.forEach((l, i) => {
+      doc.text(`${i + 1}. Ticket: ${l.t}, Price: $${l.p.toFixed(2)}, Overnights: ${l.o}`, 10, y);
       y += 8;
     });
-    const totalPrice = userLoads.reduce((acc, l) => acc + l.p, 0);
-    const totalOvernights = userLoads.reduce((acc, l) => acc + l.o, 0);
+
+    const totalPrice = userLoads.reduce((sum, l) => sum + l.p, 0);
+    const totalOvernights = userLoads.reduce((sum, l) => sum + l.o, 0);
     y += 10;
     doc.text(`Total Price: $${totalPrice.toFixed(2)}`, 10, y);
     y += 8;
@@ -343,57 +306,46 @@
   function populateRecipientList() {
     const select = document.getElementById("recipientSelect");
     select.innerHTML = "";
-    for (const username in users) {
-      if (username !== currentUser) {
+    for (const name in users) {
+      if (name !== currentUser) {
         const opt = document.createElement("option");
-        opt.value = username;
-        opt.textContent = username;
+        opt.value = name;
+        opt.textContent = name;
         select.appendChild(opt);
       }
-    }
-    if (currentUser !== adminUsername) {
-      const adminOpt = document.createElement("option");
-      adminOpt.value = adminUsername;
-      adminOpt.textContent = adminUsername + " (Admin)";
-      select.appendChild(adminOpt);
     }
   }
 
   function sendMessage() {
-    const recipients = Array.from(document.getElementById("recipientSelect").selectedOptions).map(opt => opt.value);
     const text = document.getElementById("messageText").value.trim();
-    if (recipients.length === 0 || !text) {
-      alert("Select recipients and type a message.");
-      return;
-    }
+    const to = Array.from(document.getElementById("recipientSelect").selectedOptions).map(o => o.value);
+    if (!text || to.length === 0) return alert("Message and recipient required.");
+
     const now = new Date();
-    const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const newMsg = {
+    const msg = {
       from: currentUser,
-      to: recipients,
+      to,
       text,
-      timestamp
+      timestamp: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-    messages.push(newMsg);
+
+    messages.push(msg);
     localStorage.setItem("messages", JSON.stringify(messages));
     document.getElementById("messageText").value = "";
     renderMessages();
   }
 
   function renderMessages() {
-    const msgList = document.getElementById("messageList");
-    msgList.innerHTML = "";
-    const relevant = messages.filter(
-      m => m.to.includes(currentUser) || m.from === currentUser || m.to.includes("All")
+    const box = document.getElementById("messageList");
+    box.innerHTML = "";
+    const myMessages = messages.filter(m =>
+      m.from === currentUser || m.to.includes(currentUser)
     );
-    relevant.reverse().forEach(m => {
+    myMessages.reverse().forEach(m => {
       const div = document.createElement("div");
       div.className = "message-item";
-      div.innerHTML = `
-        <strong>${m.from}</strong> → ${m.to.join(", ")}<br/>
-        ${m.text} <small>(${m.timestamp})</small>
-      `;
-      msgList.appendChild(div);
+      div.innerHTML = `<strong>${m.from}</strong> → ${m.to.join(", ")}<br/>${m.text} <small>(${m.timestamp})</small>`;
+      box.appendChild(div);
     });
   }
 

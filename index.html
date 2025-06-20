@@ -2,28 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Fleetbord</title>
   <style>
-    /* (same styles as before) */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif;
       background: #f2f2f7;
-      color: #000;
       margin: 0; padding: 1em;
-      -webkit-font-smoothing: antialiased;
+      color: #000;
     }
     input, button, select, textarea {
       width: 100%;
       padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
+      margin: 6px 0;
       border-radius: 14px;
-      box-sizing: border-box;
-      font-size: 17px;
+      border: 1px solid #ccc;
+      font-size: 16px;
       font-weight: 400;
-      background: white;
-      -webkit-appearance: none;
+      box-sizing: border-box;
     }
     button {
       background: #007aff;
@@ -31,51 +27,45 @@
       border: none;
       font-weight: 600;
       cursor: pointer;
+      margin-top: 8px;
       transition: background 0.2s ease;
     }
     button:hover {
       background: #005bb5;
     }
-    button:disabled {
-      background: #a0a0a0;
-      cursor: not-allowed;
-    }
     nav button {
       width: auto;
       margin-right: 8px;
-      display: inline-block;
       min-width: 90px;
+      display: inline-block;
     }
     h1, h2 {
       font-weight: 700;
-      margin-bottom: 12px;
     }
     .hidden { display: none; }
-    #loadList div {
+    #loadList > div {
       background: white;
-      border-radius: 12px;
       padding: 12px;
       margin: 6px 0;
-      font-size: 16px;
+      border-radius: 12px;
+      font-size: 15px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    #loadList div label {
+    #loadList > div label {
       flex-grow: 1;
       cursor: pointer;
     }
-    #loadList div input[type="checkbox"] {
+    #loadList > div input[type="checkbox"] {
       margin-left: 12px;
       transform: scale(1.3);
       cursor: pointer;
     }
     @media (max-width: 480px) {
-      body {
-        padding: 12px;
-      }
+      body { padding: 12px; }
       input, button, select, textarea {
-        font-size: 16px;
+        font-size: 15px;
         padding: 10px;
       }
       nav button {
@@ -87,341 +77,337 @@
   </style>
 </head>
 <body>
-  <h1>Fleetbord</h1>
+  <h1>Fleetbord - Supabase</h1>
+
   <div id="authSection">
     <input id="email" type="email" placeholder="Email" autocomplete="username" />
     <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
-    <button onclick="signIn()">Login</button>
-    <button onclick="signUp()">Sign Up</button>
-    <button onclick="signOut()" class="hidden">Logout</button>
+    <button id="loginBtn">Login</button>
+    <button id="signupBtn">Sign Up</button>
+    <button id="logoutBtn" class="hidden">Logout</button>
     <div id="roleLabel"></div>
   </div>
+
   <div id="app" class="hidden">
     <nav>
-      <button onclick="show('manageUsers')">Manage Users</button>
-      <button onclick="show('messaging')">Messaging</button>
-      <button onclick="show('loads')">Load Records</button>
+      <button data-show="manageUsers">Manage Users</button>
+      <button data-show="messaging">Messaging</button>
+      <button data-show="loads">Loads</button>
     </nav>
 
-    <div id="manageUsers" class="hidden">
+    <section id="manageUsers" class="hidden">
       <h2>User Management</h2>
-      <input id="newEmail" type="email" placeholder="New user email" autocomplete="email" />
-      <select id="newRole">
+      <input id="newUserEmail" type="email" placeholder="New User Email" />
+      <select id="newUserRole">
         <option value="driver">Driver</option>
         <option value="dispatcher">Dispatcher</option>
-        <option value="office">Office</option>
+        <option value="office">Office Personnel</option>
+        <option value="admin">Administrator</option>
       </select>
-      <button onclick="createUser()">Create User</button>
+      <button id="createUserBtn">Create User</button>
       <div id="userList"></div>
-      <button onclick="show('app')">⬅️ Back</button>
-    </div>
+      <button class="backBtn">⬅️ Back</button>
+    </section>
 
-    <div id="messaging" class="hidden">
+    <section id="messaging" class="hidden">
       <h2>Messaging</h2>
-      <select id="recipients" multiple size="5" style="height:120px;"></select>
+      <select id="messageRecipients" multiple size="5" style="height:120px;"></select>
       <textarea id="messageText" placeholder="Message..."></textarea>
       <input id="messagePhoto" type="file" accept="image/*" />
-      <button onclick="sendMessage()">Send</button>
+      <button id="sendMessageBtn">Send</button>
       <div id="messageContainer"></div>
-      <button onclick="show('app')">⬅️ Back</button>
-    </div>
+      <button class="backBtn">⬅️ Back</button>
+    </section>
 
-    <div id="loads" class="hidden">
+    <section id="loads" class="hidden">
       <h2>Load Records</h2>
-      <input id="ldDate" type="date" />
-      <input id="ldTicket" type="text" placeholder="Ticket #" />
-      <input id="ldCustomer" type="text" placeholder="Customer" />
-      <input id="ldRig" type="text" placeholder="Rig" />
-      <input id="ldLease" type="text" placeholder="Lease" />
-      <input id="ldPrice" type="number" placeholder="Price" />
-      <input id="ldNights" type="number" placeholder="Overnights" />
-      <input id="ldPhoto" type="file" multiple accept="image/*" />
-      <button onclick="saveLoad()">Save Load</button>
+      <input id="loadDate" type="date" />
+      <input id="loadTicket" type="text" placeholder="Ticket #" />
+      <input id="loadCustomer" type="text" placeholder="Customer" />
+      <input id="loadRig" type="text" placeholder="Rig" />
+      <input id="loadLease" type="text" placeholder="Lease" />
+      <input id="loadPrice" type="number" placeholder="Price" />
+      <input id="loadNights" type="number" placeholder="Overnights" />
+      <input id="loadPhotos" type="file" multiple accept="image/*" />
+      <button id="saveLoadBtn">Save Load</button>
       <div id="loadList"></div>
-      <button onclick="generatePaySheet()" disabled id="exportPdfBtn">Export Pay Sheet PDF</button>
-      <button onclick="show('app')">⬅️ Back</button>
-    </div>
+      <button id="generatePdfBtn" disabled>Export Pay Sheet PDF</button>
+      <button class="backBtn">⬅️ Back</button>
+    </section>
   </div>
 
-  <!-- jsPDF CDN for PDF export -->
+  <!-- jsPDF for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as fSignOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
+    const SUPABASE_URL = 'https://qtvelljlgkpjilrtvvip.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dmVsbGpsZ2twamlscnR2dmlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0NTI0MDAsImV4cCI6MjA2NjAyODQwMH0.nPM0b70D_B4lJoMWwhp5xWfkoQ3zGdLq7MsWCfHBV1U'
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     const { jsPDF } = window.jspdf;
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDJ8X2MrWtWXXF54xO_OwCfS9YAlIgFu4E",
-      authDomain: "fleetbord-67471.firebaseapp.com",
-      projectId: "fleetbord-67471",
-      storageBucket: "fleetbord-67471.appspot.com",
-      messagingSenderId: "1067341128354",
-      appId: "1:1067341128354:web:da654da7885f6aeda5adfb",
-      measurementId: "G-QNJ1MTGKDZ"
-    };
+    // (rest of the JavaScript continues in Part 2...)
+        let currentUser = null
+    let currentRole = ''
+    let allLoads = []
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    async function ensureAdminExists() {
-      const q = query(collection(db, 'users'), where('role', '==', 'admin'));
-      const snapshot = await getDocs(q);
-      if (snapshot.empty) {
-        try {
-          const adminCred = await createUserWithEmailAndPassword(auth, "admin@fleetbord.com", "1");
-          await setDoc(doc(db, "users", adminCred.user.uid), { email: "admin@fleetbord.com", role: "admin" });
-          alert("Default admin account created: admin@fleetbord.com / 1");
-          await fSignOut(auth);
-        } catch (e) {
-          console.log("Admin already exists or creation failed:", e.message);
-        }
+    // Show sections
+    function show(sectionId) {
+      ['manageUsers', 'messaging', 'loads'].forEach(id => {
+        document.getElementById(id).classList.add('hidden')
+      })
+      if (sectionId) {
+        document.getElementById(sectionId).classList.remove('hidden')
       }
     }
 
-    await ensureAdminExists();
+    document.querySelectorAll('.backBtn').forEach(btn => {
+      btn.onclick = () => show('')
+    })
 
-    const ui = {
-      authSection: document.getElementById('authSection'),
-      appArea: document.getElementById('app'),
-      roleLabel: document.getElementById('roleLabel'),
-      userList: document.getElementById('userList'),
-      recipients: document.getElementById('recipients'),
-      messageContainer: document.getElementById('messageContainer'),
-      loadList: document.getElementById('loadList'),
-      exportPdfBtn: document.getElementById('exportPdfBtn')
-    };
+    document.querySelectorAll('nav button').forEach(btn => {
+      btn.onclick = () => show(btn.dataset.show)
+    })
 
-    let currentRole = '';
-    let allLoads = [];
-
-    onAuthStateChanged(auth, async user => {
-      if (user) {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        currentRole = snap.data().role;
-        document.querySelector('button[onclick="signIn()"]').classList.add('hidden');
-        document.querySelector('button[onclick="signUp()"]').classList.add('hidden');
-        document.querySelector('button[onclick="signOut()"]').classList.remove('hidden');
-        ui.roleLabel.textContent = user.email + ' (' + currentRole + ')';
-        ui.appArea.classList.remove('hidden');
-
+    // Auth state change
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        currentUser = session.user
+        await fetchUserRole()
+        document.getElementById('roleLabel').textContent = `${currentUser.email} (${currentRole})`
+        document.getElementById('authSection').classList.add('hidden')
+        document.getElementById('app').classList.remove('hidden')
         if (currentRole === 'admin' || currentRole === 'office') {
-          document.getElementById('manageUsers').classList.remove('hidden');
-          listUsers();
+          show('manageUsers')
+          await loadUsers()
         } else {
-          document.getElementById('manageUsers').classList.add('hidden');
+          show('loads')
         }
-        loadRecipients();
-        loadMessages();
-        loadLoads();
+        await loadRecipients()
+        await loadMessages()
+        await loadLoads()
       } else {
-        ui.appArea.classList.add('hidden');
+        currentUser = null
+        currentRole = ''
+        document.getElementById('authSection').classList.remove('hidden')
+        document.getElementById('app').classList.add('hidden')
       }
-    });
+    })
 
-    async function signIn() {
-      await signInWithEmailAndPassword(auth, email.value, password.value);
+    // Login
+    loginBtn.onclick = async () => {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: emailInput.value,
+        password: passwordInput.value
+      })
+      if (error) alert(error.message)
     }
 
-    async function signUp() {
-      const cred = await createUserWithEmailAndPassword(auth, email.value, password.value);
-      await setDoc(doc(db, 'users', cred.user.uid), { email: email.value, role: 'driver' });
+    // Signup (default to driver)
+    signupBtn.onclick = async () => {
+      const { data, error } = await supabase.auth.signUp({
+        email: emailInput.value,
+        password: passwordInput.value
+      })
+      if (error) return alert(error.message)
+      await supabase.from('users').insert([{
+        id: data.user.id,
+        email: data.user.email,
+        role: 'driver'
+      }])
+      alert('Signup complete. Confirm your email and log in.')
     }
 
-    async function signOut() {
-      await fSignOut(auth);
-      location.reload();
+    // Logout
+    logoutBtn.onclick = async () => {
+      await supabase.auth.signOut()
     }
 
-    function show(id) {
-      document.querySelectorAll('div[id]').forEach(el => el.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
+    // Fetch user role
+    async function fetchUserRole() {
+      const { data, error } = await supabase.from('users')
+        .select('role')
+        .eq('id', currentUser.id).single()
+      if (error) {
+        currentRole = 'driver'
+      } else {
+        currentRole = data.role
+      }
     }
 
-    async function createUser() {
-      const em = newEmail.value, rl = newRole.value;
-      const cred = await createUserWithEmailAndPassword(auth, em, "changeme123");
-      await setDoc(doc(db, 'users', cred.user.uid), { email: em, role: rl });
-      alert(`Created ${rl}: ${em}`);
-      listUsers();
+    // Load users
+    async function loadUsers() {
+      const { data, error } = await supabase.from('users').select()
+      if (error) return alert(error.message)
+      userList.innerHTML = ''
+      data.forEach(u => {
+        const div = document.createElement('div')
+        div.textContent = `${u.email} (${u.role})`
+        userList.appendChild(div)
+      })
     }
 
-    async function listUsers() {
-      const snap = await getDocs(collection(db, 'users'));
-      ui.userList.innerHTML = '';
-      snap.forEach(doc => {
-        const u = doc.data();
-        ui.userList.innerHTML += `<div>${u.email} (${u.role})</div>`;
-      });
+    // Create user (via dashboard)
+    createUserBtn.onclick = async () => {
+      alert('⚠️ Creating new users with passwords must be done via Supabase Admin API or Dashboard.\n\nYou can add their roles here after they register.')
     }
 
+    // Load recipients for messaging
     async function loadRecipients() {
-      const snap = await getDocs(collection(db, 'users'));
-      ui.recipients.innerHTML = '';
-      snap.forEach(doc => {
-        if (doc.id !== auth.currentUser.uid) {
-          const opt = document.createElement('option');
-          opt.value = doc.id;
-          opt.textContent = doc.data().email;
-          ui.recipients.appendChild(opt);
+      const { data, error } = await supabase.from('users').select('id,email')
+      if (error) return alert(error.message)
+      messageRecipients.innerHTML = ''
+      data.forEach(u => {
+        if (u.id !== currentUser.id) {
+          const opt = document.createElement('option')
+          opt.value = u.id
+          opt.textContent = u.email
+          messageRecipients.appendChild(opt)
         }
-      });
+      })
     }
 
-    async function sendMessage() {
-      const recips = Array.from(ui.recipients.selectedOptions).map(o => o.value);
-      const text = messageText.value;
-      let photoURL = '';
-      if (messagePhoto.files[0]) {
-        const file = messagePhoto.files[0];
-        const ref = sRef(storage, 'msg_' + Date.now() + '_' + file.name);
-        await uploadBytes(ref, file);
-        photoURL = await getDownloadURL(ref);
+    // Send message
+    sendMessageBtn.onclick = async () => {
+      const selected = Array.from(messageRecipients.selectedOptions).map(opt => opt.value)
+      const text = messageText.value.trim()
+      if (!text && messagePhoto.files.length === 0) return alert('Enter message or attach photo.')
+      let photoUrl = ''
+      if (messagePhoto.files.length > 0) {
+        const file = messagePhoto.files[0]
+        const path = `messages/${Date.now()}_${file.name}`
+        const { error: uploadError } = await supabase.storage.from('files').upload(path, file)
+        if (uploadError) return alert(uploadError.message)
+        const { data: urlData } = supabase.storage.from('files').getPublicUrl(path)
+        photoUrl = urlData.publicUrl
       }
-      await addDoc(collection(db, 'messages'), {
-        from: auth.currentUser.uid,
-        to: recips,
+      const { error } = await supabase.from('messages').insert([{
+        from_id: currentUser.id,
+        to_ids: selected,
         text,
-        photoURL,
-        ts: Date.now()
-      });
-      messageText.value = '';
-      messagePhoto.value = '';
+        photo: photoUrl,
+        created_at: new Date()
+      }])
+      if (error) return alert(error.message)
+      messageText.value = ''
+      messagePhoto.value = ''
+      loadMessages()
     }
 
-    function loadMessages() {
-      onSnapshot(collection(db, 'messages'), snap => {
-        ui.messageContainer.innerHTML = '';
-        snap.forEach(doc => {
-          const m = doc.data();
-          if (m.from === auth.currentUser.uid || m.to.includes(auth.currentUser.uid)) {
-            ui.messageContainer.innerHTML += `<div style="margin-bottom:12px"><strong>${m.text}</strong>${m.photoURL ? `<br><img src="${m.photoURL}" style="max-width:100%;margin-top:8px;border-radius:12px"/>` : ''}</div>`;
-          }
-        });
-      });
-    }
-
-    async function saveLoad() {
-      const photos = [];
-      for (let file of ldPhoto.files) {
-        const ref = sRef(storage, 'load_' + Date.now() + '_' + file.name);
-        await uploadBytes(ref, file);
-        photos.push(await getDownloadURL(ref));
-      }
-      await addDoc(collection(db, 'loads'), {
-        by: auth.currentUser.uid,
-        date: ldDate.value,
-        ticket: ldTicket.value,
-        customer: ldCustomer.value,
-        rig: ldRig.value,
-        lease: ldLease.value,
-        price: Number(ldPrice.value),
-        overnights: Number(ldNights.value),
-        photos,
-        ts: Date.now()
-      });
-      alert('Load saved');
-      clearLoadInputs();
-      loadLoads();
-    }
-
-    function clearLoadInputs() {
-      ldDate.value = '';
-      ldTicket.value = '';
-      ldCustomer.value = '';
-      ldRig.value = '';
-      ldLease.value = '';
-      ldPrice.value = '';
-      ldNights.value = '';
-      ldPhoto.value = '';
-    }
-
-    function loadLoads() {
-      const q = query(collection(db, 'loads'), where('by', '==', auth.currentUser.uid));
-      onSnapshot(q, snap => {
-        ui.loadList.innerHTML = '';
-        allLoads = [];
-        snap.forEach(doc => {
-          const l = doc.data();
-          l.id = doc.id;
-          allLoads.push(l);
-          const div = document.createElement('div');
-          const label = document.createElement('label');
-          label.textContent = `${l.date} | Ticket #${l.ticket} | Customer: ${l.customer} | $${l.price.toFixed(2)} | Nights: ${l.overnights}`;
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.value = doc.id;
-          div.appendChild(label);
-          div.appendChild(checkbox);
-          ui.loadList.appendChild(div);
-        });
-        ui.exportPdfBtn.disabled = allLoads.length === 0;
-      });
-    }
-
-    function generatePaySheet() {
-      const selectedIds = Array.from(ui.loadList.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
-      if (selectedIds.length === 0) {
-        alert("Please select at least one load to export.");
-        return;
-      }
-      const loadsToExport = allLoads.filter(l => selectedIds.includes(l.id));
-
-      const doc = new jsPDF();
-
-      doc.setFontSize(18);
-      doc.text("Fleetbord Pay Sheet", 14, 20);
-      doc.setFontSize(12);
-      doc.text(`Driver: ${auth.currentUser.email}`, 14, 30);
-
-      const headers = ["Date", "Ticket #", "Customer", "Rig", "Lease", "Price", "Overnights"];
-      const colWidths = [25, 25, 40, 20, 25, 20, 25];
-      const startX = 14;
-      let startY = 40;
-      const lineHeight = 10;
-
-      // Draw headers
-      let x = startX;
-      doc.setFont(undefined, "bold");
-      headers.forEach((header, i) => {
-        doc.text(header, x, startY);
-        x += colWidths[i];
-      });
-      doc.setFont(undefined, "normal");
-
-      // Draw rows
-      startY += lineHeight;
-      loadsToExport.forEach(load => {
-        let x = startX;
-        const row = [
-          load.date,
-          load.ticket,
-          load.customer,
-          load.rig,
-          load.lease,
-          load.price.toFixed(2),
-          load.overnights.toString()
-        ];
-        row.forEach((cell, i) => {
-          doc.text(cell, x, startY);
-          x += colWidths[i];
-        });
-        startY += lineHeight;
-        // Page break if needed
-        if (startY > 270) {
-          doc.addPage();
-          startY = 20;
+    // Load messages
+    async function loadMessages() {
+      const { data, error } = await supabase.from('messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (error) return alert(error.message)
+      messageContainer.innerHTML = ''
+      data.forEach(msg => {
+        if (msg.to_ids.includes(currentUser.id) || msg.from_id === currentUser.id) {
+          const div = document.createElement('div')
+          div.innerHTML = `<strong>${msg.text}</strong><br>${msg.photo ? `<img src="${msg.photo}" style="max-width:100%;border-radius:10px" />` : ''}<hr/>`
+          messageContainer.appendChild(div)
         }
-      });
-
-      doc.save(`Fleetbord_P
-            doc.save(`Fleetbord_PaySheet_${new Date().toISOString().slice(0,10)}.pdf`);
+      })
     }
+
+    // Load management, save load logic continues in Part 3...
+        // Save a load
+    saveLoadBtn.onclick = async () => {
+      const files = loadPhotos.files
+      let photoUrls = []
+      for (const file of files) {
+        const path = `loads/${Date.now()}_${file.name}`
+        const { error: uploadError } = await supabase.storage.from('files').upload(path, file)
+        if (uploadError) return alert(uploadError.message)
+        const { data: urlData } = supabase.storage.from('files').getPublicUrl(path)
+        photoUrls.push(urlData.publicUrl)
+      }
+
+      const { error } = await supabase.from('loads').insert([{
+        user_id: currentUser.id,
+        date: loadDate.value,
+        ticket: loadTicket.value,
+        customer: loadCustomer.value,
+        rig: loadRig.value,
+        lease: loadLease.value,
+        price: Number(loadPrice.value),
+        overnights: Number(loadNights.value),
+        photos: photoUrls,
+        created_at: new Date()
+      }])
+      if (error) return alert(error.message)
+      loadDate.value = ''
+      loadTicket.value = ''
+      loadCustomer.value = ''
+      loadRig.value = ''
+      loadLease.value = ''
+      loadPrice.value = ''
+      loadNights.value = ''
+      loadPhotos.value = ''
+      loadLoads()
+    }
+
+    // Load all user's loads
+    async function loadLoads() {
+      const { data, error } = await supabase
+        .from('loads')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('date', { ascending: false })
+      if (error) return alert(error.message)
+
+      allLoads = data
+      loadList.innerHTML = ''
+      generatePdfBtn.disabled = data.length === 0
+
+      data.forEach(load => {
+        const div = document.createElement('div')
+        const label = document.createElement('label')
+        label.textContent = `${load.date} - Ticket #${load.ticket} - $${load.price.toFixed(2)} - Nights: ${load.overnights}`
+        const checkbox = document.createElement('input')
+        checkbox.type = 'checkbox'
+        checkbox.value = load.id
+        div.appendChild(label)
+        div.appendChild(checkbox)
+        loadList.appendChild(div)
+      })
+    }
+
+    // Generate PDF from selected loads
+    generatePdfBtn.onclick = () => {
+      const selected = Array.from(loadList.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.value)
+      if (selected.length === 0) return alert('Select at least one load.')
+
+      const selectedLoads = allLoads.filter(l => selected.includes(l.id))
+      const doc = new jsPDF()
+      doc.setFontSize(18)
+      doc.text('Fleetbord Pay Sheet', 14, 20)
+      doc.setFontSize(12)
+      doc.text(`Driver: ${currentUser.email}`, 14, 30)
+
+      const headers = ['Date', 'Ticket', 'Customer', 'Rig', 'Lease', 'Price', 'Nights']
+      const rows = selectedLoads.map(l => [
+        l.date, l.ticket, l.customer, l.rig, l.lease, `$${l.price.toFixed(2)}`, l.overnights
+      ])
+
+      let y = 40
+      headers.forEach((h, i) => doc.text(h, 14 + i * 28, y))
+      y += 8
+      rows.forEach(row => {
+        row.forEach((val, i) => doc.text(String(val), 14 + i * 28, y))
+        y += 8
+      })
+
+      const total = selectedLoads.reduce((sum, l) => sum + l.price, 0)
+      const nights = selectedLoads.reduce((sum, l) => sum + l.overnights, 0)
+      y += 10
+      doc.text(`Total Price: $${total.toFixed(2)}`, 14, y)
+      doc.text(`Total Overnights: ${nights}`, 90, y)
+
+      doc.save('Fleetbord_PaySheet.pdf')
+    }
+
   </script>
 </body>
 </html>

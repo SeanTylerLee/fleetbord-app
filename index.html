@@ -4,75 +4,94 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Fleetbord</title>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #f2f2f7;
+      color: #000;
+      margin: 0;
+      padding: 1em;
+    }
+    input, button, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      border: none;
+    }
+    button:hover {
+      background: #005bb5;
+    }
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Fleetbord</h1>
-    <div id="authSection">
-      <input id="email" type="email" placeholder="Email" />
-      <input id="password" type="password" placeholder="Password" />
-      <button onclick="signIn()">Login</button>
-      <button onclick="signUp()">Sign Up</button>
-      <button onclick="signOut()" class="hidden">Logout</button>
-      <span id="roleLabel"></span>
-    </div>
-  </header>
-
-  <main id="app" class="hidden">
-    <nav id="navigation">
+  <h1>Fleetbord</h1>
+  <div id="authSection">
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <button onclick="signIn()">Login</button>
+    <button onclick="signUp()">Sign Up</button>
+    <button onclick="signOut()" class="hidden">Logout</button>
+    <div id="roleLabel"></div>
+  </div>
+  <div id="app" class="hidden">
+    <nav>
       <button onclick="show('manageUsers')">Manage Users</button>
       <button onclick="show('messaging')">Messaging</button>
       <button onclick="show('loads')">Load Records</button>
     </nav>
 
-    <div id="manageUsers" class="panel hidden">
+    <div id="manageUsers" class="hidden">
       <h2>User Management</h2>
-      <input id="newEmail" type="email" placeholder="Email">
+      <input id="newEmail" type="email" placeholder="New user email" />
       <select id="newRole">
         <option value="driver">Driver</option>
         <option value="dispatcher">Dispatcher</option>
         <option value="office">Office</option>
       </select>
-      <button onclick="createUser()">Add User</button>
+      <button onclick="createUser()">Create User</button>
       <div id="userList"></div>
       <button onclick="back()">⬅️ Back</button>
     </div>
 
-    <div id="messaging" class="panel hidden">
+    <div id="messaging" class="hidden">
       <h2>Messaging</h2>
       <select id="recipients" multiple></select>
-      <textarea id="messageText" placeholder="Type a message..."></textarea>
+      <textarea id="messageText" placeholder="Message..."></textarea>
       <input id="messagePhoto" type="file" />
       <button onclick="sendMessage()">Send</button>
       <div id="messageContainer"></div>
       <button onclick="back()">⬅️ Back</button>
     </div>
 
-    <div id="loads" class="panel hidden">
+    <div id="loads" class="hidden">
       <h2>Load Records</h2>
-      <input type="date" id="ldDate" />
-      <input type="text" id="ldTicket" placeholder="Ticket #">
-      <input type="text" id="ldCustomer" placeholder="Customer">
-      <input type="text" id="ldRig" placeholder="Rig">
-      <input type="text" id="ldLease" placeholder="Lease">
-      <input type="number" id="ldPrice" placeholder="Price" />
-      <input type="number" id="ldNights" placeholder="Overnights" />
+      <input id="ldDate" type="date" />
+      <input id="ldTicket" type="text" placeholder="Ticket #" />
+      <input id="ldCustomer" type="text" placeholder="Customer" />
+      <input id="ldRig" type="text" placeholder="Rig" />
+      <input id="ldLease" type="text" placeholder="Lease" />
+      <input id="ldPrice" type="number" placeholder="Price" />
+      <input id="ldNights" type="number" placeholder="Overnights" />
       <input id="ldPhoto" type="file" multiple />
       <button onclick="saveLoad()">Save Load</button>
       <div id="loadList"></div>
-      <button onclick="generatePaySheet()">PDF / CSV Pay Sheet</button>
       <button onclick="back()">⬅️ Back</button>
     </div>
-  </main>
+  </div>
 
-  <!-- Firebase Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-             signOut as fSignOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot,
-             collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as fSignOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
     const firebaseConfig = {
@@ -90,6 +109,24 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
 
+    // Auto-create admin on first load
+    async function ensureAdminExists() {
+      const q = query(collection(db, 'users'), where('role', '==', 'admin'));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        try {
+          const adminCred = await createUserWithEmailAndPassword(auth, "admin@fleetbord.com", "1");
+          await setDoc(doc(db, "users", adminCred.user.uid), { email: "admin@fleetbord.com", role: "admin" });
+          alert("Default admin account created: admin@fleetbord.com / 1");
+          await fSignOut(auth);
+        } catch (e) {
+          console.log("Admin already exists or creation failed:", e.message);
+        }
+      }
+    }
+
+    await ensureAdminExists();
+
     const ui = {
       authSection: document.getElementById('authSection'),
       appArea: document.getElementById('app'),
@@ -104,91 +141,87 @@
 
     onAuthStateChanged(auth, async user => {
       if (user) {
-        const docSnap = await getDoc(doc(db, 'users', user.uid));
-        currentRole = docSnap.data().role;
-        ui.authSection.querySelector('button[onclick="signIn()"]').classList.add('hidden');
-        ui.authSection.querySelector('button[onclick="signUp()"]').classList.add('hidden');
-        ui.authSection.querySelector('button[onclick="signOut()"]').classList.remove('hidden');
-        ui.roleLabel.textContent = `${user.email} (${currentRole})`;
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        currentRole = snap.data().role;
+        document.querySelector('button[onclick="signIn()"]').classList.add('hidden');
+        document.querySelector('button[onclick="signUp()"]').classList.add('hidden');
+        document.querySelector('button[onclick="signOut()"]').classList.remove('hidden');
+        ui.roleLabel.textContent = user.email + ' (' + currentRole + ')';
         ui.appArea.classList.remove('hidden');
-        updateNavigation();
+        if (currentRole === 'admin' || currentRole === 'office') {
+          document.getElementById('manageUsers').classList.remove('hidden');
+          listUsers();
+        }
+        loadRecipients();
+        loadMessages();
+        loadLoads();
       } else {
         ui.appArea.classList.add('hidden');
       }
     });
 
     async function signIn() {
-      const em = email.value, pw = password.value;
-      await signInWithEmailAndPassword(auth, em, pw);
+      await signInWithEmailAndPassword(auth, email.value, password.value);
     }
+
     async function signUp() {
-      const em = email.value, pw = password.value;
-      const cred = await createUserWithEmailAndPassword(auth, em, pw);
-      await setDoc(doc(db, 'users', cred.user.uid), { role: 'driver', email: em });
+      const cred = await createUserWithEmailAndPassword(auth, email.value, password.value);
+      await setDoc(doc(db, 'users', cred.user.uid), { email: email.value, role: 'driver' });
     }
+
     async function signOut() {
       await fSignOut(auth);
       location.reload();
     }
 
-    function updateNavigation() {
-      if (['admin','office'].includes(currentRole)) {
-        document.getElementById('manageUsers').querySelector('button').hidden = false;
-      }
-      show('messaging');
-      loadRecipients();
+    function show(id) {
+      document.querySelectorAll('div[id]').forEach(el => el.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
     }
 
-    function show(panel) {
-      document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
-      document.getElementById(panel).classList.remove('hidden');
-    }
     function back() {
-      show('messaging');
+      show('app');
     }
 
     async function createUser() {
       const em = newEmail.value, rl = newRole.value;
-      const tempPw = 'changeme123';
-      const cred = await createUserWithEmailAndPassword(auth, em, tempPw);
-      await setDoc(doc(db, 'users', cred.user.uid), { role: rl, email: em });
-      alert('Added '+em);
+      const cred = await createUserWithEmailAndPassword(auth, em, "changeme123");
+      await setDoc(doc(db, 'users', cred.user.uid), { email: em, role: rl });
+      alert(`Created ${rl}: ${em}`);
       listUsers();
     }
 
     async function listUsers() {
-      const snapshot = await getDocs(collection(db, 'users'));
+      const snap = await getDocs(collection(db, 'users'));
       ui.userList.innerHTML = '';
-      snapshot.forEach(docSnap => {
-        const { email, role } = docSnap.data();
-        const div = document.createElement('div');
-        div.textContent = email + ' ('+role+')';
-        ui.userList.appendChild(div);
+      snap.forEach(doc => {
+        const u = doc.data();
+        ui.userList.innerHTML += `<div>${u.email} (${u.role})</div>`;
       });
     }
 
     async function loadRecipients() {
-      const snapshot = await getDocs(collection(db, 'users'));
+      const snap = await getDocs(collection(db, 'users'));
       ui.recipients.innerHTML = '';
-      snapshot.forEach(docSnap => {
-        if (docSnap.data().email !== auth.currentUser.email) {
+      snap.forEach(doc => {
+        if (doc.id !== auth.currentUser.uid) {
           const opt = document.createElement('option');
-          opt.value = docSnap.id;
-          opt.textContent = docSnap.data().email + ' ('+docSnap.data().role+')';
+          opt.value = doc.id;
+          opt.textContent = doc.data().email;
           ui.recipients.appendChild(opt);
         }
       });
     }
 
     async function sendMessage() {
-      const text = messageText.value;
       const recips = Array.from(ui.recipients.selectedOptions).map(o => o.value);
+      const text = messageText.value;
       let photoURL = '';
-      if (messagePhoto.files.length) {
+      if (messagePhoto.files[0]) {
         const file = messagePhoto.files[0];
-        const path = `messages/${auth.currentUser.uid}_${Date.now()}_${file.name}`;
-        await uploadBytes(sRef(storage, path), file);
-        photoURL = await getDownloadURL(sRef(storage, path));
+        const ref = sRef(storage, 'msg_' + file.name);
+        await uploadBytes(ref, file);
+        photoURL = await getDownloadURL(ref);
       }
       await addDoc(collection(db, 'messages'), {
         from: auth.currentUser.uid,
@@ -197,19 +230,15 @@
         photoURL,
         ts: Date.now()
       });
-      loadMessages();
     }
 
     function loadMessages() {
       onSnapshot(collection(db, 'messages'), snap => {
         ui.messageContainer.innerHTML = '';
-        snap.forEach(docSnap => {
-          const m = docSnap.data();
-          if (m.to.includes(auth.currentUser.uid) || m.from === auth.currentUser.uid) {
-            const div = document.createElement('div');
-            div.innerHTML = `<strong>${m.text}</strong><br/>`;
-            if (m.photoURL) div.innerHTML += `<img src="${m.photoURL}" style="max-width:100%"/>`;
-            ui.messageContainer.appendChild(div);
+        snap.forEach(doc => {
+          const m = doc.data();
+          if (m.from === auth.currentUser.uid || m.to.includes(auth.currentUser.uid)) {
+            ui.messageContainer.innerHTML += `<div><strong>${m.text}</strong>${m.photoURL ? `<br><img src="${m.photoURL}" width="200"/>` : ''}</div>`;
           }
         });
       });
@@ -218,9 +247,9 @@
     async function saveLoad() {
       const photos = [];
       for (let file of ldPhoto.files) {
-        const path = `loads/${auth.currentUser.uid}_${Date.now()}_${file.name}`;
-        await uploadBytes(sRef(storage, path), file);
-        photos.push(await getDownloadURL(sRef(storage, path)));
+        const ref = sRef(storage, 'load_' + file.name);
+        await uploadBytes(ref, file);
+        photos.push(await getDownloadURL(ref));
       }
       await addDoc(collection(db, 'loads'), {
         by: auth.currentUser.uid,
@@ -234,37 +263,18 @@
         photos,
         ts: Date.now()
       });
-      loadLoads();
     }
 
     function loadLoads() {
-      const q = query(collection(db, 'loads'),
-                      where('by', '==', auth.currentUser.uid));
+      const q = query(collection(db, 'loads'), where('by', '==', auth.currentUser.uid));
       onSnapshot(q, snap => {
         ui.loadList.innerHTML = '';
-        snap.forEach(docSnap => {
-          const l = docSnap.data();
-          const div = document.createElement('div');
-          div.innerHTML = `<strong>${l.date}</strong>: ${l.ticket}, $${l.price}`;
-          ui.loadList.appendChild(div);
+        snap.forEach(doc => {
+          const l = doc.data();
+          ui.loadList.innerHTML += `<div><strong>${l.date}</strong> | Ticket #${l.ticket} | $${l.price}</div>`;
         });
       });
     }
-
-    function generatePaySheet() {
-      // you can build PDF or CSV the same way — I'll skip it for brevity
-      alert('Pay sheet export coming soon!');
-    }
-
-    // Auto load messages/loads when authenticated
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        loadMessages();
-        loadLoads();
-        listUsers();
-        loadRecipients();
-      }
-    });
 
   </script>
 </body>

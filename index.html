@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -69,8 +69,8 @@
     <!-- LOGIN PANEL -->
     <div id="loginPanel" class="panel">
       <h2>Login</h2>
-      <input id="loginUsername" placeholder="Username" autocomplete="username" />
-      <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
+      <input id="loginUsername" placeholder="Username" />
+      <input id="loginPassword" type="password" placeholder="Password" />
       <button onclick="login()">Login</button>
       <p id="loginMessage" style="color:red;"></p>
     </div>
@@ -81,8 +81,8 @@
       <button onclick="logout()" class="logout-btn">Logout</button>
 
       <h3>Create New User</h3>
-      <input id="newUserName" placeholder="Username" autocomplete="off" />
-      <input id="newUserPass" type="password" placeholder="Password" autocomplete="new-password" />
+      <input id="newUserName" placeholder="Username" />
+      <input id="newUserPass" type="password" placeholder="Password" />
       <label for="newUserRole">Role:</label>
       <select id="newUserRole">
         <option value="Driver">Driver</option>
@@ -129,26 +129,21 @@
   </div>
 
 <script>
-  // Admin credentials hardcoded
   const adminUsername = "Sean";
   const adminPassword = "1";
 
-  // Stored users: username => {password, role}
   let users = JSON.parse(localStorage.getItem("users")) || {};
-  // Loads per user: username => array of loads
   let loads = JSON.parse(localStorage.getItem("loads")) || {};
-  // Messages array
   let messages = JSON.parse(localStorage.getItem("messages")) || [];
 
   let currentUser = "";
 
-  // --- LOGIN ---
   function login() {
     const u = document.getElementById("loginUsername").value.trim();
     const p = document.getElementById("loginPassword").value.trim();
     const msg = document.getElementById("loginMessage");
 
-    if(u === adminUsername && p === adminPassword) {
+    if (u === adminUsername && p === adminPassword) {
       currentUser = u;
       if (!users[u]) {
         users[u] = { password: p, role: "Admin" };
@@ -159,7 +154,7 @@
       return;
     }
 
-    if(users[u] && users[u].password === p) {
+    if (users[u] && users[u].password === p) {
       currentUser = u;
       msg.textContent = "";
       showUserPanel();
@@ -171,34 +166,17 @@
 
   function logout() {
     currentUser = "";
-    clearForms();
     showPanel("login");
   }
 
-  function clearForms() {
-    document.getElementById("loginUsername").value = "";
-    document.getElementById("loginPassword").value = "";
-    document.getElementById("newUserName").value = "";
-    document.getElementById("newUserPass").value = "";
-    document.getElementById("userMsg").textContent = "";
-    document.getElementById("ticketNumber").value = "";
-    document.getElementById("customer").value = "";
-    document.getElementById("rig").value = "";
-    document.getElementById("lease").value = "";
-    document.getElementById("price").value = "";
-    document.getElementById("overnights").value = "";
-    document.getElementById("messageText").value = "";
-  }
-
-  // --- UI Control ---
   function showPanel(panel) {
     document.getElementById("loginPanel").classList.add("hidden");
     document.getElementById("adminPanel").classList.add("hidden");
     document.getElementById("userPanel").classList.add("hidden");
 
-    if(panel === "login") document.getElementById("loginPanel").classList.remove("hidden");
-    if(panel === "admin") document.getElementById("adminPanel").classList.remove("hidden");
-    if(panel === "user") document.getElementById("userPanel").classList.remove("hidden");
+    if (panel === "login") document.getElementById("loginPanel").classList.remove("hidden");
+    if (panel === "admin") document.getElementById("adminPanel").classList.remove("hidden");
+    if (panel === "user") document.getElementById("userPanel").classList.remove("hidden");
   }
 
   function showAdminPanel() {
@@ -214,24 +192,23 @@
     populateRecipientList();
   }
 
-  // --- USER MANAGEMENT (Admin only) ---
   function addUser() {
     const name = document.getElementById("newUserName").value.trim();
     const pass = document.getElementById("newUserPass").value.trim();
     const role = document.getElementById("newUserRole").value;
     const msg = document.getElementById("userMsg");
 
-    if(!name || !pass) {
+    if (!name || !pass) {
       msg.style.color = "red";
       msg.textContent = "Username and password required.";
       return;
     }
-    if(users[name]) {
+    if (users[name]) {
       msg.style.color = "red";
       msg.textContent = "User already exists.";
       return;
     }
-    if(name === adminUsername) {
+    if (name === adminUsername) {
       msg.style.color = "red";
       msg.textContent = "Cannot create another admin.";
       return;
@@ -251,8 +228,8 @@
     container.innerHTML = "";
 
     const ul = document.createElement("ul");
-    for(const username in users) {
-      if(username === adminUsername) continue;
+    for (const username in users) {
+      if (username === adminUsername) continue;
       const user = users[username];
       const li = document.createElement("li");
       li.className = "user-item";
@@ -264,22 +241,17 @@
       `;
       ul.appendChild(li);
     }
-    if(ul.children.length === 0) {
-      container.textContent = "No users yet.";
-    } else {
-      container.appendChild(ul);
-    }
+    container.appendChild(ul);
   }
 
   function deleteUser(username) {
-    if(confirm(\`Delete user "\${username}"?\`)) {
+    if (confirm(`Delete user "${username}"?`)) {
       delete users[username];
       localStorage.setItem("users", JSON.stringify(users));
       renderUserList();
     }
   }
 
-  // --- LOAD TRACKING (Users) ---
   function addLoad() {
     const t = document.getElementById("ticketNumber").value.trim();
     const c = document.getElementById("customer").value.trim();
@@ -288,23 +260,13 @@
     const p = parseFloat(document.getElementById("price").value.trim()) || 0;
     const o = parseInt(document.getElementById("overnights").value.trim()) || 0;
 
-    if(!t || !c) {
-      alert("Ticket Number and Customer are required.");
-      return;
-    }
-    if(!loads[currentUser]) loads[currentUser] = [];
+    if (!t || !c) return alert("Ticket Number and Customer are required.");
+
+    if (!loads[currentUser]) loads[currentUser] = [];
 
     loads[currentUser].push({ id: Date.now(), t, c, r, l, p, o });
     localStorage.setItem("loads", JSON.stringify(loads));
     renderLoads();
-
-    // Clear inputs
-    document.getElementById("ticketNumber").value = "";
-    document.getElementById("customer").value = "";
-    document.getElementById("rig").value = "";
-    document.getElementById("lease").value = "";
-    document.getElementById("price").value = "";
-    document.getElementById("overnights").value = "";
   }
 
   function renderLoads() {
@@ -315,32 +277,13 @@
       const div = document.createElement("div");
       div.className = "load-item";
       div.innerHTML = `
-        <strong>Ticket:</strong> ${load.t} | <strong>Customer:</strong> ${load.c}<br/>
-        Rig: ${load.r} | Lease: ${load.l}<br/>
+        <strong>Ticket:</strong> ${load.t}<br/>
+        Customer: ${load.c} | Rig: ${load.r} | Lease: ${load.l}<br/>
         Price: $${load.p.toFixed(2)} | Overnights: ${load.o}<br/>
-        <button onclick="editLoad(${load.id})">Edit</button>
         <button onclick="deleteLoad(${load.id})" style="background:#e33;">Delete</button>
       `;
       container.appendChild(div);
     });
-  }
-
-  function editLoad(id) {
-    const userLoads = loads[currentUser] || [];
-    const load = userLoads.find(l => l.id === id);
-    if(!load) return alert("Load not found.");
-
-    document.getElementById("ticketNumber").value = load.t;
-    document.getElementById("customer").value = load.c;
-    document.getElementById("rig").value = load.r;
-    document.getElementById("lease").value = load.l;
-    document.getElementById("price").value = load.p;
-    document.getElementById("overnights").value = load.o;
-
-    // Remove original load so it can be replaced on save
-    loads[currentUser] = userLoads.filter(l => l.id !== id);
-    localStorage.setItem("loads", JSON.stringify(loads));
-    renderLoads();
   }
 
   function deleteLoad(id) {
@@ -350,16 +293,11 @@
     renderLoads();
   }
 
-  // --- PDF FORM GENERATION ---
   function generateForm() {
     const userLoads = loads[currentUser] || [];
-    if(userLoads.length === 0) {
-      alert("No loads to generate form.");
-      return;
-    }
+    if (userLoads.length === 0) return alert("No loads to generate.");
 
-    let totalPrice = 0;
-    let totalOvernights = 0;
+    let totalPrice = 0, totalOvernights = 0;
 
     const formDetails = document.getElementById("formDetails");
     formDetails.innerHTML = "<ul>" + userLoads.map(l =>
@@ -382,33 +320,66 @@
   async function sendForm() {
     const { jsPDF } = window.jspdf;
     const userLoads = loads[currentUser] || [];
-    if(userLoads.length === 0) return alert("No loads to export.");
-
     const doc = new jsPDF();
     let y = 10;
     doc.setFontSize(14);
     doc.text("FleetBord Load Summary", 10, y);
     y += 10;
     doc.setFontSize(12);
-
     userLoads.forEach((load, i) => {
       const line = `${i+1}. Ticket: ${load.t}, Customer: ${load.c}, Price: $${load.p.toFixed(2)}, Overnights: ${load.o}`;
       doc.text(line, 10, y);
       y += 8;
     });
-
     const totalPrice = userLoads.reduce((acc, l) => acc + l.p, 0);
     const totalOvernights = userLoads.reduce((acc, l) => acc + l.o, 0);
-
     y += 10;
     doc.text(`Total Price: $${totalPrice.toFixed(2)}`, 10, y);
     y += 8;
     doc.text(`Total Overnights: ${totalOvernights}`, 10, y);
-
     doc.save(`FleetBord_${currentUser}_Loads.pdf`);
   }
 
-  // --- MESSAGING ---
+  function populateRecipientList() {
+    const select = document.getElementById("recipientSelect");
+    select.innerHTML = "";
+    for (const username in users) {
+      if (username !== currentUser) {
+        const opt = document.createElement("option");
+        opt.value = username;
+        opt.textContent = username;
+        select.appendChild(opt);
+      }
+    }
+    if (currentUser !== adminUsername) {
+      const adminOpt = document.createElement("option");
+      adminOpt.value = adminUsername;
+      adminOpt.textContent = adminUsername + " (Admin)";
+      select.appendChild(adminOpt);
+    }
+  }
+
+  function sendMessage() {
+    const recipients = Array.from(document.getElementById("recipientSelect").selectedOptions).map(opt => opt.value);
+    const text = document.getElementById("messageText").value.trim();
+    if (recipients.length === 0 || !text) {
+      alert("Select recipients and type a message.");
+      return;
+    }
+    const now = new Date();
+    const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newMsg = {
+      from: currentUser,
+      to: recipients,
+      text,
+      timestamp
+    };
+    messages.push(newMsg);
+    localStorage.setItem("messages", JSON.stringify(messages));
+    document.getElementById("messageText").value = "";
+    renderMessages();
+  }
+
   function renderMessages() {
     const msgList = document.getElementById("messageList");
     msgList.innerHTML = "";
@@ -426,50 +397,7 @@
     });
   }
 
-  function populateRecipientList() {
-    const select = document.getElementById("recipientSelect");
-    select.innerHTML = "";
-    for(const username in users) {
-      if(username !== currentUser) {
-        const opt = document.createElement("option");
-        opt.value = username;
-        opt.textContent = username;
-        select.appendChild(opt);
-      }
-    }
-    if(currentUser !== adminUsername
-        if(currentUser !== adminUsername) {
-      const adminOpt = document.createElement("option");
-      adminOpt.value = adminUsername;
-      adminOpt.textContent = adminUsername + " (Admin)";
-      select.appendChild(adminOpt);
-    }
-  }
-
-  function sendMessage() {
-    const recipients = Array.from(document.getElementById("recipientSelect").selectedOptions).map(opt => opt.value);
-    const text = document.getElementById("messageText").value.trim();
-    if(recipients.length === 0 || !text) {
-      alert("Please enter a message and select recipients.");
-      return;
-    }
-    const now = new Date();
-    const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const newMsg = {
-      from: currentUser,
-      to: recipients,
-      text,
-      timestamp
-    };
-    messages.push(newMsg);
-    localStorage.setItem("messages", JSON.stringify(messages));
-    document.getElementById("messageText").value = "";
-    renderMessages();
-  }
-
-  // Initialize app
   showPanel("login");
 </script>
-
 </body>
 </html>

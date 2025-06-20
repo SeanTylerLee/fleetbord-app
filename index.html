@@ -1,196 +1,277 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FleetBoard iOS WebApp</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fleetbord</title>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      margin: 0;
-      padding: 1rem;
-      background: #FAF6F2;
-      display: flex;
-      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      margin: 0; padding: 0;
+      background-color: #f2f2f7;
+      color: #000;
     }
-    .container {
-      width: 100%;
-      max-width: 420px;
+    header, main {
+      padding: 1em;
+      max-width: 600px;
+      margin: auto;
     }
-    .hidden { display: none; }
-    input, select, button, textarea {
-      margin: 0.4rem 0;
-      padding: 0.7rem;
-      font-size: 1rem;
+    h1 { text-align: center; }
+    input, button, select, textarea {
       width: 100%;
-      box-sizing: border-box;
+      padding: 10px;
+      margin-top: 10px;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      border-radius: 10px;
+      box-sizing: border-box;
+      font-size: 16px;
     }
     button {
-      background: #007AFF;
+      background-color: #007aff;
       color: white;
       border: none;
+      cursor: pointer;
     }
-    .panel {
+    button:hover {
+      background-color: #005bb5;
+    }
+    .hidden { display: none; }
+    .message, .load {
       background: white;
-      padding: 1.5rem;
-      border-radius: 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      margin-bottom: 1rem;
-    }
-    .logout-btn {
-      background-color: #e33;
-      margin-top: 1rem;
-    }
-    .message-item, .load-item {
-      background: #f1f1f7;
+      padding: 10px;
       border-radius: 10px;
-      padding: 0.6rem;
-      margin-bottom: 0.5rem;
-      font-size: 0.95rem;
+      margin-top: 10px;
     }
-    .emoji { font-size: 1.2rem; }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1em;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div id="loginPanel" class="panel">
-      <h2>Login</h2>
-      <input id="username" placeholder="Username" />
-      <input id="password" type="password" placeholder="Password" />
+  <header>
+    <h1>Fleetbord</h1>
+    <div id="loginSection">
+      <input type="text" id="loginUser" placeholder="Username" />
+      <input type="password" id="loginPass" placeholder="Password" />
       <button onclick="login()">Login</button>
-      <button onclick="resetAll()" style="margin-top:0.5rem;background:#666;">Reset All</button>
-      <p id="loginMessage" style="color:red;"></p>
+    </div>
+    <div id="roleLabel" class="hidden">
+      Logged in as <strong><span id="roleUser"></span></strong>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main id="app" class="hidden">
+    <nav id="adminPanel" class="hidden">
+      <button onclick="showSection('manageUsers')">Manage Users</button>
+    </nav>
+
+    <div id="manageUsers" class="hidden">
+      <h2>User Management</h2>
+      <input type="text" id="newUser" placeholder="Username">
+      <input type="password" id="newPass" placeholder="Password">
+      <select id="newRole">
+        <option value="driver">Driver</option>
+        <option value="dispatcher">Dispatcher</option>
+        <option value="office">Office</option>
+      </select>
+      <button onclick="createUser()">Create User</button>
+      <div id="userList"></div>
     </div>
 
-    <div id="dashboard" class="panel hidden">
-      <h2 id="welcomeTitle">Welcome!</h2>
-      <button class="logout-btn" onclick="logout()">Logout</button>
-
-      <h3>Load Tracker</h3>
-      <input id="ticket" placeholder="Ticket #" />
-      <input id="customer" placeholder="Customer" />
-      <input id="rig" placeholder="Rig" />
-      <input id="lease" placeholder="Lease" />
-      <input id="price" type="number" placeholder="Price" />
-      <input id="overnights" type="number" placeholder="Overnights" />
-      <button onclick="addLoad()">Add Load</button>
-      <div id="loads"></div>
-      <button onclick="exportPDF()">Export PDF</button>
-
-      <h3>Chat</h3>
-      <textarea id="chatInput" placeholder="Message (emoji ok 👍)" rows="2"></textarea>
+    <div id="messaging">
+      <h2>Messaging</h2>
+      <select id="recipientSelect" multiple></select>
+      <textarea id="messageInput" placeholder="Type message..."></textarea>
+      <input type="file" id="messageImage">
       <button onclick="sendMessage()">Send</button>
-      <div id="chatMessages" style="max-height:200px;overflow-y:auto;"></div>
+      <div id="messagesDiv"></div>
     </div>
-  </div>
 
-<script>
-  const admin = { username: "Sean", password: "1" };
-  let users = JSON.parse(localStorage.getItem("users")) || {};
-  let loads = JSON.parse(localStorage.getItem("loads")) || {};
-  let chat = JSON.parse(localStorage.getItem("chat")) || [];
-  let currentUser = "";
+    <div id="loads">
+      <h2>Load Records</h2>
+      <input type="date" id="loadDate">
+      <input type="text" id="ticketNum" placeholder="Ticket Number">
+      <input type="text" id="customer" placeholder="Customer">
+      <input type="text" id="rig" placeholder="Rig">
+      <input type="text" id="lease" placeholder="Lease">
+      <input type="number" id="price" placeholder="Price">
+      <input type="number" id="overnights" placeholder="Overnights">
+      <input type="file" id="loadPhoto" multiple>
+      <button onclick="saveLoad()">Save Load</button>
+      <div id="loadList"></div>
+      <button onclick="generatePaySheet()">Generate Pay Sheet CSV</button>
+    </div>
+  </main>
 
-  // Ensure admin account exists in local storage
-  if (!users[admin.username]) {
-    users[admin.username] = { password: admin.password, role: "Admin" };
-    localStorage.setItem("users", JSON.stringify(users));
-  }
+  <script>
+    const users = {
+      Sean: { password: "1", role: "admin" }
+    };
 
-  function login() {
-    const u = document.getElementById("username").value.trim();
-    const p = document.getElementById("password").value.trim();
-    const msg = document.getElementById("loginMessage");
+    let currentUser = null;
 
-    if (users[u] && users[u].password === p) {
-      currentUser = u;
-      msg.textContent = "";
-      document.getElementById("loginPanel").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-      document.getElementById("welcomeTitle").textContent = "Welcome, " + u + "!";
-      renderLoads();
-      renderChat();
-    } else {
-      msg.textContent = "Invalid login.";
+    function login() {
+      const u = loginUser.value;
+      const p = loginPass.value;
+      if (users[u] && users[u].password === p) {
+        currentUser = { username: u, role: users[u].role };
+        roleUser.textContent = `${u} (${users[u].role})`;
+        document.getElementById('loginSection').classList.add("hidden");
+        document.getElementById('roleLabel').classList.remove("hidden");
+        document.getElementById('app').classList.remove("hidden");
+        if (["admin", "office"].includes(users[u].role)) {
+          adminPanel.classList.remove("hidden");
+        }
+        populateUsers();
+      } else {
+        alert("Invalid credentials");
+      }
     }
-  }
 
-  function logout() {
-    currentUser = "";
-    document.getElementById("dashboard").classList.add("hidden");
-    document.getElementById("loginPanel").classList.remove("hidden");
-  }
-
-  function resetAll() {
-    if (confirm("Reset all users, loads, and messages?")) {
-      localStorage.clear();
+    function logout() {
       location.reload();
     }
-  }
 
-  function addLoad() {
-    const t = document.getElementById("ticket").value;
-    const c = document.getElementById("customer").value;
-    const r = document.getElementById("rig").value;
-    const l = document.getElementById("lease").value;
-    const p = parseFloat(document.getElementById("price").value) || 0;
-    const o = parseInt(document.getElementById("overnights").value) || 0;
-    if (!loads[currentUser]) loads[currentUser] = [];
-    loads[currentUser].push({ t, c, r, l, p, o });
-    localStorage.setItem("loads", JSON.stringify(loads));
-    renderLoads();
-  }
+    function showSection(id) {
+      document.querySelectorAll("main > div").forEach(el => el.classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+    }
 
-  function renderLoads() {
-    const list = document.getElementById("loads");
-    list.innerHTML = "";
-    (loads[currentUser] || []).forEach((load, i) => {
-      const div = document.createElement("div");
-      div.className = "load-item";
-      div.innerHTML = `#${i+1} Ticket: ${load.t}, Customer: ${load.c}, Price: $${load.p.toFixed(2)}, Overnights: ${load.o}`;
-      list.appendChild(div);
-    });
-  }
+    function createUser() {
+      const u = newUser.value.trim();
+      const p = newPass.value.trim();
+      const r = newRole.value;
+      if (u && p && !users[u]) {
+        users[u] = { password: p, role: r };
+        alert("User created!");
+        populateUsers();
+      } else {
+        alert("Invalid or existing username");
+      }
+    }
 
-  function exportPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("FleetBoard Load Summary", 10, 10);
-    let y = 20;
-    let total = 0, nights = 0;
-    (loads[currentUser] || []).forEach((l, i) => {
-      doc.text(`${i+1}. ${l.t}, ${l.c}, $${l.p.toFixed(2)}, ${l.o} nights`, 10, y);
-      y += 8;
-      total += l.p;
-      nights += l.o;
-    });
-    doc.text(`Total: $${total.toFixed(2)} | Overnights: ${nights}`, 10, y + 10);
-    doc.save("FleetBoard_Loads.pdf");
-  }
+    function populateUsers() {
+      recipientSelect.innerHTML = "";
+      userList.innerHTML = "";
+      Object.keys(users).forEach(u => {
+        const { role } = users[u];
+        if (u !== currentUser?.username) {
+          const opt = document.createElement("option");
+          opt.value = u;
+          opt.textContent = `${u} (${role})`;
+          recipientSelect.appendChild(opt);
+        }
+        if (["admin", "office"].includes(currentUser?.role)) {
+          const div = document.createElement("div");
+          div.textContent = `${u} (${role})`;
+          userList.appendChild(div);
+        }
+      });
+    }
 
-  function sendMessage() {
-    const txt = document.getElementById("chatInput").value.trim();
-    if (!txt) return;
-    chat.push({ from: currentUser, text: txt, time: new Date().toLocaleTimeString() });
-    localStorage.setItem("chat", JSON.stringify(chat));
-    document.getElementById("chatInput").value = "";
-    renderChat();
-  }
+    const messages = [];
 
-  function renderChat() {
-    const list = document.getElementById("chatMessages");
-    list.innerHTML = "";
-    chat.slice(-50).forEach(m => {
-      const div = document.createElement("div");
-      div.className = "message-item";
-      div.innerHTML = `<strong>${m.from}</strong>: ${m.text} <small>(${m.time})</small>`;
-      list.appendChild(div);
-    });
-  }
-</script>
+    function sendMessage() {
+      const text = messageInput.value;
+      const to = [...recipientSelect.selectedOptions].map(opt => opt.value);
+      const file = messageImage.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        messages.push({ from: currentUser.username, to, text, image: reader.result });
+        displayMessages();
+      };
+      if (file) reader.readAsDataURL(file);
+      else {
+        messages.push({ from: currentUser.username, to, text });
+        displayMessages();
+      }
+    }
+
+    function displayMessages() {
+      messagesDiv.innerHTML = "";
+      messages.forEach(m => {
+        if (m.to.includes(currentUser.username) || m.from === currentUser.username || currentUser.role === 'dispatcher') {
+          const div = document.createElement("div");
+          div.className = "message";
+          div.innerHTML = `<strong>${m.from}:</strong> ${m.text || ''}`;
+          if (m.image) {
+            const img = document.createElement("img");
+            img.src = m.image;
+            img.style.maxWidth = "100%";
+            div.appendChild(img);
+          }
+          messagesDiv.appendChild(div);
+        }
+      });
+    }
+
+    const loads = [];
+
+    function saveLoad() {
+      const load = {
+        user: currentUser.username,
+        date: loadDate.value,
+        ticket: ticketNum.value,
+        customer: customer.value,
+        rig: rig.value,
+        lease: lease.value,
+        price: price.value,
+        overnights: overnights.value,
+        photos: []
+      };
+
+      const files = loadPhoto.files;
+      const promises = Array.from(files).map(file => {
+        return new Promise(res => {
+          const reader = new FileReader();
+          reader.onload = () => res(reader.result);
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(promises).then(imgs => {
+        load.photos = imgs;
+        loads.push(load);
+        displayLoads();
+      });
+    }
+
+    function displayLoads() {
+      loadList.innerHTML = "";
+      loads.filter(l => l.user === currentUser.username || currentUser.role !== 'driver')
+        .forEach((l, i) => {
+        const div = document.createElement("div");
+        div.className = "load";
+        div.innerHTML = `<strong>${l.date}</strong> - ${l.ticket} - $${l.price}<br/>
+          <input type="checkbox" data-index="${i}" class="payCheck"/>`;
+        loadList.appendChild(div);
+      });
+    }
+
+    function generatePaySheet() {
+      const selected = [...document.querySelectorAll('.payCheck:checked')]
+        .map(cb => loads[cb.dataset.index]);
+      if (!selected.length) return alert("No loads selected.");
+
+      let content = "Date,Ticket,Customer,Rig,Lease,Price,Overnights\n";
+      let total = 0, nights = 0;
+
+      selected.forEach(l => {
+        content += `${l.date},${l.ticket},${l.customer},${l.rig},${l.lease},${l.price},${l.overnights}\n`;
+        total += parseFloat(l.price || 0);
+        nights += parseInt(l.overnights || 0);
+      });
+
+      const blob = new Blob([content], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `PaySheet-${currentUser.username}.csv`;
+      a.click();
+    }
+  </script>
 </body>
 </html>

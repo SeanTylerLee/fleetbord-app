@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Messages | Fleetbord</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Messages</h1>
+    <a href="dashboard.html" class="nav-button">← Back</a>
+  </header>
+
+  <main>
+    <h2>Inbox</h2>
+    <div id="messages" style="margin-bottom: 1em;"></div>
+
+    <h3>New Message</h3>
+    <form id="messageForm">
+      <label>To (Username or Comma-separated list):</label><br>
+      <input type="text" id="recipient" required><br><br>
+
+      <label>Message:</label><br>
+      <textarea id="message" rows="4" required></textarea><br><br>
+
+      <label>Attach Photo (optional):</label><br>
+      <input type="file" id="photo"><br><br>
+
+      <button type="submit" class="nav-button">Send Message</button>
+    </form>
+  </main>
+
+  <script>
+    const username = localStorage.getItem('username');
+    const role = localStorage.getItem('role');
+
+    if (!username || !role) {
+      window.location.href = "index.html";
+    }
+
+    const messagesDiv = document.getElementById('messages');
+    const form = document.getElementById('messageForm');
+
+    async function loadMessages() {
+      const res = await fetch(`/messages?username=${username}`);
+      const data = await res.json();
+      messagesDiv.innerHTML = data.map(msg => `
+        <div style="margin-bottom: 1em; padding: 1em; background: var(--card); border-radius: 0.5em;">
+          <strong>From:</strong> ${msg.sender}<br>
+          <strong>To:</strong> ${msg.recipients.join(', ')}<br>
+          <p>${msg.message}</p>
+          ${msg.photo ? `<img src="/uploads/${msg.photo}" style="max-width:100%; border-radius: 5px;">` : ''}
+        </div>
+      `).join('');
+    }
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const recipients = document.getElementById('recipient').value.split(',').map(x => x.trim());
+      const message = document.getElementById('message').value;
+      const photo = document.getElementById('photo').files[0];
+
+      const formData = new FormData();
+      formData.append('sender', username);
+      formData.append('recipients', JSON.stringify(recipients));
+      formData.append('message', message);
+      if (photo) formData.append('photo', photo);
+
+      await fetch('/messages', {
+        method: 'POST',
+        body: formData
+      });
+
+      form.reset();
+      loadMessages();
+    };
+
+    loadMessages();
+  </script>
+</body>
+</html>

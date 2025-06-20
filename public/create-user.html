@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create User | Fleetbord</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Create User</h1>
+    <a href="dashboard.html" class="nav-button">← Back</a>
+  </header>
+
+  <main>
+    <form id="createUserForm">
+      <label>Username:</label><br>
+      <input type="text" id="username" required /><br><br>
+
+      <label>Password:</label><br>
+      <input type="password" id="password" required /><br><br>
+
+      <label>Role:</label><br>
+      <select id="role" required>
+        <option value="">Select role</option>
+        <option value="driver">Driver</option>
+        <option value="dispatcher">Dispatcher</option>
+        <option value="office">Office Personnel</option>
+        <option value="admin">Administrator</option>
+      </select><br><br>
+
+      <button type="submit" class="nav-button">Create User</button>
+    </form>
+
+    <div id="message" style="margin-top:1em;"></div>
+  </main>
+
+  <script>
+    const role = localStorage.getItem('role');
+    if (!role || (role !== 'admin' && role !== 'office')) {
+      alert('Unauthorized access.');
+      window.location.href = 'index.html';
+    }
+
+    const form = document.getElementById('createUserForm');
+    const messageDiv = document.getElementById('message');
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const roleSelect = document.getElementById('role').value;
+
+      if (!username || !password || !roleSelect) {
+        messageDiv.textContent = 'Please fill all fields.';
+        return;
+      }
+
+      const res = await fetch('/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, role: roleSelect })
+      });
+
+      if (res.ok) {
+        messageDiv.style.color = 'green';
+        messageDiv.textContent = 'User created successfully!';
+        form.reset();
+      } else {
+        const error = await res.text();
+        messageDiv.style.color = 'red';
+        messageDiv.textContent = 'Error: ' + error;
+      }
+    };
+  </script>
+</body>
+</html>

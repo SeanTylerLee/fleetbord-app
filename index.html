@@ -3,44 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fleetbord Login Demo</title>
+  <title>Fleetbord Login</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif;
+      background-color: #f9f9f9;
       max-width: 400px;
-      margin: 3em auto;
-      padding: 1em;
-      background: #f2f2f7;
+      margin: 40px auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     input, button {
       width: 100%;
       font-size: 1rem;
       padding: 0.75em;
-      margin: 0.5em 0;
-      border-radius: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
     button {
       background-color: #007aff;
       color: white;
+      font-weight: bold;
       border: none;
-      font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.25s ease;
     }
     button:hover {
-      background-color: #005bb5;
+      background-color: #0051c7;
     }
     #logoutBtn {
       background-color: #ff3b30;
     }
     #logoutBtn:hover {
-      background-color: #b22222;
+      background-color: #cc2921;
     }
-    #status {
-      margin-top: 1em;
-      font-weight: 600;
+    .hidden {
+      display: none;
+    }
+    h1 {
       text-align: center;
     }
   </style>
@@ -49,54 +51,49 @@
 
   <h1>Fleetbord Login</h1>
 
-  <div id="authContainer">
-    <input type="email" id="email" placeholder="Email" autocomplete="username" />
-    <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
+  <div id="authBox">
+    <input id="email" type="email" placeholder="Email" autocomplete="username" />
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
     <button id="loginBtn">Login</button>
   </div>
 
   <button id="logoutBtn" class="hidden">Logout</button>
 
-  <div id="status"></div>
+  <div id="status" style="margin-top: 20px; text-align: center;"></div>
 
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 
   <script>
-    // Initialize Supabase client
     const SUPABASE_URL = 'https://qtvelljlgkpjilrtvvip.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dmVsbGpsZ2twamlscnR2dmlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0NTI0MDAsImV4cCI6MjA2NjAyODQwMH0.nPM0b70D_B4lJoMWwhp5xWfkoQ3zGdLq7MsWCfHBV1U';
+
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const loginBtn = document.getElementById('loginBtn');
     const logoutBtn = document.getElementById('logoutBtn');
-    const statusDiv = document.getElementById('status');
-    const authContainer = document.getElementById('authContainer');
+    const statusBox = document.getElementById('status');
+    const authBox = document.getElementById('authBox');
 
-    // Show logged in user info
     async function checkUser() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session && session.user) {
-        statusDiv.textContent = `Logged in as: ${session.user.email}`;
-        authContainer.classList.add('hidden');
+        authBox.classList.add('hidden');
         logoutBtn.classList.remove('hidden');
+        statusBox.textContent = `Logged in as: ${session.user.email}`;
       } else {
-        statusDiv.textContent = 'Not logged in';
-        authContainer.classList.remove('hidden');
+        authBox.classList.remove('hidden');
         logoutBtn.classList.add('hidden');
+        statusBox.textContent = 'Not logged in.';
       }
     }
 
     loginBtn.onclick = async () => {
       const email = emailInput.value.trim();
       const password = passwordInput.value.trim();
-      if (!email || !password) {
-        alert('Please enter email and password.');
-        return;
-      }
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         alert('Login failed: ' + error.message);
       } else {
@@ -111,10 +108,8 @@
       checkUser();
     };
 
-    // On page load, check if user is already logged in
+    // On page load
     checkUser();
-
-    // Optional: listen for auth state changes (e.g., login/logout in other tabs)
     supabase.auth.onAuthStateChange((_event, session) => {
       checkUser();
     });

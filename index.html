@@ -88,103 +88,109 @@
     </div>
   </div>
 
-  <script>
-    const admin = { username: "Sean", password: "1" };
-    let users = JSON.parse(localStorage.getItem("users")) || {};
-    let loads = JSON.parse(localStorage.getItem("loads")) || {};
-    let chat = JSON.parse(localStorage.getItem("chat")) || [];
-    let currentUser = "";
+<script>
+  const admin = { username: "Sean", password: "1" };
+  let users = JSON.parse(localStorage.getItem("users")) || {};
+  let loads = JSON.parse(localStorage.getItem("loads")) || {};
+  let chat = JSON.parse(localStorage.getItem("chat")) || [];
+  let currentUser = "";
 
-    function login() {
-      const u = document.getElementById("username").value.trim();
-      const p = document.getElementById("password").value.trim();
-      const msg = document.getElementById("loginMessage");
+  // Ensure admin account exists in local storage
+  if (!users[admin.username]) {
+    users[admin.username] = { password: admin.password, role: "Admin" };
+    localStorage.setItem("users", JSON.stringify(users));
+  }
 
-      if ((u === admin.username && p === admin.password) || (users[u] && users[u].password === p)) {
-        currentUser = u;
-        msg.textContent = "";
-        document.getElementById("loginPanel").classList.add("hidden");
-        document.getElementById("dashboard").classList.remove("hidden");
-        document.getElementById("welcomeTitle").textContent = "Welcome, " + u + "!";
-        renderLoads();
-        renderChat();
-      } else {
-        msg.textContent = "Invalid login.";
-      }
-    }
+  function login() {
+    const u = document.getElementById("username").value.trim();
+    const p = document.getElementById("password").value.trim();
+    const msg = document.getElementById("loginMessage");
 
-    function logout() {
-      currentUser = "";
-      document.getElementById("dashboard").classList.add("hidden");
-      document.getElementById("loginPanel").classList.remove("hidden");
-    }
-
-    function resetAll() {
-      if (confirm("Reset all users, loads, and messages?")) {
-        localStorage.clear();
-        location.reload();
-      }
-    }
-
-    function addLoad() {
-      const t = document.getElementById("ticket").value;
-      const c = document.getElementById("customer").value;
-      const r = document.getElementById("rig").value;
-      const l = document.getElementById("lease").value;
-      const p = parseFloat(document.getElementById("price").value) || 0;
-      const o = parseInt(document.getElementById("overnights").value) || 0;
-      if (!loads[currentUser]) loads[currentUser] = [];
-      loads[currentUser].push({ t, c, r, l, p, o });
-      localStorage.setItem("loads", JSON.stringify(loads));
+    if (users[u] && users[u].password === p) {
+      currentUser = u;
+      msg.textContent = "";
+      document.getElementById("loginPanel").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+      document.getElementById("welcomeTitle").textContent = "Welcome, " + u + "!";
       renderLoads();
-    }
-
-    function renderLoads() {
-      const list = document.getElementById("loads");
-      list.innerHTML = "";
-      (loads[currentUser] || []).forEach((load, i) => {
-        const div = document.createElement("div");
-        div.className = "load-item";
-        div.innerHTML = \`#\${i+1} Ticket: \${load.t}, Customer: \${load.c}, Price: $\${load.p.toFixed(2)}, Overnights: \${load.o}\`;
-        list.appendChild(div);
-      });
-    }
-
-    function exportPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("FleetBoard Load Summary", 10, 10);
-      let y = 20;
-      let total = 0, nights = 0;
-      (loads[currentUser] || []).forEach((l, i) => {
-        doc.text(\`\${i+1}. \${l.t}, \${l.c}, $\${l.p.toFixed(2)}, \${l.o} nights\`, 10, y);
-        y += 8;
-        total += l.p;
-        nights += l.o;
-      });
-      doc.text(\`Total: $\${total.toFixed(2)} | Overnights: \${nights}\`, 10, y + 10);
-      doc.save("FleetBoard_Loads.pdf");
-    }
-
-    function sendMessage() {
-      const txt = document.getElementById("chatInput").value.trim();
-      if (!txt) return;
-      chat.push({ from: currentUser, text: txt, time: new Date().toLocaleTimeString() });
-      localStorage.setItem("chat", JSON.stringify(chat));
-      document.getElementById("chatInput").value = "";
       renderChat();
+    } else {
+      msg.textContent = "Invalid login.";
     }
+  }
 
-    function renderChat() {
-      const list = document.getElementById("chatMessages");
-      list.innerHTML = "";
-      chat.slice(-50).forEach(m => {
-        const div = document.createElement("div");
-        div.className = "message-item";
-        div.innerHTML = \`<strong>\${m.from}</strong>: \${m.text} <small>(\${m.time})</small>\`;
-        list.appendChild(div);
-      });
+  function logout() {
+    currentUser = "";
+    document.getElementById("dashboard").classList.add("hidden");
+    document.getElementById("loginPanel").classList.remove("hidden");
+  }
+
+  function resetAll() {
+    if (confirm("Reset all users, loads, and messages?")) {
+      localStorage.clear();
+      location.reload();
     }
-  </script>
+  }
+
+  function addLoad() {
+    const t = document.getElementById("ticket").value;
+    const c = document.getElementById("customer").value;
+    const r = document.getElementById("rig").value;
+    const l = document.getElementById("lease").value;
+    const p = parseFloat(document.getElementById("price").value) || 0;
+    const o = parseInt(document.getElementById("overnights").value) || 0;
+    if (!loads[currentUser]) loads[currentUser] = [];
+    loads[currentUser].push({ t, c, r, l, p, o });
+    localStorage.setItem("loads", JSON.stringify(loads));
+    renderLoads();
+  }
+
+  function renderLoads() {
+    const list = document.getElementById("loads");
+    list.innerHTML = "";
+    (loads[currentUser] || []).forEach((load, i) => {
+      const div = document.createElement("div");
+      div.className = "load-item";
+      div.innerHTML = `#${i+1} Ticket: ${load.t}, Customer: ${load.c}, Price: $${load.p.toFixed(2)}, Overnights: ${load.o}`;
+      list.appendChild(div);
+    });
+  }
+
+  function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text("FleetBoard Load Summary", 10, 10);
+    let y = 20;
+    let total = 0, nights = 0;
+    (loads[currentUser] || []).forEach((l, i) => {
+      doc.text(`${i+1}. ${l.t}, ${l.c}, $${l.p.toFixed(2)}, ${l.o} nights`, 10, y);
+      y += 8;
+      total += l.p;
+      nights += l.o;
+    });
+    doc.text(`Total: $${total.toFixed(2)} | Overnights: ${nights}`, 10, y + 10);
+    doc.save("FleetBoard_Loads.pdf");
+  }
+
+  function sendMessage() {
+    const txt = document.getElementById("chatInput").value.trim();
+    if (!txt) return;
+    chat.push({ from: currentUser, text: txt, time: new Date().toLocaleTimeString() });
+    localStorage.setItem("chat", JSON.stringify(chat));
+    document.getElementById("chatInput").value = "";
+    renderChat();
+  }
+
+  function renderChat() {
+    const list = document.getElementById("chatMessages");
+    list.innerHTML = "";
+    chat.slice(-50).forEach(m => {
+      const div = document.createElement("div");
+      div.className = "message-item";
+      div.innerHTML = `<strong>${m.from}</strong>: ${m.text} <small>(${m.time})</small>`;
+      list.appendChild(div);
+    });
+  }
+</script>
 </body>
 </html>

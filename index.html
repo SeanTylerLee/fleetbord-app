@@ -1,93 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Fleetbord</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif;
-      background: #f2f2f7;
-      margin: 0; padding: 1em;
-      color: #000;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Fleetbord - Supabase App</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif;
+    background: #f2f2f7;
+    margin: 0; padding: 1em;
+    color: #000;
+  }
+  input, button, select, textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 14px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    font-weight: 400;
+    box-sizing: border-box;
+  }
+  button {
+    background: #007aff;
+    color: white;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s ease;
+  }
+  button:hover {
+    background: #005bb5;
+  }
+  nav button {
+    width: auto;
+    margin-right: 8px;
+    min-width: 90px;
+    display: inline-block;
+  }
+  h1, h2 {
+    font-weight: 700;
+  }
+  .hidden { display: none; }
+  #loadList > div {
+    background: white;
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 12px;
+    font-size: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #loadList > div label {
+    flex-grow: 1;
+    cursor: pointer;
+  }
+  #loadList > div input[type="checkbox"] {
+    margin-left: 12px;
+    transform: scale(1.3);
+    cursor: pointer;
+  }
+  @media (max-width: 480px) {
+    body { padding: 12px; }
     input, button, select, textarea {
-      width: 100%;
-      padding: 12px;
-      margin: 6px 0;
-      border-radius: 14px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-      font-weight: 400;
-      box-sizing: border-box;
-    }
-    button {
-      background: #007aff;
-      color: white;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: background 0.2s ease;
-    }
-    button:hover {
-      background: #005bb5;
+      font-size: 15px;
+      padding: 10px;
     }
     nav button {
-      width: auto;
-      margin-right: 8px;
-      min-width: 90px;
-      display: inline-block;
+      min-width: 70px;
+      font-size: 14px;
+      margin-bottom: 6px;
     }
-    h1, h2 {
-      font-weight: 700;
-    }
-    .hidden { display: none; }
-    #loadList > div {
-      background: white;
-      padding: 12px;
-      margin: 6px 0;
-      border-radius: 12px;
-      font-size: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #loadList > div label {
-      flex-grow: 1;
-      cursor: pointer;
-    }
-    #loadList > div input[type="checkbox"] {
-      margin-left: 12px;
-      transform: scale(1.3);
-      cursor: pointer;
-    }
-    @media (max-width: 480px) {
-      body { padding: 12px; }
-      input, button, select, textarea {
-        font-size: 15px;
-        padding: 10px;
-      }
-      nav button {
-        min-width: 70px;
-        font-size: 14px;
-        margin-bottom: 6px;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
   <h1>Fleetbord - Supabase</h1>
 
+  <!-- Login Section -->
   <div id="authSection">
     <input id="email" type="email" placeholder="Email" autocomplete="username" />
     <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
     <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
     <button id="logoutBtn" class="hidden">Logout</button>
     <div id="roleLabel"></div>
   </div>
 
+  <!-- Main App Section -->
   <div id="app" class="hidden">
     <nav>
       <button data-show="manageUsers">Manage Users</button>
@@ -97,14 +98,7 @@
 
     <section id="manageUsers" class="hidden">
       <h2>User Management</h2>
-      <input id="newUserEmail" type="email" placeholder="New User Email" />
-      <select id="newUserRole">
-        <option value="driver">Driver</option>
-        <option value="dispatcher">Dispatcher</option>
-        <option value="office">Office Personnel</option>
-        <option value="admin">Administrator</option>
-      </select>
-      <button id="createUserBtn">Create User</button>
+      <p><em>Only admin and office personnel can create/edit users via the Supabase dashboard currently.</em></p>
       <div id="userList"></div>
       <button class="backBtn">⬅️ Back</button>
     </section>
@@ -138,190 +132,202 @@
 
   <!-- jsPDF for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    const SUPABASE_URL = 'https://qtvelljlgkpjilrtvvip.supabase.co'
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dmVsbGpsZ2twamlscnR2dmlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0NTI0MDAsImV4cCI6MjA2NjAyODQwMH0.nPM0b70D_B4lJoMWwhp5xWfkoQ3zGdLq7MsWCfHBV1U'
+  <!-- Supabase and app logic -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+  <script>
+    const SUPABASE_URL = 'https://qtvelljlgkpjilrtvvip.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dmVsbGpsZ2twamlscnR2dmlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0NTI0MDAsImV4cCI6MjA2NjAyODQwMH0.nPM0b70D_B4lJoMWwhp5xWfkoQ3zGdLq7MsWCfHBV1U';
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const { jsPDF } = window.jspdf;
 
-    // (rest of the JavaScript continues in Part 2...)
-        let currentUser = null
-    let currentRole = ''
-    let allLoads = []
+    // DOM references
+    const authSection = document.getElementById('authSection');
+    const appSection = document.getElementById('app');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const roleLabel = document.getElementById('roleLabel');
 
-    // Show sections
-    function show(sectionId) {
-      ['manageUsers', 'messaging', 'loads'].forEach(id => {
-        document.getElementById(id).classList.add('hidden')
-      })
-      if (sectionId) {
-        document.getElementById(sectionId).classList.remove('hidden')
-      }
+    const manageUsersSection = document.getElementById('manageUsers');
+    const messagingSection = document.getElementById('messaging');
+    const loadsSection = document.getElementById('loads');
+
+    const userList = document.getElementById('userList');
+
+    const messageRecipients = document.getElementById('messageRecipients');
+    const messageText = document.getElementById('messageText');
+    const messagePhoto = document.getElementById('messagePhoto');
+    const sendMessageBtn = document.getElementById('sendMessageBtn');
+    const messageContainer = document.getElementById('messageContainer');
+
+    const loadDate = document.getElementById('loadDate');
+    const loadTicket = document.getElementById('loadTicket');
+    const loadCustomer = document.getElementById('loadCustomer');
+    const loadRig = document.getElementById('loadRig');
+    const loadLease = document.getElementById('loadLease');
+    const loadPrice = document.getElementById('loadPrice');
+    const loadNights = document.getElementById('loadNights');
+    const loadPhotos = document.getElementById('loadPhotos');
+    const saveLoadBtn = document.getElementById('saveLoadBtn');
+    const loadList = document.getElementById('loadList');
+    const generatePdfBtn = document.getElementById('generatePdfBtn');
+
+    let currentUser = null;
+    let currentRole = '';
+    let allLoads = [];
+
+    // Show/hide sections
+    function showSection(id) {
+      [manageUsersSection, messagingSection, loadsSection].forEach(sec => sec.classList.add('hidden'));
+      if (id) document.getElementById(id).classList.remove('hidden');
     }
 
+    // Back buttons
     document.querySelectorAll('.backBtn').forEach(btn => {
-      btn.onclick = () => show('')
-    })
+      btn.onclick = () => showSection('');
+    });
 
+    // Nav buttons
     document.querySelectorAll('nav button').forEach(btn => {
-      btn.onclick = () => show(btn.dataset.show)
-    })
+      btn.onclick = () => showSection(btn.dataset.show);
+    });
 
-    // Auth state change
+    // Check auth state
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        currentUser = session.user
-        await fetchUserRole()
-        document.getElementById('roleLabel').textContent = `${currentUser.email} (${currentRole})`
-        document.getElementById('authSection').classList.add('hidden')
-        document.getElementById('app').classList.remove('hidden')
+        currentUser = session.user;
+        await fetchUserRole();
+        roleLabel.textContent = `${currentUser.email} (${currentRole})`;
+        authSection.classList.add('hidden');
+        appSection.classList.remove('hidden');
+
         if (currentRole === 'admin' || currentRole === 'office') {
-          show('manageUsers')
-          await loadUsers()
+          showSection('manageUsers');
+          await loadUsers();
         } else {
-          show('loads')
+          showSection('loads');
         }
-        await loadRecipients()
-        await loadMessages()
-        await loadLoads()
+        await loadRecipients();
+        await loadMessages();
+        await loadLoads();
       } else {
-        currentUser = null
-        currentRole = ''
-        document.getElementById('authSection').classList.remove('hidden')
-        document.getElementById('app').classList.add('hidden')
+        currentUser = null;
+        currentRole = '';
+        roleLabel.textContent = '';
+        authSection.classList.remove('hidden');
+        appSection.classList.add('hidden');
+        showSection('');
       }
-    })
+    });
 
     // Login
     loginBtn.onclick = async () => {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: emailInput.value,
-        password: passwordInput.value
-      })
-      if (error) alert(error.message)
-    }
-
-    // Signup (default to driver)
-    signupBtn.onclick = async () => {
-      const { data, error } = await supabase.auth.signUp({
-        email: emailInput.value,
-        password: passwordInput.value
-      })
-      if (error) return alert(error.message)
-      await supabase.from('users').insert([{
-        id: data.user.id,
-        email: data.user.email,
-        role: 'driver'
-      }])
-      alert('Signup complete. Confirm your email and log in.')
-    }
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!email || !password) return alert('Please enter email and password.');
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        alert('Login failed: ' + error.message);
+      }
+    };
 
     // Logout
     logoutBtn.onclick = async () => {
-      await supabase.auth.signOut()
-    }
+      await supabase.auth.signOut();
+    };
 
-    // Fetch user role
+    // Fetch user role from 'users' table
     async function fetchUserRole() {
-      const { data, error } = await supabase.from('users')
-        .select('role')
-        .eq('id', currentUser.id).single()
-      if (error) {
-        currentRole = 'driver'
-      } else {
-        currentRole = data.role
-      }
+      const { data, error } = await supabase.from('users').select('role').eq('id', currentUser.id).single();
+      if (error || !data) currentRole = 'driver';
+      else currentRole = data.role;
     }
 
-    // Load users
+    // Load users for admin/office
     async function loadUsers() {
-      const { data, error } = await supabase.from('users').select()
-      if (error) return alert(error.message)
-      userList.innerHTML = ''
+      const { data, error } = await supabase.from('users').select();
+      if (error) return alert(error.message);
+      userList.innerHTML = '';
       data.forEach(u => {
-        const div = document.createElement('div')
-        div.textContent = `${u.email} (${u.role})`
-        userList.appendChild(div)
-      })
+        const div = document.createElement('div');
+        div.textContent = `${u.email} (${u.role})`;
+        userList.appendChild(div);
+      });
     }
 
-    // Create user (via dashboard)
-    createUserBtn.onclick = async () => {
-      alert('⚠️ Creating new users with passwords must be done via Supabase Admin API or Dashboard.\n\nYou can add their roles here after they register.')
-    }
-
-    // Load recipients for messaging
+    // Load message recipients list
     async function loadRecipients() {
-      const { data, error } = await supabase.from('users').select('id,email')
-      if (error) return alert(error.message)
-      messageRecipients.innerHTML = ''
+      const { data, error } = await supabase.from('users').select('id,email');
+      if (error) return alert(error.message);
+      messageRecipients.innerHTML = '';
       data.forEach(u => {
         if (u.id !== currentUser.id) {
-          const opt = document.createElement('option')
-          opt.value = u.id
-          opt.textContent = u.email
-          messageRecipients.appendChild(opt)
+          const opt = document.createElement('option');
+          opt.value = u.id;
+          opt.textContent = u.email;
+          messageRecipients.appendChild(opt);
         }
-      })
+      });
     }
 
     // Send message
     sendMessageBtn.onclick = async () => {
-      const selected = Array.from(messageRecipients.selectedOptions).map(opt => opt.value)
-      const text = messageText.value.trim()
-      if (!text && messagePhoto.files.length === 0) return alert('Enter message or attach photo.')
-      let photoUrl = ''
+      const selected = Array.from(messageRecipients.selectedOptions).map(opt => opt.value);
+      const text = messageText.value.trim();
+      if (!text && messagePhoto.files.length === 0) return alert('Enter message or attach photo.');
+
+      let photoUrl = '';
       if (messagePhoto.files.length > 0) {
-        const file = messagePhoto.files[0]
-        const path = `messages/${Date.now()}_${file.name}`
-        const { error: uploadError } = await supabase.storage.from('files').upload(path, file)
-        if (uploadError) return alert(uploadError.message)
-        const { data: urlData } = supabase.storage.from('files').getPublicUrl(path)
-        photoUrl = urlData.publicUrl
+        const file = messagePhoto.files[0];
+        const path = `messages/${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('files').upload(path, file);
+        if (uploadError) return alert(uploadError.message);
+        const { data: urlData } = supabase.storage.from('files').getPublicUrl(path);
+        photoUrl = urlData.publicUrl;
       }
+
       const { error } = await supabase.from('messages').insert([{
         from_id: currentUser.id,
         to_ids: selected,
         text,
         photo: photoUrl,
         created_at: new Date()
-      }])
-      if (error) return alert(error.message)
-      messageText.value = ''
-      messagePhoto.value = ''
-      loadMessages()
-    }
+      }]);
+      if (error) return alert(error.message);
 
-    // Load messages
+      messageText.value = '';
+      messagePhoto.value = '';
+      loadMessages();
+    };
+
+    // Load messages for current user
     async function loadMessages() {
-      const { data, error } = await supabase.from('messages')
-        .select('*')
-        .order('created_at', { ascending: false })
-      if (error) return alert(error.message)
-      messageContainer.innerHTML = ''
+      const { data, error } = await supabase.from('messages').select('*').order('created_at', { ascending: false });
+      if (error) return alert(error.message);
+
+      messageContainer.innerHTML = '';
       data.forEach(msg => {
         if (msg.to_ids.includes(currentUser.id) || msg.from_id === currentUser.id) {
-          const div = document.createElement('div')
-          div.innerHTML = `<strong>${msg.text}</strong><br>${msg.photo ? `<img src="${msg.photo}" style="max-width:100%;border-radius:10px" />` : ''}<hr/>`
-          messageContainer.appendChild(div)
+          const div = document.createElement('div');
+          div.innerHTML = `<strong>${msg.text}</strong><br>${msg.photo ? `<img src="${msg.photo}" style="max-width:100%;border-radius:10px" />` : ''}<hr/>`;
+          messageContainer.appendChild(div);
         }
-      })
+      });
     }
 
-    // Load management, save load logic continues in Part 3...
-        // Save a load
+    // Save a load
     saveLoadBtn.onclick = async () => {
-      const files = loadPhotos.files
-      let photoUrls = []
+      const files = loadPhotos.files;
+      let photoUrls = [];
       for (const file of files) {
-        const path = `loads/${Date.now()}_${file.name}`
-        const { error: uploadError } = await supabase.storage.from('files').upload(path, file)
-        if (uploadError) return alert(uploadError.message)
-        const { data: urlData } = supabase.storage.from('files').getPublicUrl(path)
-        photoUrls.push(urlData.publicUrl)
+        const path = `loads/${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('files').upload(path, file);
+        if (uploadError) return alert(uploadError.message);
+        const { data: urlData } = supabase.storage.from('files').getPublicUrl(path);
+        photoUrls.push(urlData.publicUrl);
       }
 
       const { error } = await supabase.from('loads').insert([{
@@ -332,82 +338,122 @@
         rig: loadRig.value,
         lease: loadLease.value,
         price: Number(loadPrice.value),
+        overnights: Number(loadNights
+                price: Number(loadPrice.value),
         overnights: Number(loadNights.value),
         photos: photoUrls,
         created_at: new Date()
-      }])
-      if (error) return alert(error.message)
-      loadDate.value = ''
-      loadTicket.value = ''
-      loadCustomer.value = ''
-      loadRig.value = ''
-      loadLease.value = ''
-      loadPrice.value = ''
-      loadNights.value = ''
-      loadPhotos.value = ''
-      loadLoads()
-    }
+      }]);
+      if (error) return alert(error.message);
 
-    // Load all user's loads
+      // Clear inputs after save
+      loadDate.value = '';
+      loadTicket.value = '';
+      loadCustomer.value = '';
+      loadRig.value = '';
+      loadLease.value = '';
+      loadPrice.value = '';
+      loadNights.value = '';
+      loadPhotos.value = '';
+
+      loadLoads();
+    };
+
+    // Load all loads for current user
     async function loadLoads() {
       const { data, error } = await supabase
         .from('loads')
         .select('*')
         .eq('user_id', currentUser.id)
-        .order('date', { ascending: false })
-      if (error) return alert(error.message)
+        .order('date', { ascending: false });
+      if (error) return alert(error.message);
 
-      allLoads = data
-      loadList.innerHTML = ''
-      generatePdfBtn.disabled = data.length === 0
+      allLoads = data || [];
+      loadList.innerHTML = '';
+      generatePdfBtn.disabled = allLoads.length === 0;
 
-      data.forEach(load => {
-        const div = document.createElement('div')
-        const label = document.createElement('label')
-        label.textContent = `${load.date} - Ticket #${load.ticket} - $${load.price.toFixed(2)} - Nights: ${load.overnights}`
-        const checkbox = document.createElement('input')
-        checkbox.type = 'checkbox'
-        checkbox.value = load.id
-        div.appendChild(label)
-        div.appendChild(checkbox)
-        loadList.appendChild(div)
-      })
+      allLoads.forEach(load => {
+        const div = document.createElement('div');
+        const label = document.createElement('label');
+        label.textContent = `${load.date} | Ticket #${load.ticket} | $${load.price.toFixed(2)} | Nights: ${load.overnights}`;
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = load.id;
+        div.appendChild(label);
+        div.appendChild(checkbox);
+        loadList.appendChild(div);
+      });
     }
 
-    // Generate PDF from selected loads
+    // Generate PDF pay sheet from selected loads
     generatePdfBtn.onclick = () => {
-      const selected = Array.from(loadList.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.value)
-      if (selected.length === 0) return alert('Select at least one load.')
+      const selectedIds = Array.from(loadList.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.value);
+      if (selectedIds.length === 0) return alert('Select at least one load.');
 
-      const selectedLoads = allLoads.filter(l => selected.includes(l.id))
-      const doc = new jsPDF()
-      doc.setFontSize(18)
-      doc.text('Fleetbord Pay Sheet', 14, 20)
-      doc.setFontSize(12)
-      doc.text(`Driver: ${currentUser.email}`, 14, 30)
+      const selectedLoads = allLoads.filter(l => selectedIds.includes(l.id));
 
-      const headers = ['Date', 'Ticket', 'Customer', 'Rig', 'Lease', 'Price', 'Nights']
-      const rows = selectedLoads.map(l => [
-        l.date, l.ticket, l.customer, l.rig, l.lease, `$${l.price.toFixed(2)}`, l.overnights
-      ])
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.text('Fleetbord Pay Sheet', 14, 20);
+      doc.setFontSize(12);
+      doc.text(`Driver: ${currentUser.email}`, 14, 30);
 
-      let y = 40
-      headers.forEach((h, i) => doc.text(h, 14 + i * 28, y))
-      y += 8
-      rows.forEach(row => {
-        row.forEach((val, i) => doc.text(String(val), 14 + i * 28, y))
-        y += 8
-      })
+      const headers = ['Date', 'Ticket', 'Customer', 'Rig', 'Lease', 'Price', 'Nights'];
+      const startY = 40;
+      let y = startY;
 
-      const total = selectedLoads.reduce((sum, l) => sum + l.price, 0)
-      const nights = selectedLoads.reduce((sum, l) => sum + l.overnights, 0)
-      y += 10
-      doc.text(`Total Price: $${total.toFixed(2)}`, 14, y)
-      doc.text(`Total Overnights: ${nights}`, 90, y)
+      // Draw headers
+      headers.forEach((h, i) => doc.text(h, 14 + i * 25, y));
+      y += 8;
 
-      doc.save('Fleetbord_PaySheet.pdf')
-    }
+      // Draw rows
+      selectedLoads.forEach(l => {
+        const row = [
+          l.date,
+          l.ticket,
+          l.customer,
+          l.rig,
+          l.lease,
+          `$${l.price.toFixed(2)}`,
+          l.overnights.toString()
+        ];
+        row.forEach((val, i) => {
+          doc.text(val, 14 + i * 25, y);
+        });
+        y += 8;
+      });
 
+      // Totals
+      y += 10;
+      const totalPrice = selectedLoads.reduce((sum, l) => sum + l.price, 0);
+      const totalNights = selectedLoads.reduce((sum, l) => sum + l.overnights, 0);
+
+      doc.text(`Total Price: $${totalPrice.toFixed(2)}`, 14, y);
+      doc.text(`Total Overnights: ${totalNights}`, 100, y);
+
+      doc.save('Fleetbord_PaySheet.pdf');
+    };
+
+    // On page load, check session
+    window.onload = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        await fetchUserRole();
+        roleLabel.textContent = `${currentUser.email} (${currentRole})`;
+        authSection.classList.add('hidden');
+        appSection.classList.remove('hidden');
+        if (currentRole === 'admin' || currentRole === 'office') {
+          showSection('manageUsers');
+          await loadUsers();
+        } else {
+          showSection('loads');
+        }
+        await loadRecipients();
+        await loadMessages();
+        await loadLoads();
+      }
+    };
   </script>
 </body>
 </html>

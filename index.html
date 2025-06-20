@@ -1,26 +1,190 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hello Hot Site</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FleetBoard iOS WebApp</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
-      height: 100vh;
+      padding: 1rem;
+      background: #FAF6F2;
       display: flex;
       justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #ff3300, #ff6600);
-      font-family: 'Segoe UI', sans-serif;
-      color: white;
-      font-size: 4rem;
-      font-weight: bold;
-      text-shadow: 2px 2px 8px #00000088;
     }
+    .container {
+      width: 100%;
+      max-width: 420px;
+    }
+    .hidden { display: none; }
+    input, select, button, textarea {
+      margin: 0.4rem 0;
+      padding: 0.7rem;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      background: #007AFF;
+      color: white;
+      border: none;
+    }
+    .panel {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+    }
+    .logout-btn {
+      background-color: #e33;
+      margin-top: 1rem;
+    }
+    .message-item, .load-item {
+      background: #f1f1f7;
+      border-radius: 10px;
+      padding: 0.6rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+    .emoji { font-size: 1.2rem; }
   </style>
 </head>
 <body>
-  Hello 
+  <div class="container">
+    <div id="loginPanel" class="panel">
+      <h2>Login</h2>
+      <input id="username" placeholder="Username" />
+      <input id="password" type="password" placeholder="Password" />
+      <button onclick="login()">Login</button>
+      <button onclick="resetAll()" style="margin-top:0.5rem;background:#666;">Reset All</button>
+      <p id="loginMessage" style="color:red;"></p>
+    </div>
+
+    <div id="dashboard" class="panel hidden">
+      <h2 id="welcomeTitle">Welcome!</h2>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+
+      <h3>Load Tracker</h3>
+      <input id="ticket" placeholder="Ticket #" />
+      <input id="customer" placeholder="Customer" />
+      <input id="rig" placeholder="Rig" />
+      <input id="lease" placeholder="Lease" />
+      <input id="price" type="number" placeholder="Price" />
+      <input id="overnights" type="number" placeholder="Overnights" />
+      <button onclick="addLoad()">Add Load</button>
+      <div id="loads"></div>
+      <button onclick="exportPDF()">Export PDF</button>
+
+      <h3>Chat</h3>
+      <textarea id="chatInput" placeholder="Message (emoji ok 👍)" rows="2"></textarea>
+      <button onclick="sendMessage()">Send</button>
+      <div id="chatMessages" style="max-height:200px;overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <script>
+    const admin = { username: "Sean", password: "1" };
+    let users = JSON.parse(localStorage.getItem("users")) || {};
+    let loads = JSON.parse(localStorage.getItem("loads")) || {};
+    let chat = JSON.parse(localStorage.getItem("chat")) || [];
+    let currentUser = "";
+
+    function login() {
+      const u = document.getElementById("username").value.trim();
+      const p = document.getElementById("password").value.trim();
+      const msg = document.getElementById("loginMessage");
+
+      if ((u === admin.username && p === admin.password) || (users[u] && users[u].password === p)) {
+        currentUser = u;
+        msg.textContent = "";
+        document.getElementById("loginPanel").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
+        document.getElementById("welcomeTitle").textContent = "Welcome, " + u + "!";
+        renderLoads();
+        renderChat();
+      } else {
+        msg.textContent = "Invalid login.";
+      }
+    }
+
+    function logout() {
+      currentUser = "";
+      document.getElementById("dashboard").classList.add("hidden");
+      document.getElementById("loginPanel").classList.remove("hidden");
+    }
+
+    function resetAll() {
+      if (confirm("Reset all users, loads, and messages?")) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    function addLoad() {
+      const t = document.getElementById("ticket").value;
+      const c = document.getElementById("customer").value;
+      const r = document.getElementById("rig").value;
+      const l = document.getElementById("lease").value;
+      const p = parseFloat(document.getElementById("price").value) || 0;
+      const o = parseInt(document.getElementById("overnights").value) || 0;
+      if (!loads[currentUser]) loads[currentUser] = [];
+      loads[currentUser].push({ t, c, r, l, p, o });
+      localStorage.setItem("loads", JSON.stringify(loads));
+      renderLoads();
+    }
+
+    function renderLoads() {
+      const list = document.getElementById("loads");
+      list.innerHTML = "";
+      (loads[currentUser] || []).forEach((load, i) => {
+        const div = document.createElement("div");
+        div.className = "load-item";
+        div.innerHTML = \`#\${i+1} Ticket: \${load.t}, Customer: \${load.c}, Price: $\${load.p.toFixed(2)}, Overnights: \${load.o}\`;
+        list.appendChild(div);
+      });
+    }
+
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("FleetBoard Load Summary", 10, 10);
+      let y = 20;
+      let total = 0, nights = 0;
+      (loads[currentUser] || []).forEach((l, i) => {
+        doc.text(\`\${i+1}. \${l.t}, \${l.c}, $\${l.p.toFixed(2)}, \${l.o} nights\`, 10, y);
+        y += 8;
+        total += l.p;
+        nights += l.o;
+      });
+      doc.text(\`Total: $\${total.toFixed(2)} | Overnights: \${nights}\`, 10, y + 10);
+      doc.save("FleetBoard_Loads.pdf");
+    }
+
+    function sendMessage() {
+      const txt = document.getElementById("chatInput").value.trim();
+      if (!txt) return;
+      chat.push({ from: currentUser, text: txt, time: new Date().toLocaleTimeString() });
+      localStorage.setItem("chat", JSON.stringify(chat));
+      document.getElementById("chatInput").value = "";
+      renderChat();
+    }
+
+    function renderChat() {
+      const list = document.getElementById("chatMessages");
+      list.innerHTML = "";
+      chat.slice(-50).forEach(m => {
+        const div = document.createElement("div");
+        div.className = "message-item";
+        div.innerHTML = \`<strong>\${m.from}</strong>: \${m.text} <small>(\${m.time})</small>\`;
+        list.appendChild(div);
+      });
+    }
+  </script>
 </body>
 </html>

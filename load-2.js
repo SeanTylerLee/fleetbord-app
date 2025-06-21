@@ -1,0 +1,1 @@
+module.exports = (db, upload) => { const router = require('express').Router(); router.get('/', (req, res) => { res.json({ message: 'Loads' }); }); return router; };

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fleetbord Dashboard</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      font-size: 22px;
+    }
+    button {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to Fleetbord</h1>
+  <p id="userInfo">Logged in as: ...</p>
+
+  <div id="adminControls" style="display: none;">
+    <button onclick="location.href='/admin/add-user.html'">Manage Users</button>
+    <button onclick="location.href='/admin/activity.html'">View Activity</button>
+  </div>
+
+  <div id="commonControls">
+    <button onclick="location.href='/loads.html'">Manage Loads</button>
+    <button onclick="location.href='/messages.html'">Messages</button>
+    <button onclick="location.href='/uploads.html'">Upload Paperwork</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    // Fetch session info
+    fetch('/auth/session')
+      .then(res => res.json())
+      .then(user => {
+        if (!user || !user.username) {
+          window.location.href = '/index.html';
+        } else {
+          document.getElementById('userInfo').innerText = "Logged in as: " + user.username + " (" + user.role + ")";
+          if (user.role === 'admin') {
+            document.getElementById('adminControls').style.display = 'block';
+          }
+        }
+      });
+
+    function logout() {
+      fetch('/auth/logout', { method: 'POST' })
+        .then(() => window.location.href = '/index.html');
+    }
+  </script>
+</body>
+</html>

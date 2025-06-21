@@ -1,0 +1,1 @@
+module.exports = function(db) { const express = require('express'); const router = express.Router(); return router; };

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fleetbord Messaging</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f2f2f7;
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  header {
+    background: white;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+  }
+  header button {
+    background: none;
+    border: none;
+    color: #007aff;
+    font-size: 22px;
+    margin-right: 15px;
+    cursor: pointer;
+  }
+  header h1 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 20px;
+  }
+  #userList {
+    background: white;
+    overflow-y: auto;
+    flex: 1 1 auto;
+  }
+  .user-item {
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+  }
+  .user-item:hover {
+    background: #e5e5ea;
+  }
+  #chatContainer {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+    background: white;
+  }
+  #chatHeader {
+    padding: 15px;
+    border-bottom: 1px solid #ccc;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+  }
+  #chatMessages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+  }
+  .message {
+    max-width: 75%;
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    position: relative;
+    word-wrap: break-word;
+  }
+  .message.sent {
+    background: #007aff;
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+  }
+  .message.received {
+    background: #e5e5ea;
+    color: black;
+    margin-right: auto;
+    border-bottom-left-radius: 4px;
+  }
+  .timestamp {
+    font-size: 10px;
+    color: #666;
+    margin-top: 3px;
+  }
+  #chatInputContainer {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    background: white;
+  }
+  #chatInput {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    outline: none;
+  }
+  #sendBtn, #attachBtn {
+    background: #007aff;
+    border: none;
+    color: white;
+    padding: 0 16px;
+    margin-left: 10px;
+    border-radius: 20px;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  #attachBtn {
+    background: #555;
+    position: relative;
+  }
+  #fileInput {
+    display: none;
+  }
+  .message img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin-top: 5px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button id="backToUsersBtn" style="display:none;">‹ Back</button>
+  <h1>Messages</h1>
+</header>
+
+<div id="userList">
+  <!-- Users will be listed here -->
+</div>
+
+<div id="chatContainer">
+  <div id="chatHeader"></div>
+  <div id="chatMessages"></div>
+  <div id="chatInputContainer">
+    <input type="text" id="chatInput" placeholder="Type a message..." />
+    <button id="attachBtn">📎</button>
+    <input type="file" id="fileInput" accept="image/*" />
+    <button id="sendBtn">Send</button>
+  </div>
+</div>
+
+<script>
+  // Sample users - replace with backend data later
+  const users = [
+    { id: '1', name: 'Sean (Admin)' },
+    { id: '2', name: 'Driver Dave' },
+    { id: '3', name: 'Dispatcher Dana' },
+    { id: '4', name: 'Office Olivia' }
+  ];
+
+  let currentUser = users[0]; // logged in user (change as needed)
+  let currentChatUser = null;
+  let messages = JSON.parse(localStorage.getItem('messages') || '{}');
+
+  const userListEl = document.getElementById('userList');
+  const chatContainerEl = document.getElementById('chatContainer');
+  const chatHeaderEl = document.getElementById('chatHeader');
+  const chatMessagesEl = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const backToUsersBtn = document.getElementById('backToUsersBtn');
+  const attachBtn = document.getElementById('attachBtn');
+  const fileInput = document.getElementById('fileInput');
+
+  function renderUserList() {
+    userListEl.innerHTML = '';
+    users.forEach(user => {
+      if(user.id === currentUser.id) return; // don't list self
+      const div = document.createElement('div');
+      div.className = 'user-item';
+      div.textContent = user.name;
+      div.onclick = () => openChat(user);
+      userListEl.appendChild(div);
+    });
+  }
+
+  function openChat(user) {
+    currentChatUser = user;
+    userListEl.style.display = 'none';
+    chatContainerEl.style.display = 'flex';
+    backToUsersBtn.style.display = 'inline';
+    chatHeaderEl.textContent = user.name;
+    chatInput.focus();
+    renderMessages();
+  }
+
+  function goBackToUsers() {
+    currentChatUser = null;
+    chatContainerEl.style.display = 'none';
+    userListEl.style.display = 'block';
+    backToUsersBtn.style.display = 'none';
+    chatInput.value = '';
+  }
+
+  function getChatKey() {
+    // Unique key for chat between currentUser and currentChatUser (sorted to be symmetric)
+    const ids = [currentUser.id, currentChatUser.id].sort();
+    return ids.join('_');
+  }
+
+  function renderMessages() {
+    const chatKey = getChatKey();
+    const chatMessages = messages[chatKey] || [];
+    chatMessagesEl.innerHTML = '';
+    chatMessages.forEach(msg => {
+      const div = document.createElement('div');
+      div.className = 'message ' + (msg.sender === currentUser.id ? 'sent' : 'received');
+      div.textContent = msg.text || '';
+      if (msg.image) {
+        const img = document.createElement('img');
+        img.src = msg.image;
+        div.appendChild(img);
+      }
+      const ts = document.createElement('div');
+      ts.className = 'timestamp';
+      ts.textContent = new Date(msg.timestamp).toLocaleString();
+      div.appendChild(ts);
+      chatMessagesEl.appendChild(div);
+    });
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  }
+
+  function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text && !fileInput.files.length) return;
+    const chatKey = getChatKey();
+    if (!messages[chatKey]) messages[chatKey] = [];
+
+    if (fileInput.files.length) {
+      // Send images
+      Array.from(fileInput.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          messages[chatKey].push({
+            sender: currentUser.id,
+            text: '',
+            image: e.target.result,
+            timestamp: Date.now()
+          });
+          saveAndRender();
+        };
+        reader.readAsDataURL(file);
+      });
+      fileInput.value = '';
+    }
+    if (text) {
+      messages[chatKey].push({
+        sender: currentUser.id,
+        text: text,
+        image: null,
+        timestamp: Date.now()
+      });
+      chatInput.value = '';
+      saveAndRender();
+    }
+  }
+
+  function saveAndRender() {
+    localStorage.setItem('messages', JSON.stringify(messages));
+    renderMessages();
+  }
+
+  backToUsersBtn.onclick = goBackToUsers;
+  sendBtn.onclick = sendMessage;
+  attachBtn.onclick = () => fileInput.click();
+  fileInput.onchange = () => {
+    sendMessage();
+  };
+
+  // Initialize
+  renderUserList();
+</script>
+
+</body>
+</html>

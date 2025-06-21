@@ -1,203 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fleetbord - Loads</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      margin: 20px;
-      padding-bottom: 60px;
-      background-color: #f9f9f9;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .back-btn {
-      background: #eee;
-      border: 1px solid #ccc;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      margin-bottom: 10px;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 6px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    button {
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 16px;
-      background-color: #007AFF;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .load-item {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-      background-color: white;
-      border-radius: 6px;
-    }
-
-    .checkbox-group {
-      margin-top: 10px;
-    }
-
-    .pdf-button {
-      background-color: #34C759;
-    }
-
-    .delete-button {
-      background-color: #ff3b30;
-      margin-left: 10px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fleetbord Loads</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    margin: 0;
+    padding: 10px;
+    background: #f2f2f7;
+    color: #000;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  header button {
+    font-size: 18px;
+    margin-right: 15px;
+    background: none;
+    border: none;
+    color: #007aff;
+    cursor: pointer;
+  }
+  h1 {
+    margin: 0;
+    font-weight: 600;
+  }
+  form {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+  }
+  form input, form select {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  form input[type="file"] {
+    padding: 3px 10px;
+  }
+  form button {
+    background-color: #007aff;
+    border: none;
+    color: white;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 17px;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .load-list {
+    background: white;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    max-height: 350px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+  }
+  .load-item {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+  }
+  .load-item:last-child {
+    border-bottom: none;
+  }
+  .load-details {
+    flex-grow: 1;
+    font-size: 14px;
+    line-height: 1.3;
+  }
+  .load-photo-thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-left: 10px;
+    border: 1px solid #ccc;
+  }
+  .load-actions button {
+    margin-left: 8px;
+    background: none;
+    border: none;
+    color: #007aff;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .pay-sheet-btn {
+    background-color: #34c759;
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  /* Checkbox */
+  input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.3);
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
-  <button class="back-btn" onclick="window.location.href='/dashboard.html'">⬅ Back to Dashboard</button>
 
-  <h1>Submit Load</h1>
-  <form id="loadForm">
-    <div class="form-group">
-      <label>Date</label>
-      <input type="date" name="date" required />
-    </div>
-    <div class="form-group">
-      <label>Ticket Number</label>
-      <input type="text" name="ticket" required />
-    </div>
-    <div class="form-group">
-      <label>Customer</label>
-      <input type="text" name="customer" required />
-    </div>
-    <div class="form-group">
-      <label>Rig</label>
-      <input type="text" name="rig" required />
-    </div>
-    <div class="form-group">
-      <label>Lease</label>
-      <input type="text" name="lease" required />
-    </div>
-    <div class="form-group">
-      <label>Rate ($)</label>
-      <input type="number" step="0.01" name="price" required />
-    </div>
-    <div class="form-group">
-      <label>Overnights</label>
-      <input type="number" name="overnights" required />
-    </div>
-    <button type="submit">Save Load</button>
-  </form>
+<header>
+  <button onclick="goBack()">‹ Back</button>
+  <h1>My Loads</h1>
+</header>
 
-  <h2>Your Loads</h2>
-  <div id="loadsContainer"></div>
+<form id="loadForm">
+  <input type="hidden" id="loadId" />
+  <input type="date" id="date" required />
+  <input type="text" id="ticket" placeholder="Ticket Number" required />
+  <input type="text" id="customer" placeholder="Customer" required />
+  <input type="text" id="lease" placeholder="Lease" required />
+  <input type="text" id="rig" placeholder="Rig" required />
+  <input type="number" step="0.01" id="price" placeholder="Price" required />
+  <input type="number" id="overnights" placeholder="Overnights" required min="0" />
+  <input type="file" id="photo" accept="image/*" />
+  <button type="submit">Save Load</button>
+</form>
 
-  <button class="pdf-button" onclick="generatePdfPaySheet()">📄 Generate Pay Sheet PDF</button>
+<button class="pay-sheet-btn" onclick="generatePaySheet()">Generate Pay Sheet PDF</button>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script>
-    const loadForm = document.getElementById('loadForm');
-    const loadsContainer = document.getElementById('loadsContainer');
-    let loads = [];
+<div class="load-list" id="loadList"></div>
 
-    loadForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const formData = new FormData(loadForm);
-      const load = Object.fromEntries(formData.entries());
-      load.id = Date.now();
-      loads.push(load);
-      localStorage.setItem('loads', JSON.stringify(loads));
-      renderLoads();
-      loadForm.reset();
-    });
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    function renderLoads() {
-      loadsContainer.innerHTML = '';
-      loads = JSON.parse(localStorage.getItem('loads')) || [];
-      loads.forEach(load => {
-        const div = document.createElement('div');
-        div.className = 'load-item';
-        div.innerHTML = `
-          <strong>${load.date}</strong> - Ticket: ${load.ticket}<br>
-          Customer: ${load.customer}, Rig: ${load.rig}, Lease: ${load.lease}<br>
-          Rate: $${parseFloat(load.price).toFixed(2)}, Overnights: ${load.overnights}<br>
-          <label><input type="checkbox" data-id="${load.id}" /> Include in pay sheet</label>
-          <button class="delete-button" onclick="deleteLoad(${load.id})">🗑️ Delete</button>
-        `;
-        loadsContainer.appendChild(div);
-      });
+<script>
+  const loadForm = document.getElementById('loadForm');
+  const loadList = document.getElementById('loadList');
+  const loadIdInput = document.getElementById('loadId');
+
+  // Loads stored in localStorage as array
+  let loads = JSON.parse(localStorage.getItem('loads') || '[]');
+
+  function saveLoads() {
+    localStorage.setItem('loads', JSON.stringify(loads));
+  }
+
+  function renderLoads() {
+    loadList.innerHTML = '';
+    if (loads.length === 0) {
+      loadList.innerHTML = '<p>No loads added yet.</p>';
+      return;
     }
+    loads.forEach(load => {
+      const div = document.createElement('div');
+      div.className = 'load-item';
 
-    function deleteLoad(id) {
-      loads = loads.filter(l => l.id !== id);
-      localStorage.setItem('loads', JSON.stringify(loads));
-      renderLoads();
-    }
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'select-load';
+      checkbox.dataset.id = load.id;
 
-    function generatePdfPaySheet() {
-      const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-      const selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
-      const selectedLoads = loads.filter(l => selectedIds.includes(l.id));
+      const details = document.createElement('div');
+      details.className = 'load-details';
+      details.innerHTML = `
+        <strong>${load.date}</strong> | Ticket: ${load.ticket} | Customer: ${load.customer} | Lease: ${load.lease} | Rig: ${load.rig}<br/>
+        Price: $${parseFloat(load.price).toFixed(2)} | Overnights: ${load.overnights}
+      `;
 
-      if(selectedLoads.length === 0){
-        alert("Please select loads to include in the pay sheet.");
-        return;
+      const actions = document.createElement('div');
+      actions.className = 'load-actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = () => editLoad(load.id);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.onclick = () => deleteLoad(load.id);
+
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+
+      div.appendChild(checkbox);
+      div.appendChild(details);
+
+      if (load.photo) {
+        const img = document.createElement('img');
+        img.src = load.photo;
+        img.className = 'load-photo-thumb';
+        img.alt = 'Load Photo';
+        div.appendChild(img);
       }
 
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFontSize(16);
-      doc.text("Fleetbord Pay Sheet", 14, 20);
+      div.appendChild(actions);
+      loadList.appendChild(div);
+    });
+  }
 
-      const headers = [["Date", "Ticket", "Customer", "Rig", "Lease", "Price", "Overnights"]];
-      const data = selectedLoads.map(load => [
+  function clearForm() {
+    loadForm.reset();
+    loadIdInput.value = '';
+  }
+
+  loadForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const id = loadIdInput.value;
+    const date = document.getElementById('date').value;
+    const ticket = document.getElementById('ticket').value.trim();
+    const customer = document.getElementById('customer').value.trim();
+    const lease = document.getElementById('lease').value.trim();
+    const rig = document.getElementById('rig').value.trim();
+    const price = parseFloat(document.getElementById('price').value);
+    const overnights = parseInt(document.getElementById('overnights').value);
+
+    if (!date || !ticket || !customer || !lease || !rig || isNaN(price) || isNaN(overnights)) {
+      alert('Please fill out all fields correctly.');
+      return;
+    }
+
+    const photoInput = document.getElementById('photo');
+    if (photoInput.files && photoInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const photoDataUrl = event.target.result;
+        saveLoad(id, date, ticket, customer, lease, rig, price, overnights, photoDataUrl);
+      };
+      reader.readAsDataURL(photoInput.files[0]);
+    } else {
+      saveLoad(id, date, ticket, customer, lease, rig, price, overnights, null);
+    }
+  });
+
+  function saveLoad(id, date, ticket, customer, lease, rig, price, overnights, photo) {
+    if (id) {
+      // Edit existing load
+      const idx = loads.findIndex(l => l.id === id);
+      if (idx !== -1) {
+        loads[idx] = { id, date, ticket, customer, lease, rig, price, overnights, photo: photo || loads[idx].photo };
+      }
+    } else {
+      // New load
+      loads.push({ id: Date.now().toString(), date, ticket, customer, lease, rig, price, overnights, photo });
+    }
+    saveLoads();
+    renderLoads();
+    clearForm();
+  }
+
+  function editLoad(id) {
+    const load = loads.find(l => l.id === id);
+    if (!load) return;
+    loadIdInput.value = load.id;
+    document.getElementById('date').value = load.date;
+    document.getElementById('ticket').value = load.ticket;
+    document.getElementById('customer').value = load.customer;
+    document.getElementById('lease').value = load.lease;
+    document.getElementById('rig').value = load.rig;
+    document.getElementById('price').value = load.price;
+    document.getElementById('overnights').value = load.overnights;
+  }
+
+  function deleteLoad(id) {
+    if (!confirm('Delete this load?')) return;
+    loads = loads.filter(l => l.id !== id);
+    saveLoads();
+    renderLoads();
+  }
+
+  function generatePaySheet() {
+    const selectedCheckboxes = document.querySelectorAll('input.select-load:checked');
+    if (selectedCheckboxes.length === 0) {
+      alert('Please select at least one load for the pay sheet.');
+      return;
+    }
+    const selectedLoads = [];
+    selectedCheckboxes.forEach(cb => {
+      const load = loads.find(l => l.id === cb.dataset.id);
+      if (load) selectedLoads.push(load);
+    });
+
+    if (selectedLoads.length === 0) {
+      alert('No valid loads selected.');
+      return;
+    }
+
+    // Using jsPDF for PDF generation
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Fleetbord Pay Sheet", 14, 20);
+
+    doc.setFontSize(12);
+    const colHeaders = ["Date", "Ticket #", "Customer", "Lease", "Rig", "Price", "Overnights"];
+    const colWidths = [25, 25, 40, 30, 20, 25, 25];
+    let x = 14;
+    let y = 35;
+
+    // Draw header
+    for (let i = 0; i < colHeaders.length; i++) {
+      doc.text(colHeaders[i], x, y);
+      x += colWidths[i];
+    }
+
+    y += 6;
+    x = 14;
+
+    let totalPrice = 0;
+    let totalOvernights = 0;
+
+    selectedLoads.forEach(load => {
+      const row = [
         load.date,
         load.ticket,
         load.customer,
-        load.rig,
         load.lease,
+        load.rig,
         `$${parseFloat(load.price).toFixed(2)}`,
         load.overnights.toString()
-      ]);
+      ];
 
-      doc.autoTable({
-        head: headers,
-        body: data,
-        startY: 30,
-        styles: { fontSize: 10 },
-        theme: 'grid',
-        headStyles: { fillColor: [50, 50, 50] }
-      });
+      for (let i = 0; i < row.length; i++) {
+        doc.text(row[i], x, y);
+        x += colWidths[i];
+      }
+      totalPrice += parseFloat(load.price);
+      totalOvernights += parseInt(load.overnights);
+      y += 7;
+      x = 14;
+    });
 
-      doc.save(`pay_sheet_${Date.now()}.pdf`);
-    }
+    // Totals
+    y += 6;
+    doc.setFontSize(14);
+    doc.text(`Total Price: $${totalPrice.toFixed(2)}`, 14, y);
+    y += 7;
+    doc.text(`Total Overnights: ${totalOvernights}`, 14, y);
 
-    renderLoads();
-  </script>
+    doc.save("Fleetbord_PaySheet.pdf");
+  }
+
+  function goBack() {
+    window.history.back();
+  }
+
+  // Initial render
+  renderLoads();
+</script>
+
 </body>
 </html>

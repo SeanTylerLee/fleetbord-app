@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fleetbord Loads</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      font-size: 22px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, button, select {
+      font-size: 16px;
+      padding: 8px;
+      margin-top: 4px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    th {
+      background: #f2f2f2;
+    }
+    .btn {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Your Loads</h1>
+
+  <form id="loadForm">
+    <input type="hidden" id="loadId" value="" />
+    <label>Date: <input type="date" id="date" required /></label>
+    <label>Ticket Number: <input type="text" id="ticket" required /></label>
+    <label>Customer: <input type="text" id="customer" required /></label>
+    <label>Rig: <input type="text" id="rig" required /></label>
+    <label>Lease: <input type="text" id="lease" required /></label>
+    <label>Price: <input type="number" id="price" step="0.01" required /></label>
+    <label>Overnights: <input type="number" id="overnights" required /></label>
+    <button type="submit" id="submitBtn">Add Load</button>
+    <button type="button" id="clearBtn">Clear</button>
+  </form>
+
+  <h2>Select Loads to Add to Pay Sheet</h2>
+  <button id="generatePaySheetBtn" class="btn">Generate Pay Sheet (PDF)</button>
+
+  <table id="loadsTable">
+    <thead>
+      <tr>
+        <th>Select</th>
+        <th>Date</th>
+        <th>Ticket</th>
+        <th>Customer</th>
+        <th>Rig</th>
+        <th>Lease</th>
+        <th>Price</th>
+        <th>Overnights</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    let currentUser = null;
+    let loads = [];
+
+    // On load: get logged in user & loads
+    fetch('/auth/session')
+      .then(res => res.json())
+      .then(user => {
+        if (!user || !user.username) {
+          window.location.href = '/index.html';
+          return;
+        }
+        currentUser = user.username;
+        loadLoads();
+      });
+
+    function loadLoads() {
+      fetch(`/loads/user/${currentUser}`)
+        .then(res => res.json())
+        .then(data => {
+          loads = data;
+          renderLoads();
+        });
+    }
+
+    function renderLoads() {
+      const tbody = document.querySelector('#loadsTable tbody');
+      tbody.innerHTML = '';
+      loads.forEach(load => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="checkbox" data-id="${load.id}"></td>
+          <td>${load.date}</td>
+          <td>${load.ticket}</td>
+          <td>${load.customer}</td>
+          <td>${load.rig}</td>
+          <td>${load.lease}</td>
+          <td>$${parseFloat(load.price).toFixed(2)}</td>
+          <td>${load.overnights}</td>
+          <td>
+            <button data-id="${load.id}" class="editBtn">Edit</button>
+            <button data-id="${load.id}" class="deleteBtn">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll('.editBtn').forEach(btn => {
+        btn.onclick = e => {
+          const id = e.target.dataset.id;
+          const load = loads.find(l => l.id == id);
+          if (!load) return;
+          document.getElementById('loadId').value = load.id;
+          document.getElementById('date').value = load.date;
+          document.getElementById('ticket').value = load.ticket;
+          document.getElementById('customer').value = load.customer;
+          document.getElementById('rig').value = load.rig;
+          document.getElementById('lease').value = load.lease;
+          document.getElementById('price').value = load.price;
+          document.getElementById('overnights').value = load.overnights;
+          document.getElementById('submitBtn').innerText = 'Update Load';
+        };
+      });
+
+      document.querySelectorAll('.deleteBtn').forEach(btn => {
+        btn.onclick = e => {
+          const id = e.target.dataset.id;
+          if (!confirm('Delete this load?')) return;
+          fetch(`/loads/delete/${id}`, { method: 'POST' })
+            .then(() => loadLoads());
+        };
+      });
+    }
+
+    document.getElementById('clearBtn').onclick = () => {
+      clearForm();
+    };
+
+    document.getElementById('loadForm').onsubmit = e => {
+      e.preventDefault();
+      const id = document.getElementById('loadId').value;
+      const loadData = {
+        user: currentUser,
+        date: document.getElementById('date').value,
+        ticket: document.getElementById('ticket').value,
+        customer: document.getElementById('customer').value,
+        rig: document.getElementById('rig').value,
+        lease: document.getElementById('lease').value,
+        price: parseFloat(document.getElementById('price').value),
+        overnights: parseInt(document.getElementById('overnights').value),
+      };
+
+      if (id) {
+        // Update load - (We'll implement this server side soon)
+        alert('Update functionality coming soon!');
+      } else {
+        // Add new load
+        const formData = new FormData();
+        for (const key in loadData) formData.append(key, loadData[key]);
+
+        fetch('/loads/add', {
+          method: 'POST',
+          body: formData
+        })
+        .then(() => {
+          loadLoads();
+          clearForm();
+        });
+      }
+    };
+
+    function clearForm() {
+      document.getElementById('loadId').value = '';
+      document.getElementById('date').value = '';
+      document.getElementById('ticket').value = '';
+      document.getElementById('customer').value = '';
+      document.getElementById('rig').value = '';
+      document.getElementById('lease').value = '';
+      document.getElementById('price').value = '';
+      document.getElementById('overnights').value = '';
+      document.getElementById('submitBtn').innerText = 'Add Load';
+    }
+
+    document.getElementById('generatePaySheetBtn').onclick = () => {
+      const selectedIds = Array.from(document.querySelectorAll('input[type=checkbox]:checked')).map(cb => parseInt(cb.dataset.id));
+      if (selectedIds.length === 0) {
+        alert('Select at least one load to generate pay sheet');
+        return;
+      }
+      const selectedLoads = loads.filter(load => selectedIds.includes(load.id));
+      generatePdfPaySheet(selectedLoads);
+    };
+
+    function generatePdfPaySheet(selectedLoads) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text("Fleetbord Pay Sheet", 14, 20);
+
+      const colHeaders = ["Date", "Ticket", "Customer", "Rig", "Lease", "Price", "Overnights"];
+      const colWidths = [25, 30, 40, 25, 25, 20, 25];
+      let startY = 30;
+
+      // Header row
+      let x = 14;
+      colHeaders.forEach((header, i) => {
+        doc.text(header, x, startY);
+        x += colWidths[i];
+      });
+
+      // Rows
+      startY += 8;
+      selectedLoads.forEach(load => {
+        let x = 14;
+        [
+          load.date,
+          load.ticket,
+          load.customer,
+          load.rig,
+          load.lease,
+          `$${parseFloat(load.price).toFixed(2)}`,
+          load.overnights.toString()
+        ].forEach((text, i) => {
+          doc.text(text, x, startY);
+          x += colWidths[i];
+        });
+        startY += 8;
+      });
+
+      doc.save(`pay_sheet_${Date.now()}.pdf`);
+    }
+  </script>
+</body>
+</html>

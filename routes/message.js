@@ -1,40 +1,66 @@
 const express = require('express');
-const fs = require('fs');
+const router = express.Router();
 const path = require('path');
 
 module.exports = (db, upload) => {
-  const router = express.Router();
-
-  // POST /messages/dispatch
+  // 📤 Send a dispatch message (with optional photo and map link)
   router.post('/dispatch', upload.single('photo'), (req, res) => {
-    const sender = req.session.username || 'unknown';
-    const recipients = req.body.recipients;
-    const instructions = req.body.instructions;
-    const mapLink = req.body.mapLink || '';
-    const file = req.file ? `/uploads/${req.file.filename}` : null;
+    const { sender, recipients, message, mapLink } = req.body;
+    const timestamp = new Date().toISOString();
+    const recipientsStr = Array.isArray(recipients) ? recipients.join(',') : recipients;
 
-    const message = {
-      instructions,
-      mapLink,
-      photo: file
+    const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    const content = {
+      text: message,
+      photo: photoPath,
+      mapLink: mapLink || null
     };
 
-    const msgText = JSON.stringify(message);
-    const time = new Date().toISOString();
-
     db.run(
-      `INSERT INTO messages (sender, recipients, message, timestamp)
-       VALUES (?, ?, ?, ?)`,
-      [sender, Array.isArray(recipients) ? recipients.join(',') : recipients, msgText, time],
+      'INSERT INTO messages (sender, recipients, message, timestamp) VALUES (?, ?, ?, ?)',
+      [sender, recipientsStr, JSON.stringify(content), timestamp],
       function (err) {
-        if (err) {
-          console.error('Error inserting message:', err);
-          return res.status(500).send('Failed to send dispatch');
-        }
-        res.sendStatus(200);
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: this.lastID });
+      }
+    );
+  });
+
+  // 📥 Get all messages received by a user
+  router.get('/inbox/:username', (req, res) => {
+    const username = req.params.username;
+
+    db.all(
+      'SELECT * FROM messages WHERE recipients LIKE ? ORDER BY timestamp DESC',
+      [`%${username}%`],
+      (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const formattedMessages = rows.map((row) => {
+          let parsed;
+          try {
+            parsed = JSON.parse(row.message);
+          } catch {
+            parsed = { text: row.message };
+          }
+
+          return {
+            id: row.id,
+            sender: row.sender,
+            recipients: row.recipients.split(','),
+            message: parsed.text,
+            photo: parsed.photo,
+            mapLink: parsed.mapLink,
+            timestamp: row.timestamp
+          };
+        });
+
+        res.json(formattedMessages);
       }
     );
   });
 
   return router;
 };
+ 

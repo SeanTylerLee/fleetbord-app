@@ -3,64 +3,173 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fleetbord</title>
+  <title>Fleetbord - Loads</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       margin: 0;
-      background-color: #000000; /* black background */
-      color: #cccccc;            /* light gray text */
+      background-color: #000000;
+      color: #cccccc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-
     .header-image {
       width: 100%;
       height: auto;
       display: block;
     }
-
     .content {
       padding: 20px;
-      text-align: center;
     }
-
-    h1, p {
-      color: #cccccc; /* ensure header and paragraph are gray */
+    h1, p, label {
+      color: #cccccc;
     }
-
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 10px;
+      border: none;
+      border-radius: 8px;
+    }
     .ios-button {
-      margin-top: 20px;
+      margin: 10px 5px;
       background-color: #007aff;
       color: white;
-      font-size: 17px;
-      padding: 12px 24px;
+      font-size: 16px;
+      padding: 10px 20px;
       border: none;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
       cursor: pointer;
-      transition: background-color 0.3s ease;
     }
-
-    .ios-button:hover {
-      background-color: #005bb5;
+    .load-item {
+      background: #111;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .load-item label {
+      display: block;
+      font-size: 14px;
+      margin: 3px 0;
     }
   </style>
-  <link rel="apple-touch-icon" href="/icons/icon.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
 
-  <!-- Header Image -->
-  <img src="fleetbordheader.jpg" alt="Fleetbord Header" class="header-image" />
+<div class="content">
+  <h1>Loads</h1>
 
-  <!-- Page Content -->
-  <div class="content">
-    <h1>Loads</h1>
-    <p> test </p>
+  <form id="loadForm">
+    <label>Date:</label><input type="date" id="date" required>
+    <label>Ticket #:</label><input type="text" id="ticket" required>
+    <label>Customer:</label><input type="text" id="customer" required>
+    <label>Lease:</label><input type="text" id="lease" required>
+    <label>Rig:</label><input type="text" id="rig" required>
+    <label>Rate:</label><input type="number" id="rate" required>
+    <label>Overnights:</label><input type="number" id="overnights" required>
+    <button class="ios-button" type="submit">Add Load</button>
+  </form>
 
-    <!-- iOS-Style Button -->
-    <button class="ios-button" onclick="location.href='index.html'"> Back </button>
-  </div>
+  <div id="loadList"></div>
+
+  <button class="ios-button" onclick="generatePDF()">Export Selected to PDF</button>
+  <button class="ios-button" onclick="location.href='index.html'">Back</button>
+</div>
+
+<script>
+  const form = document.getElementById('loadForm');
+  const loadList = document.getElementById('loadList');
+  let loads = JSON.parse(localStorage.getItem('loads') || '[]');
+
+  function saveLoads() {
+    localStorage.setItem('loads', JSON.stringify(loads));
+    renderLoads();
+  }
+
+  function renderLoads() {
+    loadList.innerHTML = '';
+    loads.forEach((load, i) => {
+      const div = document.createElement('div');
+      div.className = 'load-item';
+      div.innerHTML = `
+        <input type="checkbox" id="select-${i}">
+        <label><b>Date:</b> ${load.date}</label>
+        <label><b>Ticket:</b> ${load.ticket}</label>
+        <label><b>Customer:</b> ${load.customer}</label>
+        <label><b>Lease:</b> ${load.lease}</label>
+        <label><b>Rig:</b> ${load.rig}</label>
+        <label><b>Rate:</b> $${load.rate}</label>
+        <label><b>Overnights:</b> ${load.overnights}</label>
+        <button class="ios-button" onclick="editLoad(${i})">Edit</button>
+        <button class="ios-button" onclick="deleteLoad(${i})">Delete</button>
+      `;
+      loadList.appendChild(div);
+    });
+  }
+
+  function editLoad(i) {
+    const load = loads[i];
+    document.getElementById('date').value = load.date;
+    document.getElementById('ticket').value = load.ticket;
+    document.getElementById('customer').value = load.customer;
+    document.getElementById('lease').value = load.lease;
+    document.getElementById('rig').value = load.rig;
+    document.getElementById('rate').value = load.rate;
+    document.getElementById('overnights').value = load.overnights;
+    loads.splice(i, 1);
+    saveLoads();
+  }
+
+  function deleteLoad(i) {
+    if (confirm('Delete this load?')) {
+      loads.splice(i, 1);
+      saveLoads();
+    }
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const load = {
+      date: document.getElementById('date').value,
+      ticket: document.getElementById('ticket').value,
+      customer: document.getElementById('customer').value,
+      lease: document.getElementById('lease').value,
+      rig: document.getElementById('rig').value,
+      rate: parseFloat(document.getElementById('rate').value),
+      overnights: parseInt(document.getElementById('overnights').value)
+    };
+    loads.push(load);
+    saveLoads();
+    form.reset();
+  });
+
+  function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(12);
+    let y = 20;
+
+    doc.text("Fleetbord - Pay Sheet", 15, 10);
+    doc.text("Date    Ticket  Customer  Lease  Rig  Rate  Overnights", 10, y);
+    y += 8;
+
+    loads.forEach((load, i) => {
+      const checkbox = document.getElementById(`select-${i}`);
+      if (checkbox && checkbox.checked) {
+        doc.text(
+          `${load.date}  ${load.ticket}  ${load.customer}  ${load.lease}  ${load.rig}  $${load.rate.toFixed(2)}  ${load.overnights}`,
+          10,
+          y
+        );
+        y += 8;
+      }
+    });
+
+    doc.save("paysheet.pdf");
+  }
+
+  renderLoads();
+</script>
 
 </body>
 </html>

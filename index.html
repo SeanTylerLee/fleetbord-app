@@ -2,354 +2,79 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fleetbord</title>
+  <meta name="viewport" 
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>iOS Style Page</title>
   <style>
-    :root {
-      --primary: #007aff;
-      --background: #f2f2f7;
-      --text: #1c1c1e;
-      --card: #ffffff;
-      --admin-bg: #ffe6e6;
-    }
     body {
       margin: 0;
+      padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: var(--background);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      background-color: #ffffff;
+      color: #000000;
     }
+
     header {
-      background-color: var(--primary);
-      color: white;
-      padding: 1rem;
-      font-size: 1.5rem;
-      text-align: center;
       position: sticky;
       top: 0;
+      background: #ffffff;
+      border-bottom: 1px solid #ccc;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       z-index: 10;
     }
-    main {
-      flex: 1;
-      padding: 1rem;
-      overflow-y: auto;
-    }
-    .card {
-      background-color: var(--card);
-      border-radius: 14px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-    input, button, select, textarea {
-      width: 100%;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      font-size: 1rem;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: white;
-      border-top: 1px solid #ccc;
-      display: flex;
-      justify-content: space-around;
-      padding: 0.5rem 0;
-    }
-    nav button {
-      flex: 1;
+
+    .back-button {
       background: none;
-      color: var(--primary);
+      border: none;
+      color: #007aff;
       font-size: 1rem;
+      cursor: pointer;
+      padding: 0;
     }
-    h2 {
-      margin-top: 0;
-    }
-    /* Hide sections by default */
-    #loginView, #appView {
-      display: none;
-    }
-    /* Show active section */
-    .visible {
+
+    .top-image {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
       display: block;
     }
-    /* Admin styling */
-    body.admin {
-      background-color: var(--admin-bg);
+
+    main {
+      padding: 1rem;
+    }
+
+    .card {
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
     }
   </style>
 </head>
 <body>
-  <header>Fleetbord</header>
 
-  <!-- Login View -->
-  <main id="loginView" class="visible">
+  <!-- iOS-style header -->
+  <header>
+    <button class="back-button" onclick="history.back()">← Back</button>
+    <div></div> <!-- Spacer -->
+  </header>
+
+  <!-- Top Image -->
+  <img src="header.png" alt="Top Banner" class="top-image" />
+
+  <!-- Page Content -->
+  <main>
     <div class="card">
-      <h2>Login</h2>
-      <input id="emailInput" type="text" placeholder="Email or username" autocomplete="username" />
-      <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" />
-      <button id="loginBtn">Sign In</button>
-      <p style="text-align:center; margin-top:0.5rem;">
-        or <a href="#" id="signupLink">Sign Up</a>
-      </p>
+      <h2>Welcome</h2>
+      <p>This is your iOS-style web page layout.</p>
     </div>
+
+    <!-- You can add more .card blocks here -->
   </main>
 
-  <!-- Main App View -->
-  <main id="appView">
-    <button style="float:right; margin-bottom:1rem;" id="logoutBtn">Logout</button>
-
-    <div class="card">
-      <h2>New Load</h2>
-      <input id="ticketInput" type="text" placeholder="Ticket #" />
-      <input id="customerInput" type="text" placeholder="Customer" />
-      <input id="leaseInput" type="text" placeholder="Lease" />
-      <input id="rigInput" type="text" placeholder="Rig" />
-      <input id="rateInput" type="number" placeholder="Rate" />
-      <input id="overnightsInput" type="number" placeholder="Overnights" />
-      <input id="dateInput" type="date" />
-      <button id="submitLoadBtn">Submit Load</button>
-    </div>
-
-    <div class="card">
-      <h2>Upload Paperwork</h2>
-      <input id="fileInput" type="file" />
-      <button id="uploadFileBtn">Upload</button>
-    </div>
-
-    <div class="card">
-      <h2>Messages</h2>
-      <textarea id="messageBox" placeholder="Type a message..."></textarea>
-      <button id="sendMessageBtn">Send</button>
-      <div id="messageLog" style="margin-top: 1rem; max-height: 300px; overflow-y: auto; background:#f9f9f9; padding:0.5rem; border-radius:10px;"></div>
-    </div>
-  </main>
-
-  <nav>
-    <button>🏠 Home</button>
-    <button>📦 Loads</button>
-    <button>📤 Upload</button>
-    <button>💬 Chat</button>
-    <button>⚙️ Settings</button>
-  </nav>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDZajwhXvmLdgy_daqmYB83XB-e1TgT0KA",
-    authDomain: "fleetbord-11dfd.firebaseapp.com",
-    projectId: "fleetbord-11dfd",
-    storageBucket: "fleetbord-11dfd.appspot.com",
-    messagingSenderId: "264094852958",
-    appId: "1:264094852958:web:3aefa90034e5631cf"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
-
-  const loginView = document.getElementById('loginView');
-  const appView = document.getElementById('appView');
-
-  const emailInput = document.getElementById('emailInput');
-  const passwordInput = document.getElementById('passwordInput');
-  const loginBtn = document.getElementById('loginBtn');
-  const signupLink = document.getElementById('signupLink');
-
-  const logoutBtn = document.getElementById('logoutBtn');
-
-  const ticketInput = document.getElementById('ticketInput');
-  const customerInput = document.getElementById('customerInput');
-  const leaseInput = document.getElementById('leaseInput');
-  const rigInput = document.getElementById('rigInput');
-  const rateInput = document.getElementById('rateInput');
-  const overnightsInput = document.getElementById('overnightsInput');
-  const dateInput = document.getElementById('dateInput');
-  const submitLoadBtn = document.getElementById('submitLoadBtn');
-
-  const fileInput = document.getElementById('fileInput');
-  const uploadFileBtn = document.getElementById('uploadFileBtn');
-
-  const messageBox = document.getElementById('messageBox');
-  const sendMessageBtn = document.getElementById('sendMessageBtn');
-  const messageLog = document.getElementById('messageLog');
-
-  let currentUser = null;
-  let isAdmin = false;
-
-  const UNIVERSAL_ADMIN_USERNAME = "admin";
-  const UNIVERSAL_ADMIN_PASSWORD = "1";
-
-  function showLogin() {
-    loginView.classList.add('visible');
-    appView.classList.remove('visible');
-    document.body.classList.remove("admin");
-  }
-  function showApp() {
-    loginView.classList.remove('visible');
-    appView.classList.add('visible');
-    if (isAdmin) document.body.classList.add("admin");
-    else document.body.classList.remove("admin");
-  }
-
-  loginBtn.onclick = async () => {
-    const username = emailInput.value.trim();
-    const password = passwordInput.value;
-
-    if (username === UNIVERSAL_ADMIN_USERNAME && password === UNIVERSAL_ADMIN_PASSWORD) {
-      currentUser = { email: "admin@fleetbord.com", displayName: "Admin" };
-      isAdmin = true;
-      alert("Logged in as universal admin");
-      showApp();
-      loadMessages();
-      return;
-    }
-
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, username, password);
-      currentUser = userCredential.user;
-      isAdmin = false;
-      alert("Logged in");
-      showApp();
-      loadMessages();
-    } catch (error) {
-      alert("Login failed: " + error.message);
-    }
-  };
-
-  signupLink.onclick = async (e) => {
-    e.preventDefault();
-    const username = emailInput.value.trim();
-    const password = passwordInput.value;
-
-    if (!username || !password) {
-      alert("Please enter email and password to sign up.");
-      return;
-    }
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, username, password);
-      currentUser = userCredential.user;
-      isAdmin = false;
-      alert("Signed up and logged in");
-      showApp();
-      loadMessages();
-    } catch (error) {
-      alert("Signup failed: " + error.message);
-    }
-  };
-
-  logoutBtn.onclick = async () => {
-    if (isAdmin) {
-      currentUser = null;
-      isAdmin = false;
-      alert("Logged out");
-      showLogin();
-    } else {
-      await signOut(auth);
-      currentUser = null;
-      isAdmin = false;
-      alert("Logged out");
-      showLogin();
-    }
-  };
-
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      currentUser = user;
-      isAdmin = false;
-      showApp();
-      loadMessages();
-    } else if (!isAdmin) {
-      showLogin();
-    }
-  });
-
-  submitLoadBtn.onclick = async () => {
-    if (!currentUser) return alert("Please log in first");
-    try {
-      await addDoc(collection(db, "loads"), {
-        ticket: ticketInput.value,
-        customer: customerInput.value,
-        lease: leaseInput.value,
-        rig: rigInput.value,
-        rate: parseFloat(rateInput.value),
-        overnights: parseInt(overnightsInput.value),
-        date: dateInput.value,
-        user: currentUser.email || currentUser.displayName || "unknown",
-        time: server
-                user: currentUser.email || currentUser.displayName || "unknown",
-        time: serverTimestamp()
-      });
-      alert("Load saved");
-      ticketInput.value = customerInput.value = leaseInput.value = rigInput.value = "";
-      rateInput.value = overnightsInput.value = dateInput.value = "";
-    } catch (e) {
-      alert("Error saving load: " + e.message);
-    }
-  };
-
-  uploadFileBtn.onclick = async () => {
-    if (!currentUser) return alert("Please log in first");
-    const file = fileInput.files[0];
-    if (!file) return alert("Choose a file to upload");
-    const fileRef = ref(storage, "uploads/" + Date.now() + "_" + file.name);
-    try {
-      await uploadBytes(fileRef, file);
-      alert("File uploaded");
-      fileInput.value = "";
-    } catch (e) {
-      alert("Upload failed: " + e.message);
-    }
-  };
-
-  sendMessageBtn.onclick = async () => {
-    if (!currentUser) return alert("Please log in first");
-    const text = messageBox.value.trim();
-    if (!text) return;
-    try {
-      await addDoc(collection(db, "messages"), {
-        text,
-        user: currentUser.email || currentUser.displayName || "unknown",
-        time: serverTimestamp()
-      });
-      messageBox.value = "";
-    } catch (e) {
-      alert("Failed to send message: " + e.message);
-    }
-  };
-
-  function loadMessages() {
-    messageLog.innerHTML = "Loading messages...";
-    const messagesQuery = query(collection(db, "messages"), orderBy("time"));
-    onSnapshot(messagesQuery, (snapshot) => {
-      messageLog.innerHTML = "";
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-        const time = msg.time?.toDate?.().toLocaleString() || "";
-        const safeText = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        messageLog.innerHTML += `<p><b>${msg.user}</b>: ${safeText} <small>${time}</small></p>`;
-      });
-      messageLog.scrollTop = messageLog.scrollHeight;
-    });
-  }
-</script>
 </body>
 </html>

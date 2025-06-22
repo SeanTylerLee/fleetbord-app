@@ -79,7 +79,10 @@
       <h2>Login</h2>
       <input type="email" placeholder="Email" />
       <input type="password" placeholder="Password" />
-      <button>Sign In</button>
+      <button onclick="login()">Sign In</button>
+      <p style="text-align:center; margin-top:0.5rem;">
+        or <a href="#" onclick="signup()">Sign Up</a>
+      </p>
     </div>
 
     <div class="card">
@@ -91,19 +94,19 @@
       <input type="number" placeholder="Rate" />
       <input type="number" placeholder="Overnights" />
       <input type="date" />
-      <button>Submit Load</button>
+      <button onclick="submitLoad()">Submit Load</button>
     </div>
 
     <div class="card">
       <h2>Upload Paperwork</h2>
       <input type="file" />
-      <button>Upload</button>
+      <button onclick="uploadFile()">Upload</button>
     </div>
 
     <div class="card">
       <h2>Messages</h2>
       <textarea placeholder="Type a message..."></textarea>
-      <button>Send</button>
+      <button onclick="sendMessage()">Send</button>
     </div>
   </main>
 
@@ -114,5 +117,100 @@
     <button>💬 Chat</button>
     <button>⚙️ Settings</button>
   </nav>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDZajwhXvmLdgy_daqmYB83XB-e1TgT0KA",
+  authDomain: "fleetbord-11dfd.firebaseapp.com",
+  projectId: "fleetbord-11dfd",
+  storageBucket: "fleetbord-11dfd.appspot.com",
+  messagingSenderId: "264094852958",
+  appId: "1:264094852958:web:3aefa90034e5631a2851cf"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+const emailInput = document.querySelector('input[type="email"]');
+const passwordInput = document.querySelector('input[type="password"]');
+const loadInputs = document.querySelectorAll('.card:nth-of-type(2) input');
+const fileInput = document.querySelector('input[type="file"]');
+const messageBox = document.querySelector('textarea');
+const messageLog = document.createElement('div');
+document.querySelector('.card:last-of-type').appendChild(messageLog);
+
+window.login = async () => {
+  try {
+    await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    alert("Logged in");
+  } catch (err) {
+    alert("Login failed: " + err.message);
+  }
+};
+
+window.signup = async () => {
+  try {
+    await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    alert("Signed up");
+  } catch (err) {
+    alert("Signup failed: " + err.message);
+  }
+};
+
+window.submitLoad = async () => {
+  const [ticket, customer, lease, rig, rate, nights, date] = [...loadInputs].map(i => i.value);
+  try {
+    await addDoc(collection(db, "loads"), {
+      ticket, customer, lease, rig,
+      rate: parseFloat(rate), overnights: parseInt(nights), date,
+      user: auth.currentUser?.email,
+      time: serverTimestamp()
+    });
+    alert("Load saved");
+  } catch (e) {
+    alert("Error: " + e.message);
+  }
+};
+
+window.uploadFile = async () => {
+  const file = fileInput.files[0];
+  if (!file) return alert("Choose a file");
+  const fileRef = ref(storage, "uploads/" + file.name);
+  try {
+    await uploadBytes(fileRef, file);
+    alert("Uploaded");
+  } catch (e) {
+    alert("Upload failed: " + e.message);
+  }
+};
+
+window.sendMessage = async () => {
+  const text = messageBox.value;
+  if (!text) return;
+  await addDoc(collection(db, "messages"), {
+    text,
+    user: auth.currentUser?.email,
+    time: serverTimestamp()
+  });
+  messageBox.value = "";
+};
+
+onSnapshot(query(collection(db, "messages"), orderBy("time")), snap => {
+  messageLog.innerHTML = "";
+  snap.forEach(doc => {
+    const m = doc.data();
+    const t = m.time?.toDate?.().toLocaleString() ?? "";
+    messageLog.innerHTML += `<p><b>${m.user}</b>: ${m.text} <small>${t}</small></p>`;
+  });
+});
+</script>
+
 </body>
 </html>

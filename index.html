@@ -5,251 +5,114 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fleetbord</title>
   <style>
+    :root {
+      --primary: #007aff;
+      --background: #f2f2f7;
+      --text: #1c1c1e;
+      --card: #ffffff;
+    }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #f2f2f7;
-      color: #111;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
     }
     header {
-      background-color: #007aff;
+      background-color: var(--primary);
       color: white;
       padding: 1rem;
-      text-align: center;
       font-size: 1.5rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     main {
       padding: 1rem;
     }
-    input, button, select {
+    .card {
+      background-color: var(--card);
+      border-radius: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    input, button, select, textarea {
       width: 100%;
-      padding: 0.6rem;
+      padding: 0.75rem;
       margin-top: 0.5rem;
       font-size: 1rem;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
     }
-    .hidden { display: none; }
-    .card {
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+    }
+    nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
       background: white;
-      padding: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin-top: 1rem;
+      border-top: 1px solid #ccc;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem 0;
+    }
+    nav button {
+      flex: 1;
+      background: none;
+      color: var(--primary);
+      font-size: 1rem;
+    }
+    h2 {
+      margin-top: 0;
     }
   </style>
 </head>
 <body>
   <header>Fleetbord</header>
   <main>
-    <div id="login-section">
-      <div class="card">
-        <h2>Login</h2>
-        <input type="email" id="email" placeholder="Email" />
-        <input type="password" id="password" placeholder="Password" />
-        <button onclick="login()">Login</button>
-        <p>or <a href="#" onclick="signup()">Sign up</a></p>
-      </div>
+    <div class="card">
+      <h2>Login</h2>
+      <input type="email" placeholder="Email" />
+      <input type="password" placeholder="Password" />
+      <button>Sign In</button>
     </div>
 
-    <div id="app-section" class="hidden">
-      <div class="card">
-        <h2>New Load</h2>
-        <input type="text" id="ticket" placeholder="Ticket Number" />
-        <input type="text" id="customer" placeholder="Customer" />
-        <input type="text" id="lease" placeholder="Lease" />
-        <input type="text" id="rig" placeholder="Rig" />
-        <input type="number" id="rate" placeholder="Rate" />
-        <input type="number" id="overnights" placeholder="Overnights" />
-        <input type="date" id="date" />
-        <button onclick="saveLoad()">Save Load</button>
-      </div>
+    <div class="card">
+      <h2>New Load</h2>
+      <input type="text" placeholder="Ticket #" />
+      <input type="text" placeholder="Customer" />
+      <input type="text" placeholder="Lease" />
+      <input type="text" placeholder="Rig" />
+      <input type="number" placeholder="Rate" />
+      <input type="number" placeholder="Overnights" />
+      <input type="date" />
+      <button>Submit Load</button>
+    </div>
 
-      <div class="card">
-        <h2>Upload Paperwork</h2>
-        <input type="file" id="fileInput" />
-        <button onclick="uploadFile()">Upload</button>
-      </div>
+    <div class="card">
+      <h2>Upload Paperwork</h2>
+      <input type="file" />
+      <button>Upload</button>
+    </div>
 
-      
-      <div class="card">
-        <h2>Saved Loads</h2>
-        <ul id="loadList"></ul>
-      </div>
-
-      <div class="card">
-        <h2>Generate Pay Sheet</h2>
-        <button onclick="generatePaySheet()">Download PDF</button>
-      </div>
-
-      <div class="card">
-        <h2>Message Dispatch</h2>
-        <textarea id="messageInput" placeholder="Type a message..."></textarea>
-        <button onclick="sendMessage()">Send Message</button>
-        <div id="messageLog"></div>
-      </div>
-<div class="card">
-        <button onclick="logout()">Logout</button>
-      </div>
+    <div class="card">
+      <h2>Messages</h2>
+      <textarea placeholder="Type a message..."></textarea>
+      <button>Send</button>
     </div>
   </main>
 
-  <script type="module">
-    import { getDocs, onSnapshot, query, orderBy, serverTimestamp, Timestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import jsPDF from "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.es.min.js";
-
-    async function fetchLoads() {
-      const q = query(collection(db, "loads"), orderBy("date", "desc"));
-      const snapshot = await getDocs(q);
-      const list = document.getElementById("loadList");
-      list.innerHTML = '';
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const item = document.createElement("li");
-        item.textContent = `${data.date}: ${data.ticket} - $${data.rate} (${data.overnights} nights)`;
-        list.appendChild(item);
-      });
-    }
-
-    window.generatePaySheet = async () => {
-      const q = query(collection(db, "loads"), orderBy("date", "desc"));
-      const snapshot = await getDocs(q);
-      const docPDF = new jsPDF();
-      let y = 10, total = 0, nights = 0;
-
-      docPDF.text("Fleetbord Pay Sheet", 10, y);
-      y += 10;
-      snapshot.forEach((docSnap) => {
-        const d = docSnap.data();
-        docPDF.text(`${d.date}: $${d.rate} - ${d.overnights} nights`, 10, y);
-        y += 10;
-        total += d.rate;
-        nights += d.overnights;
-      });
-      y += 10;
-      docPDF.text(`Total: $${total}`, 10, y);
-      y += 10;
-      docPDF.text(`Overnights: ${nights}`, 10, y);
-      docPDF.save("Fleetbord_PaySheet.pdf");
-    }
-
-    window.sendMessage = async () => {
-      const message = document.getElementById("messageInput").value;
-      if (!message.trim()) return alert("Enter a message first.");
-      const user = auth.currentUser;
-      if (!user) return;
-      const payload = {
-        text: message,
-        user: user.email,
-        time: serverTimestamp()
-      };
-      await addDoc(collection(db, "messages"), payload);
-      document.getElementById("messageInput").value = "";
-    }
-
-    const log = document.getElementById("messageLog");
-    onSnapshot(query(collection(db, "messages"), orderBy("time")), (snapshot) => {
-      log.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const t = d.time?.toDate?.().toLocaleString?.() || "Just now";
-        log.innerHTML += `<p><b>${d.user}</b>: ${d.text} <i>(${t})</i></p>`;
-      });
-    });
-
-    fetchLoads();
-
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDZajwhXvmLdgy_daqmYB83XB-e1TgT0KA",
-      authDomain: "fleetbord-11dfd.firebaseapp.com",
-      projectId: "fleetbord-11dfd",
-      storageBucket: "fleetbord-11dfd.appspot.com",
-      messagingSenderId: "264094852958",
-      appId: "1:264094852958:web:3aefa90034e5631a2851cf"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    const loginSection = document.getElementById('login-section');
-    const appSection = document.getElementById('app-section');
-
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        loginSection.classList.add('hidden');
-        appSection.classList.remove('hidden');
-      } else {
-        loginSection.classList.remove('hidden');
-        appSection.classList.add('hidden');
-      }
-    });
-
-    window.login = async () => {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  console.log("Attempting login with:", email);
-
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-  console.log('Login successful');
-      } catch (error) {
-        console.error('Login error:', error.message);
-  alert("Login failed: " + error.message);
-      }
-    };
-
-    window.signup = async () => {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-      } catch (error) {
-        alert("Signup failed: " + error.message);
-      }
-    };
-
-    window.logout = () => {
-      signOut(auth);
-    };
-
-    window.saveLoad = async () => {
-      const ticket = document.getElementById('ticket').value;
-      const customer = document.getElementById('customer').value;
-      const lease = document.getElementById('lease').value;
-      const rig = document.getElementById('rig').value;
-      const rate = document.getElementById('rate').value;
-      const overnights = document.getElementById('overnights').value;
-      const date = document.getElementById('date').value;
-      try {
-        await addDoc(collection(db, "loads"), {
-          ticket, customer, lease, rig, rate: parseFloat(rate), overnights: parseInt(overnights), date
-        });
-        alert("Load saved.");
-      } catch (error) {
-        alert("Error saving load: " + error.message);
-      }
-    };
-
-    window.uploadFile = async () => {
-      const file = document.getElementById('fileInput').files[0];
-      if (!file) return alert("Please choose a file.");
-      try {
-        const storageRef = ref(storage, `uploads/${file.name}`);
-        await uploadBytes(storageRef, file);
-        alert("Upload successful!");
-      } catch (error) {
-        alert("Upload failed: " + error.message);
-      }
-    };
-  </script>
+  <nav>
+    <button>🏠 Home</button>
+    <button>📦 Loads</button>
+    <button>📤 Upload</button>
+    <button>💬 Chat</button>
+    <button>⚙️ Settings</button>
+  </nav>
 </body>
 </html>

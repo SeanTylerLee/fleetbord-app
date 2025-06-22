@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,74 +7,165 @@
   <style>
     body {
       margin: 0;
-      background-color: #D4D4D4; /* logo background */
-      color: #000000;            /* light gray text */
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f2f2f7;
+      color: #111;
     }
-
-    .header-image {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .content {
-      padding: 20px;
-      text-align: center;
-    }
-
-    h1, p {
-      color: #black; /* ensure header and paragraph are gray */
-    }
-
-    .ios-button {
-      margin-top: 20px;
-      background-color: #4B4B4B;
+    header {
+      background-color: #007aff;
       color: white;
-      font-size: 17px;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
     }
-
-    .ios-button:hover {
-      background-color: #1C1C1E;
-			
-
+    main {
+      padding: 1rem;
+    }
+    input, button, select {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .hidden { display: none; }
+    .card {
+      background: white;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 1rem;
     }
   </style>
-  <link rel="apple-touch-icon" href="/icons/icon.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
+  <header>Fleetbord</header>
+  <main>
+    <div id="login-section">
+      <div class="card">
+        <h2>Login</h2>
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
+        <button onclick="login()">Login</button>
+        <p>or <a href="#" onclick="signup()">Sign up</a></p>
+      </div>
+    </div>
 
-  <!-- Header Image -->
-  <img src="header.png" alt="Fleetbord Header" class="header-image" />
+    <div id="app-section" class="hidden">
+      <div class="card">
+        <h2>New Load</h2>
+        <input type="text" id="ticket" placeholder="Ticket Number" />
+        <input type="text" id="customer" placeholder="Customer" />
+        <input type="text" id="lease" placeholder="Lease" />
+        <input type="text" id="rig" placeholder="Rig" />
+        <input type="number" id="rate" placeholder="Rate" />
+        <input type="number" id="overnights" placeholder="Overnights" />
+        <input type="date" id="date" />
+        <button onclick="saveLoad()">Save Load</button>
+      </div>
 
-  <!-- Page Content -->
-  <div class="content">
-    <h1>Welcome to Fleetbord</h1>
-    <p>This is your fleet management dashboard.</p>
+      <div class="card">
+        <h2>Upload Paperwork</h2>
+        <input type="file" id="fileInput" />
+        <button onclick="uploadFile()">Upload</button>
+      </div>
 
-    
-    <!-- BUTTONS -->
-    
-    <!-- iOS-Style Buttons -->
-    
-    <button class="ios-button" onclick="location.href='loads.html'">Loads</button>
+      <div class="card">
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </main>
 
-    <button class="ios-button" onclick="location.href='notes.html'"> Notes </button>
-    
-        <button class="ios-button" onclick="location.href='about.html'"> About </button>
-        
-      
-    
-    
-  </div>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZajwhXvmLdgy_daqmYB83XB-e1TgT0KA",
+      authDomain: "fleetbord-11dfd.firebaseapp.com",
+      projectId: "fleetbord-11dfd",
+      storageBucket: "fleetbord-11dfd.appspot.com",
+      messagingSenderId: "264094852958",
+      appId: "1:264094852958:web:3aefa90034e5631a2851cf"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    // Auth UI control
+    const loginSection = document.getElementById('login-section');
+    const appSection = document.getElementById('app-section');
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        loginSection.classList.add('hidden');
+        appSection.classList.remove('hidden');
+      } else {
+        loginSection.classList.remove('hidden');
+        appSection.classList.add('hidden');
+      }
+    });
+
+    window.login = async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        alert("Login failed: " + error.message);
+      }
+    };
+
+    window.signup = async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        alert("Signup failed: " + error.message);
+      }
+    };
+
+    window.logout = () => {
+      signOut(auth);
+    };
+
+    window.saveLoad = async () => {
+      const ticket = document.getElementById('ticket').value;
+      const customer = document.getElementById('customer').value;
+      const lease = document.getElementById('lease').value;
+      const rig = document.getElementById('rig').value;
+      const rate = document.getElementById('rate').value;
+      const overnights = document.getElementById('overnights').value;
+      const date = document.getElementById('date').value;
+      try {
+        await addDoc(collection(db, "loads"), {
+          ticket, customer, lease, rig, rate: parseFloat(rate), overnights: parseInt(overnights), date
+        });
+        alert("Load saved.");
+      } catch (error) {
+        alert("Error saving load: " + error.message);
+      }
+    };
+
+    window.uploadFile = async () => {
+      const file = document.getElementById('fileInput').files[0];
+      if (!file) return alert("Please choose a file.");
+      try {
+        const storageRef = ref(storage, `uploads/${file.name}`);
+        await uploadBytes(storageRef, file);
+        alert("Upload successful!");
+      } catch (error) {
+        alert("Upload failed: " + error.message);
+      }
+    };
+  </script>
 </body>
 </html>

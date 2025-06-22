@@ -144,28 +144,72 @@
   });
 
   function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(12);
-    let y = 20;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    unit: 'pt',
+    format: 'letter'
+  });
 
-    doc.text("Fleetbord - Pay Sheet", 15, 10);
-    doc.text("Date    Ticket  Customer  Lease  Rig  Rate  Overnights", 10, y);
-    y += 8;
+  doc.setFontSize(14);
+  doc.text("Fleetbord - Pay Sheet", 40, 40);
 
-    loads.forEach((load, i) => {
-      const checkbox = document.getElementById(`select-${i}`);
-      if (checkbox && checkbox.checked) {
-        doc.text(
-          `${load.date}  ${load.ticket}  ${load.customer}  ${load.lease}  ${load.rig}  $${load.rate.toFixed(2)}  ${load.overnights}`,
-          10,
-          y
-        );
-        y += 8;
+  const startX = 40;
+  let startY = 70;
+  const rowHeight = 25;
+  const colWidths = [70, 60, 90, 70, 50, 60, 80]; // widths for Date, Ticket, Customer, Lease, Rig, Rate, Overnights
+
+  // Table headers
+  const headers = ["Date", "Ticket", "Customer", "Lease", "Rig", "Rate", "Overnights"];
+
+  // Draw header row background
+  doc.setFillColor(230, 230, 230);
+  doc.rect(startX, startY - 18, colWidths.reduce((a,b) => a + b, 0), rowHeight, 'F');
+
+  // Draw header text and borders
+  let x = startX;
+  headers.forEach((header, i) => {
+    doc.setTextColor(0, 0, 0);
+    doc.text(header, x + 5, startY);
+    doc.rect(x, startY - 18, colWidths[i], rowHeight);
+    x += colWidths[i];
+  });
+
+  startY += rowHeight;
+
+  // Draw rows for selected loads
+  loads.forEach((load, i) => {
+    const checkbox = document.getElementById(`select-${i}`);
+    if (checkbox && checkbox.checked) {
+      x = startX;
+
+      // Draw row cells and text
+      [
+        load.date,
+        load.ticket,
+        load.customer,
+        load.lease,
+        load.rig,
+        `$${load.rate.toFixed(2)}`,
+        load.overnights.toString()
+      ].forEach((text, colIndex) => {
+        doc.rect(x, startY - 18, colWidths[colIndex], rowHeight);
+        doc.setTextColor(0, 0, 0);
+        doc.text(text, x + 5, startY);
+        x += colWidths[colIndex];
+      });
+
+      startY += rowHeight;
+
+      // If page overflow, add new page and reset y
+      if (startY > 750) {
+        doc.addPage();
+        startY = 40;
       }
-    });
+    }
+  });
 
-    doc.save("paysheet.pdf");
+  doc.save("paysheet.pdf");
+}
   }
 
   renderLoads();

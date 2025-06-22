@@ -71,15 +71,94 @@
         <button onclick="uploadFile()">Upload</button>
       </div>
 
+      
       <div class="card">
+        <h2>Saved Loads</h2>
+        <ul id="loadList"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Generate Pay Sheet</h2>
+        <button onclick="generatePaySheet()">Download PDF</button>
+      </div>
+
+      <div class="card">
+        <h2>Message Dispatch</h2>
+        <textarea id="messageInput" placeholder="Type a message..."></textarea>
+        <button onclick="sendMessage()">Send Message</button>
+        <div id="messageLog"></div>
+      </div>
+<div class="card">
         <button onclick="logout()">Logout</button>
       </div>
     </div>
   </main>
 
-  <!-- Firebase SDK -->
   <script type="module">
-    // Firebase imports
+    import { getDocs, onSnapshot, query, orderBy, serverTimestamp, Timestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import jsPDF from "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.es.min.js";
+
+    async function fetchLoads() {
+      const q = query(collection(db, "loads"), orderBy("date", "desc"));
+      const snapshot = await getDocs(q);
+      const list = document.getElementById("loadList");
+      list.innerHTML = '';
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const item = document.createElement("li");
+        item.textContent = `${data.date}: ${data.ticket} - $${data.rate} (${data.overnights} nights)`;
+        list.appendChild(item);
+      });
+    }
+
+    window.generatePaySheet = async () => {
+      const q = query(collection(db, "loads"), orderBy("date", "desc"));
+      const snapshot = await getDocs(q);
+      const docPDF = new jsPDF();
+      let y = 10, total = 0, nights = 0;
+
+      docPDF.text("Fleetbord Pay Sheet", 10, y);
+      y += 10;
+      snapshot.forEach((docSnap) => {
+        const d = docSnap.data();
+        docPDF.text(`${d.date}: $${d.rate} - ${d.overnights} nights`, 10, y);
+        y += 10;
+        total += d.rate;
+        nights += d.overnights;
+      });
+      y += 10;
+      docPDF.text(`Total: $${total}`, 10, y);
+      y += 10;
+      docPDF.text(`Overnights: ${nights}`, 10, y);
+      docPDF.save("Fleetbord_PaySheet.pdf");
+    }
+
+    window.sendMessage = async () => {
+      const message = document.getElementById("messageInput").value;
+      if (!message.trim()) return alert("Enter a message first.");
+      const user = auth.currentUser;
+      if (!user) return;
+      const payload = {
+        text: message,
+        user: user.email,
+        time: serverTimestamp()
+      };
+      await addDoc(collection(db, "messages"), payload);
+      document.getElementById("messageInput").value = "";
+    }
+
+    const log = document.getElementById("messageLog");
+    onSnapshot(query(collection(db, "messages"), orderBy("time")), (snapshot) => {
+      log.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const t = d.time?.toDate?.().toLocaleString?.() || "Just now";
+        log.innerHTML += `<p><b>${d.user}</b>: ${d.text} <i>(${t})</i></p>`;
+      });
+    });
+
+    fetchLoads();
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -99,7 +178,6 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
 
-    // Auth UI control
     const loginSection = document.getElementById('login-section');
     const appSection = document.getElementById('app-section');
 

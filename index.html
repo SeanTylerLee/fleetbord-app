@@ -151,7 +151,6 @@
   import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-  // Firebase config (your project)
   const firebaseConfig = {
     apiKey: "AIzaSyDZajwhXvmLdgy_daqmYB83XB-e1TgT0KA",
     authDomain: "fleetbord-11dfd.firebaseapp.com",
@@ -161,13 +160,11 @@
     appId: "1:264094852958:web:3aefa90034e5631cf"
   };
 
-  // Init Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
   const storage = getStorage(app);
 
-  // Elements
   const loginView = document.getElementById('loginView');
   const appView = document.getElementById('appView');
 
@@ -194,15 +191,12 @@
   const sendMessageBtn = document.getElementById('sendMessageBtn');
   const messageLog = document.getElementById('messageLog');
 
-  // Track current user info
   let currentUser = null;
   let isAdmin = false;
 
-  // Universal admin credentials (local, no Firebase)
   const UNIVERSAL_ADMIN_USERNAME = "admin";
   const UNIVERSAL_ADMIN_PASSWORD = "1";
 
-  // Show/hide views
   function showLogin() {
     loginView.classList.add('visible');
     appView.classList.remove('visible');
@@ -215,13 +209,11 @@
     else document.body.classList.remove("admin");
   }
 
-  // Login handler
   loginBtn.onclick = async () => {
     const username = emailInput.value.trim();
     const password = passwordInput.value;
 
     if (username === UNIVERSAL_ADMIN_USERNAME && password === UNIVERSAL_ADMIN_PASSWORD) {
-      // Local admin login
       currentUser = { email: "admin@fleetbord.com", displayName: "Admin" };
       isAdmin = true;
       alert("Logged in as universal admin");
@@ -230,7 +222,6 @@
       return;
     }
 
-    // Normal Firebase login
     try {
       const userCredential = await signInWithEmailAndPassword(auth, username, password);
       currentUser = userCredential.user;
@@ -243,7 +234,6 @@
     }
   };
 
-  // Signup handler
   signupLink.onclick = async (e) => {
     e.preventDefault();
     const username = emailInput.value.trim();
@@ -266,16 +256,13 @@
     }
   };
 
-  // Logout handler
   logoutBtn.onclick = async () => {
     if (isAdmin) {
-      // Just reset local admin login
       currentUser = null;
       isAdmin = false;
       alert("Logged out");
       showLogin();
     } else {
-      // Firebase sign out
       await signOut(auth);
       currentUser = null;
       isAdmin = false;
@@ -284,7 +271,6 @@
     }
   };
 
-  // Auth state observer for Firebase users
   onAuthStateChanged(auth, user => {
     if (user) {
       currentUser = user;
@@ -292,12 +278,10 @@
       showApp();
       loadMessages();
     } else if (!isAdmin) {
-      // If no Firebase user and no local admin, show login
       showLogin();
     }
   });
 
-  // Submit new load
   submitLoadBtn.onclick = async () => {
     if (!currentUser) return alert("Please log in first");
     try {
@@ -310,17 +294,18 @@
         overnights: parseInt(overnightsInput.value),
         date: dateInput.value,
         user: currentUser.email || currentUser.displayName || "unknown",
+        time: server
+                user: currentUser.email || currentUser.displayName || "unknown",
         time: serverTimestamp()
       });
       alert("Load saved");
       ticketInput.value = customerInput.value = leaseInput.value = rigInput.value = "";
       rateInput.value = overnightsInput.value = dateInput.value = "";
     } catch (e) {
-           alert("Error saving load: " + e.message);
+      alert("Error saving load: " + e.message);
     }
   };
 
-  // Upload paperwork file
   uploadFileBtn.onclick = async () => {
     if (!currentUser) return alert("Please log in first");
     const file = fileInput.files[0];
@@ -335,7 +320,6 @@
     }
   };
 
-  // Send chat message
   sendMessageBtn.onclick = async () => {
     if (!currentUser) return alert("Please log in first");
     const text = messageBox.value.trim();
@@ -352,7 +336,6 @@
     }
   };
 
-  // Load and listen for messages in real-time
   function loadMessages() {
     messageLog.innerHTML = "Loading messages...";
     const messagesQuery = query(collection(db, "messages"), orderBy("time"));
@@ -364,12 +347,9 @@
         const safeText = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
         messageLog.innerHTML += `<p><b>${msg.user}</b>: ${safeText} <small>${time}</small></p>`;
       });
-      // Scroll to bottom
       messageLog.scrollTop = messageLog.scrollHeight;
     });
   }
-
 </script>
-
 </body>
 </html>

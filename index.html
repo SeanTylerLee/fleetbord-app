@@ -192,12 +192,18 @@
     });
 
     window.login = async () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  console.log("Attempting login with:", email);
+
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       try {
         await signInWithEmailAndPassword(auth, email, password);
+  console.log('Login successful');
       } catch (error) {
-        alert("Login failed: " + error.message);
+        console.error('Login error:', error.message);
+  alert("Login failed: " + error.message);
       }
     };
 

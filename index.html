@@ -10,12 +10,16 @@
       --background: #f2f2f7;
       --text: #1c1c1e;
       --card: #ffffff;
+      --admin-bg: #ffe6e6;
     }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background-color: var(--background);
       color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
     header {
       background-color: var(--primary);
@@ -28,7 +32,9 @@
       z-index: 10;
     }
     main {
+      flex: 1;
       padding: 1rem;
+      overflow-y: auto;
     }
     .card {
       background-color: var(--card);
@@ -50,6 +56,7 @@
       background-color: var(--primary);
       color: white;
       border: none;
+      cursor: pointer;
     }
     nav {
       position: fixed;
@@ -70,43 +77,63 @@
     h2 {
       margin-top: 0;
     }
+    /* Hide sections by default */
+    #loginView, #appView {
+      display: none;
+    }
+    /* Show active section */
+    .visible {
+      display: block;
+    }
+    /* Admin styling */
+    body.admin {
+      background-color: var(--admin-bg);
+    }
   </style>
 </head>
 <body>
   <header>Fleetbord</header>
-  <main>
+
+  <!-- Login View -->
+  <main id="loginView" class="visible">
     <div class="card">
       <h2>Login</h2>
-      <input type="email" placeholder="Email" />
-      <input type="password" placeholder="Password" />
-      <button onclick="login()">Sign In</button>
+      <input id="emailInput" type="text" placeholder="Email or username" autocomplete="username" />
+      <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" />
+      <button id="loginBtn">Sign In</button>
       <p style="text-align:center; margin-top:0.5rem;">
-        or <a href="#" onclick="signup()">Sign Up</a>
+        or <a href="#" id="signupLink">Sign Up</a>
       </p>
     </div>
+  </main>
+
+  <!-- Main App View -->
+  <main id="appView">
+    <button style="float:right; margin-bottom:1rem;" id="logoutBtn">Logout</button>
 
     <div class="card">
       <h2>New Load</h2>
-      <input type="text" placeholder="Ticket #" />
-      <input type="text" placeholder="Customer" />
-      <input type="text" placeholder="Lease" />
-      <input type="text" placeholder="Rig" />
-      <input type="number" placeholder="Rate" />
-      <input type="number" placeholder="Overnights" />
-      <input type="date" />
-      <button onclick="submitLoad()">Submit Load</button>
+      <input id="ticketInput" type="text" placeholder="Ticket #" />
+      <input id="customerInput" type="text" placeholder="Customer" />
+      <input id="leaseInput" type="text" placeholder="Lease" />
+      <input id="rigInput" type="text" placeholder="Rig" />
+      <input id="rateInput" type="number" placeholder="Rate" />
+      <input id="overnightsInput" type="number" placeholder="Overnights" />
+      <input id="dateInput" type="date" />
+      <button id="submitLoadBtn">Submit Load</button>
     </div>
 
     <div class="card">
       <h2>Upload Paperwork</h2>
-      <input type="file" />
-      <button onclick="uploadFile()">Upload</button>
+      <input id="fileInput" type="file" />
+      <button id="uploadFileBtn">Upload</button>
     </div>
 
     <div class="card">
       <h2>Messages</h2>
-      <textarea placeholder="Type a message..."></textarea>
-      <button onclick="sendMessage()">Send</button>
+      <textarea id="messageBox" placeholder="Type a message..."></textarea>
+      <button id="sendMessageBtn">Send</button>
+      <div id="messageLog" style="margin-top: 1rem; max-height: 300px; overflow-y: auto; background:#f9f9f9; padding:0.5rem; border-radius:10px;"></div>
     </div>
   </main>
 
@@ -119,97 +146,229 @@
   </nav>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDZajwhXvmLdgy_daqmYB83XB-e1TgT0KA",
-  authDomain: "fleetbord-11dfd.firebaseapp.com",
-  projectId: "fleetbord-11dfd",
-  storageBucket: "fleetbord-11dfd.appspot.com",
-  messagingSenderId: "264094852958",
-  appId: "1:264094852958:web:3aefa90034e5631a2851cf"
-};
+  // Firebase config (your project)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDZajwhXvmLdgy_daqmYB83XB-e1TgT0KA",
+    authDomain: "fleetbord-11dfd.firebaseapp.com",
+    projectId: "fleetbord-11dfd",
+    storageBucket: "fleetbord-11dfd.appspot.com",
+    messagingSenderId: "264094852958",
+    appId: "1:264094852958:web:3aefa90034e5631cf"
+  };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+  // Init Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
 
-const emailInput = document.querySelector('input[type="email"]');
-const passwordInput = document.querySelector('input[type="password"]');
-const loadInputs = document.querySelectorAll('.card:nth-of-type(2) input');
-const fileInput = document.querySelector('input[type="file"]');
-const messageBox = document.querySelector('textarea');
-const messageLog = document.createElement('div');
-document.querySelector('.card:last-of-type').appendChild(messageLog);
+  // Elements
+  const loginView = document.getElementById('loginView');
+  const appView = document.getElementById('appView');
 
-window.login = async () => {
-  try {
-    await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-    alert("Logged in");
-  } catch (err) {
-    alert("Login failed: " + err.message);
+  const emailInput = document.getElementById('emailInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const loginBtn = document.getElementById('loginBtn');
+  const signupLink = document.getElementById('signupLink');
+
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  const ticketInput = document.getElementById('ticketInput');
+  const customerInput = document.getElementById('customerInput');
+  const leaseInput = document.getElementById('leaseInput');
+  const rigInput = document.getElementById('rigInput');
+  const rateInput = document.getElementById('rateInput');
+  const overnightsInput = document.getElementById('overnightsInput');
+  const dateInput = document.getElementById('dateInput');
+  const submitLoadBtn = document.getElementById('submitLoadBtn');
+
+  const fileInput = document.getElementById('fileInput');
+  const uploadFileBtn = document.getElementById('uploadFileBtn');
+
+  const messageBox = document.getElementById('messageBox');
+  const sendMessageBtn = document.getElementById('sendMessageBtn');
+  const messageLog = document.getElementById('messageLog');
+
+  // Track current user info
+  let currentUser = null;
+  let isAdmin = false;
+
+  // Universal admin credentials (local, no Firebase)
+  const UNIVERSAL_ADMIN_USERNAME = "admin";
+  const UNIVERSAL_ADMIN_PASSWORD = "1";
+
+  // Show/hide views
+  function showLogin() {
+    loginView.classList.add('visible');
+    appView.classList.remove('visible');
+    document.body.classList.remove("admin");
   }
-};
-
-window.signup = async () => {
-  try {
-    await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-    alert("Signed up");
-  } catch (err) {
-    alert("Signup failed: " + err.message);
+  function showApp() {
+    loginView.classList.remove('visible');
+    appView.classList.add('visible');
+    if (isAdmin) document.body.classList.add("admin");
+    else document.body.classList.remove("admin");
   }
-};
 
-window.submitLoad = async () => {
-  const [ticket, customer, lease, rig, rate, nights, date] = [...loadInputs].map(i => i.value);
-  try {
-    await addDoc(collection(db, "loads"), {
-      ticket, customer, lease, rig,
-      rate: parseFloat(rate), overnights: parseInt(nights), date,
-      user: auth.currentUser?.email,
-      time: serverTimestamp()
+  // Login handler
+  loginBtn.onclick = async () => {
+    const username = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (username === UNIVERSAL_ADMIN_USERNAME && password === UNIVERSAL_ADMIN_PASSWORD) {
+      // Local admin login
+      currentUser = { email: "admin@fleetbord.com", displayName: "Admin" };
+      isAdmin = true;
+      alert("Logged in as universal admin");
+      showApp();
+      loadMessages();
+      return;
+    }
+
+    // Normal Firebase login
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, username, password);
+      currentUser = userCredential.user;
+      isAdmin = false;
+      alert("Logged in");
+      showApp();
+      loadMessages();
+    } catch (error) {
+      alert("Login failed: " + error.message);
+    }
+  };
+
+  // Signup handler
+  signupLink.onclick = async (e) => {
+    e.preventDefault();
+    const username = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!username || !password) {
+      alert("Please enter email and password to sign up.");
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, username, password);
+      currentUser = userCredential.user;
+      isAdmin = false;
+      alert("Signed up and logged in");
+      showApp();
+      loadMessages();
+    } catch (error) {
+      alert("Signup failed: " + error.message);
+    }
+  };
+
+  // Logout handler
+  logoutBtn.onclick = async () => {
+    if (isAdmin) {
+      // Just reset local admin login
+      currentUser = null;
+      isAdmin = false;
+      alert("Logged out");
+      showLogin();
+    } else {
+      // Firebase sign out
+      await signOut(auth);
+      currentUser = null;
+      isAdmin = false;
+      alert("Logged out");
+      showLogin();
+    }
+  };
+
+  // Auth state observer for Firebase users
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      currentUser = user;
+      isAdmin = false;
+      showApp();
+      loadMessages();
+    } else if (!isAdmin) {
+      // If no Firebase user and no local admin, show login
+      showLogin();
+    }
+  });
+
+  // Submit new load
+  submitLoadBtn.onclick = async () => {
+    if (!currentUser) return alert("Please log in first");
+    try {
+      await addDoc(collection(db, "loads"), {
+        ticket: ticketInput.value,
+        customer: customerInput.value,
+        lease: leaseInput.value,
+        rig: rigInput.value,
+        rate: parseFloat(rateInput.value),
+        overnights: parseInt(overnightsInput.value),
+        date: dateInput.value,
+        user: currentUser.email || currentUser.displayName || "unknown",
+        time: serverTimestamp()
+      });
+      alert("Load saved");
+      ticketInput.value = customerInput.value = leaseInput.value = rigInput.value = "";
+      rateInput.value = overnightsInput.value = dateInput.value = "";
+    } catch (e) {
+           alert("Error saving load: " + e.message);
+    }
+  };
+
+  // Upload paperwork file
+  uploadFileBtn.onclick = async () => {
+    if (!currentUser) return alert("Please log in first");
+    const file = fileInput.files[0];
+    if (!file) return alert("Choose a file to upload");
+    const fileRef = ref(storage, "uploads/" + Date.now() + "_" + file.name);
+    try {
+      await uploadBytes(fileRef, file);
+      alert("File uploaded");
+      fileInput.value = "";
+    } catch (e) {
+      alert("Upload failed: " + e.message);
+    }
+  };
+
+  // Send chat message
+  sendMessageBtn.onclick = async () => {
+    if (!currentUser) return alert("Please log in first");
+    const text = messageBox.value.trim();
+    if (!text) return;
+    try {
+      await addDoc(collection(db, "messages"), {
+        text,
+        user: currentUser.email || currentUser.displayName || "unknown",
+        time: serverTimestamp()
+      });
+      messageBox.value = "";
+    } catch (e) {
+      alert("Failed to send message: " + e.message);
+    }
+  };
+
+  // Load and listen for messages in real-time
+  function loadMessages() {
+    messageLog.innerHTML = "Loading messages...";
+    const messagesQuery = query(collection(db, "messages"), orderBy("time"));
+    onSnapshot(messagesQuery, (snapshot) => {
+      messageLog.innerHTML = "";
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        const time = msg.time?.toDate?.().toLocaleString() || "";
+        const safeText = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        messageLog.innerHTML += `<p><b>${msg.user}</b>: ${safeText} <small>${time}</small></p>`;
+      });
+      // Scroll to bottom
+      messageLog.scrollTop = messageLog.scrollHeight;
     });
-    alert("Load saved");
-  } catch (e) {
-    alert("Error: " + e.message);
   }
-};
 
-window.uploadFile = async () => {
-  const file = fileInput.files[0];
-  if (!file) return alert("Choose a file");
-  const fileRef = ref(storage, "uploads/" + file.name);
-  try {
-    await uploadBytes(fileRef, file);
-    alert("Uploaded");
-  } catch (e) {
-    alert("Upload failed: " + e.message);
-  }
-};
-
-window.sendMessage = async () => {
-  const text = messageBox.value;
-  if (!text) return;
-  await addDoc(collection(db, "messages"), {
-    text,
-    user: auth.currentUser?.email,
-    time: serverTimestamp()
-  });
-  messageBox.value = "";
-};
-
-onSnapshot(query(collection(db, "messages"), orderBy("time")), snap => {
-  messageLog.innerHTML = "";
-  snap.forEach(doc => {
-    const m = doc.data();
-    const t = m.time?.toDate?.().toLocaleString() ?? "";
-    messageLog.innerHTML += `<p><b>${m.user}</b>: ${m.text} <small>${t}</small></p>`;
-  });
-});
 </script>
 
 </body>

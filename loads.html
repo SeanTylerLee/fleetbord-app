@@ -24,6 +24,7 @@
 
   <!-- Main Content -->
   <main>
+    <!-- Load Form -->
     <form id="loadForm">
       <h3>Add Load</h3>
       <input type="date" id="date" required />
@@ -37,26 +38,26 @@
       <button type="submit">Save Load</button>
     </form>
 
-    <!-- Filters -->
+    <!-- Filter by Date -->
     <section>
       <h3>Filter by Date</h3>
       <input type="date" id="startDate" />
       <input type="date" id="endDate" />
-      <button onclick="filterByDate()">Apply Filter</button>
+      <button type="button" onclick="filterByDate()">Apply Filter</button>
     </section>
 
-    <!-- Export -->
+    <!-- Export/Email -->
     <section>
       <h3>Selected Loads</h3>
-      <button onclick="exportToPDF()">📄 Export to PDF</button>
-      <button onclick="emailPaySheet()">📧 Email Pay Sheet</button>
+      <button type="button" onclick="exportToPDF()">📄 Export to PDF</button>
+      <button type="button" onclick="emailPaySheet()">📧 Email Pay Sheet</button>
     </section>
 
-    <!-- Load Entries -->
+    <!-- Load List -->
     <div id="loadList"></div>
   </main>
 
-  <!-- Bottom Nav -->
+  <!-- Tab Bar -->
   <nav class="tab-bar">
     <a href="index.html" class="tab-button">Home</a>
     <a href="loads.html" class="tab-button active">Loads</a>
@@ -64,10 +65,12 @@
     <a href="settings.html" class="tab-button">Settings</a>
   </nav>
 
+  <!-- JS & PDF Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    let loads = JSON.parse(localStorage.getItem('loads') || '[]');
+    const form = document.getElementById('loadForm');
     const loadList = document.getElementById('loadList');
+    let loads = JSON.parse(localStorage.getItem('loads') || '[]');
 
     function renderLoads(filtered = null) {
       loadList.innerHTML = '';
@@ -77,12 +80,15 @@
         const div = document.createElement('div');
         div.className = 'load-entry';
         div.innerHTML = `
-          <label><input type="checkbox" onchange="toggleSelection(${index})" ${load.selected ? 'checked' : ''}/> Select</label>
+          <label>
+            <input type="checkbox" onchange="toggleSelection(${index})" ${load.selected ? 'checked' : ''} />
+            Select
+          </label>
           <strong>${load.customer}</strong><br/>
           ${load.date} | Ticket: ${load.ticket}<br/>
           Lease: ${load.lease}, Rig: ${load.rig}<br/>
           Rate: $${load.rate} | Overnights: ${load.overnights}<br/>
-          ${load.photo ? `<img src="${load.photo}" class="load-photo" />` : ''}
+          ${load.photo ? `<img src="${load.photo}" class="load-photo" alt="Attached Photo" />` : ''}
           <button onclick="deleteLoad(${index})">Delete</button>
         `;
         loadList.appendChild(div);
@@ -129,34 +135,39 @@
     }
 
     function emailPaySheet() {
-      const body = loads
-        .filter(load => load.selected)
-        .map(load => `${load.date} - ${load.customer} - Ticket ${load.ticket}`)
-        .join('\n');
+      const selected = loads.filter(load => load.selected);
+      if (!selected.length) {
+        alert("No loads selected.");
+        return;
+      }
+
+      const body = selected.map(load =>
+        `${load.date} - ${load.customer} - Ticket ${load.ticket}`
+      ).join('\n');
 
       window.location.href = `mailto:office@example.com?subject=Pay Sheet&body=${encodeURIComponent(body)}`;
     }
 
-    document.getElementById('loadForm').addEventListener('submit', (e) => {
+    form.addEventListener('submit', function (e) {
       e.preventDefault();
-      const reader = new FileReader();
       const file = document.getElementById('photo').files[0];
+      const reader = new FileReader();
 
       const save = (image = null) => {
         const newLoad = {
-          date: date.value,
-          ticket: ticket.value,
-          customer: customer.value,
-          lease: lease.value,
-          rig: rig.value,
-          rate: rate.value,
-          overnights: overnights.value,
+          date: form.date.value,
+          ticket: form.ticket.value,
+          customer: form.customer.value,
+          lease: form.lease.value,
+          rig: form.rig.value,
+          rate: form.rate.value,
+          overnights: form.overnights.value,
           photo: image,
           selected: false
         };
         loads.push(newLoad);
         localStorage.setItem('loads', JSON.stringify(loads));
-        e.target.reset();
+        form.reset();
         renderLoads();
       };
 

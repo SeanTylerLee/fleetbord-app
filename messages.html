@@ -2,611 +2,182 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Fleetbord - Messages</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      margin: 0;
-      background-color: #f4f6f8;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      -webkit-user-select: none;
-      user-select: none;
-      touch-action: manipulation;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      position: sticky;
-      top: 0;
-      background: #fff;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid #ccc;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-    }
-
-    .back-button {
-      background: none;
-      border: none;
-      color: #007aff;
-      font-size: 17px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .back-icon {
-      width: 13px;
-      height: 22px;
-      stroke: #007aff;
-      flex-shrink: 0;
-    }
-
-    .top-image {
-      width: 100%;
-      max-height: 150px;
-      object-fit: cover;
-    }
-
-    main {
-      flex: 1;
-      display: flex;
-      height: calc(100vh - 60px - 150px);
-      background: #fff;
-      box-shadow: inset 0 0 8px rgba(0,0,0,0.05);
-    }
-
-    .conversations-list {
-      width: 300px;
-      border-right: 1px solid #ddd;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-      background-color: #fafafa;
-    }
-
-    .conversations-header {
-      padding: 1rem;
-      border-bottom: 1px solid #ddd;
-      font-weight: 600;
-      font-size: 1.1rem;
-      background: #f0f0f0;
-    }
-
-    .conversation-item {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid #ddd;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      transition: background-color 0.15s ease-in-out;
-    }
-    .conversation-item:hover {
-      background-color: #e8f0fe;
-    }
-    .conversation-item.active {
-      background-color: #d0e1ff;
-      font-weight: 600;
-    }
-    .conversation-name {
-      font-size: 1rem;
-      margin-bottom: 0.25rem;
-    }
-    .conversation-last-message {
-      font-size: 0.875rem;
-      color: #555;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .messages-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .messages-header {
-      padding: 1rem;
-      border-bottom: 1px solid #ddd;
-      font-weight: 600;
-      font-size: 1.2rem;
-      background: #f0f0f0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .messages-content {
-      flex: 1;
-      padding: 1rem;
-      overflow-y: auto;
-      background: #fff;
-    }
-
-    .message {
-      margin-bottom: 1rem;
-      max-width: 75%;
-      padding: 0.5rem 0.75rem;
-      border-radius: 15px;
-      line-height: 1.3;
-      font-size: 0.95rem;
-      word-wrap: break-word;
-      position: relative;
-      cursor: pointer;
-    }
-    .message.sent {
-      background-color: #007aff;
-      color: white;
-      margin-left: auto;
-      border-bottom-right-radius: 2px;
-    }
-    .message.received {
-      background-color: #e5e5ea;
-      color: #000;
-      margin-right: auto;
-      border-bottom-left-radius: 2px;
-    }
-    .message .timestamp {
-      font-size: 0.75rem;
-      color: rgba(255,255,255,0.7);
-      margin-top: 4px;
-      display: none;
-      user-select: none;
-    }
-    .message.received .timestamp {
-      color: rgba(0,0,0,0.6);
-    }
-    .message.show-timestamp .timestamp {
-      display: block;
-    }
-
-    .message .delete-btn {
-      position: absolute;
-      top: -10px;
-      right: -10px;
-      background: #ff4d4f;
-      border-radius: 50%;
-      color: white;
-      border: none;
-      width: 20px;
-      height: 20px;
-      font-size: 14px;
-      line-height: 18px;
-      cursor: pointer;
-      display: none;
-    }
-    .message:hover .delete-btn {
-      display: block;
-    }
-
-    /* Message attachments */
-    .message img.attachment {
-      max-width: 100%;
-      border-radius: 12px;
-      margin-top: 5px;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    }
-    .message a.map-pin {
-      display: block;
-      margin-top: 6px;
-      color: #007aff;
-      text-decoration: underline;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-
-    .message-input-area {
-      padding: 0.75rem 1rem;
-      border-top: 1px solid #ddd;
-      display: flex;
-      gap: 0.5rem;
-      background: #fafafa;
-      align-items: center;
-    }
-
-    .message-input-area input[type="text"] {
-      flex: 1;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .message-input-area input[type="text"]:focus {
-      border-color: #007aff;
-    }
-
-    .message-input-area button {
-      background-color: #007aff;
-      border: none;
-      color: white;
-      font-weight: 600;
-      padding: 0 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.2s;
-    }
-    .message-input-area button:disabled {
-      background-color: #b0c9ff;
-      cursor: not-allowed;
-    }
-
-    .message-input-area input[type="file"] {
-      display: none;
-    }
-
-    .attach-btn {
-      background: none;
-      border: none;
-      font-size: 24px;
-      color: #007aff;
-      cursor: pointer;
-      padding: 0 8px;
-      user-select: none;
-    }
-    .attach-btn:hover {
-      color: #005bb5;
-    }
-
-    .new-conversation-btn {
-      padding: 1rem;
-      border-top: 1px solid #ddd;
-      background: #f0f0f0;
-      text-align: center;
-      cursor: pointer;
-      font-weight: 600;
-      color: #007aff;
-      user-select: none;
-    }
-    .new-conversation-btn:hover {
-      background: #d0e1ff;
-    }
-
-    @media (max-width: 600px) {
-      main {
-        flex-direction: column;
-        height: auto;
-      }
-      .conversations-list {
-        width: 100%;
-        height: 180px;
-        border-right: none;
-        border-bottom: 1px solid #ddd;
-      }
-      .messages-panel {
-        height: calc(100vh - 60px - 150px - 180px);
-      }
-    }
-  </style>
 </head>
-<script>
-  if (!localStorage.getItem('fleetbordLoggedInUser')) {
-    window.location.href = 'login.html';
-  }
-</script>
 <body>
 
+  <!-- Top Header -->
   <header>
-    <a href="index.html" class="back-button" aria-label="Back to Home">
-      <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 22" fill="none" aria-hidden="true">
+    <a href="index.html" class="back-button">
+      <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 22" fill="none">
         <path d="M11 1L2 11L11 21" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       Back
     </a>
   </header>
 
-  <img src="header.png" alt="Header" class="top-image" />
+  <!-- Banner -->
+  <img src="header.png" alt="Top Banner" class="top-image" />
 
+  <!-- Main Content -->
   <main>
-
-    <div class="conversations-list" aria-label="Conversations List">
-      <div class="conversations-header">Conversations</div>
-      <div id="conversationsContainer"></div>
-      <div class="new-conversation-btn" tabindex="0" role="button" aria-pressed="false" id="newConversationBtn">+ New Conversation</div>
+    <!-- Conversations List -->
+    <div class="card">
+      <h2>Conversations</h2>
+      <input type="text" id="searchUser" placeholder="Search or start new conversation" />
+      <ul id="conversationsList" style="list-style: none; padding-left: 0; margin-top: 1rem;"></ul>
+      <button id="startNewBtn" style="margin-top: 1rem;">Start New Conversation</button>
     </div>
 
-    <div class="messages-panel" aria-live="polite" aria-atomic="false">
+    <!-- Selected Conversation -->
+    <div class="card" id="conversationDetail" style="display:none;">
+      <h2 id="conversationWith"></h2>
+      <div id="messagesContainer" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; border-radius: 8px; background: #fff;"></div>
 
-      <div class="messages-header" id="messagesHeader">Select a conversation</div>
-
-      <div class="messages-content" id="messagesContent">
-        <p style="color:#888; text-align:center; margin-top:2rem;">No conversation selected</p>
-      </div>
-
-      <div class="message-input-area" id="messageInputArea" style="display:none;">
-        <button class="attach-btn" id="attachBtn" title="Attach Photo or File" aria-label="Attach Photo or File">&#128206;</button>
-        <input type="file" id="fileInput" accept="image/*,application/pdf" />
-        <input type="text" id="messageInput" placeholder="Type a message..." aria-label="Type a message" autocomplete="off" />
-        <button id="sendMessageBtn" disabled>Send</button>
-      </div>
-
+      <form id="messageForm" style="margin-top: 10px; display: flex; gap: 8px;">
+        <input type="text" id="messageInput" placeholder="Type your message..." autocomplete="off" style="flex-grow: 1; padding: 8px; border-radius: 8px; border: 1px solid #ccc;" required />
+        <button type="submit" style="padding: 8px 12px; border-radius: 8px; background-color: #007aff; color: white; border: none;">Send</button>
+      </form>
+      <button id="backToConvos" style="margin-top: 10px;">Back to Conversations</button>
     </div>
-
   </main>
 
-  <nav class="tab-bar" role="navigation" aria-label="Main Navigation">
+  <!-- Bottom Tab Bar -->
+  <nav class="tab-bar">
     <a href="index.html" class="tab-button">Home</a>
     <a href="loads.html" class="tab-button">Loads</a>
-    <a href="messages.html" class="tab-button active" aria-current="page">Messages</a>
+    <a href="messages.html" class="tab-button active">Messages</a>
     <a href="settings.html" class="tab-button">Settings</a>
   </nav>
 
-<script>
-  let conversations = JSON.parse(localStorage.getItem('conversations') || '[]');
-  let currentConversationId = null;
+  <script>
+    // Simple in-memory conversations and messages (use localStorage for persistence)
+    let conversations = JSON.parse(localStorage.getItem('conversations') || '[]');
+    const loggedInUser = localStorage.getItem('fleetbordLoggedInUser') || 'You';
 
-  const conversationsContainer = document.getElementById('conversationsContainer');
-  const messagesContent = document.getElementById('messagesContent');
-  const messagesHeader = document.getElementById('messagesHeader');
-  const messageInputArea = document.getElementById('messageInputArea');
-  const messageInput = document.getElementById('messageInput');
-  const sendMessageBtn = document.getElementById('sendMessageBtn');
-  const fileInput = document.getElementById('fileInput');
-  const attachBtn = document.getElementById('attachBtn');
-  const newConversationBtn = document.getElementById('newConversationBtn');
+    const conversationsList = document.getElementById('conversationsList');
+    const conversationDetail = document.getElementById('conversationDetail');
+    const conversationWith = document.getElementById('conversationWith');
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    const backToConvosBtn = document.getElementById('backToConvos');
+    const startNewBtn = document.getElementById('startNewBtn');
+    const searchUserInput = document.getElementById('searchUser');
 
-  // Utility: Format timestamp nicely
-  function formatTimestamp(ts) {
-    const d = new Date(ts);
-    return d.toLocaleString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
-  }
+    let currentConversationId = null;
 
-  // Render conversations list
-  function renderConversations() {
-    conversationsContainer.innerHTML = '';
-    if (conversations.length === 0) {
-      conversationsContainer.innerHTML = '<p style="padding:1rem; color:#888;">No conversations yet.</p>';
-      return;
+    function saveConversations() {
+      localStorage.setItem('conversations', JSON.stringify(conversations));
     }
 
-    conversations.forEach(conv => {
-      const div = document.createElement('div');
-      div.className = 'conversation-item' + (conv.id === currentConversationId ? ' active' : '');
-      div.tabIndex = 0;
-      div.setAttribute('role', 'button');
-      div.setAttribute('aria-pressed', conv.id === currentConversationId ? 'true' : 'false');
-      div.onclick = () => selectConversation(conv.id);
-      div.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { selectConversation(conv.id); } };
+    function renderConversations(filter = '') {
+      conversationsList.innerHTML = '';
+      const filteredConvos = conversations.filter(c => c.with.toLowerCase().includes(filter.toLowerCase()));
 
-      const lastMsg = conv.messages.length ? conv.messages[conv.messages.length - 1] : null;
-      const lastText = lastMsg ? (lastMsg.text || (lastMsg.fileName ? `[File: ${lastMsg.fileName}]` : '')) : 'No messages yet';
-
-      div.innerHTML = `
-        <div class="conversation-name">${conv.name}</div>
-        <div class="conversation-last-message">${lastText}</div>
-      `;
-
-      conversationsContainer.appendChild(div);
-    });
-  }
-
-  // Select a conversation by id
-  function selectConversation(id) {
-    currentConversationId = id;
-    const conv = conversations.find(c => c.id === id);
-    messagesHeader.textContent = conv ? conv.name : 'Select a conversation';
-    messageInputArea.style.display = conv ? 'flex' : 'none';
-    messageInput.value = '';
-    sendMessageBtn.disabled = true;
-    renderConversations();
-    renderMessages();
-  }
-
-  // Render messages inside current conversation
-  function renderMessages() {
-    messagesContent.innerHTML = '';
-    if (!currentConversationId) {
-      messagesContent.innerHTML = '<p style="color:#888; text-align:center; margin-top:2rem;">No conversation selected</p>';
-      return;
-    }
-
-    const conv = conversations.find(c => c.id === currentConversationId);
-    if (!conv || conv.messages.length === 0) {
-      messagesContent.innerHTML = '<p style="color:#888; text-align:center; margin-top:2rem;">No messages yet.</p>';
-      return;
-    }
-
-    // Group messages by date
-    let lastDate = null;
-    conv.messages.forEach((msg, index) => {
-      const msgDate = new Date(msg.timestamp).toDateString();
-      if (msgDate !== lastDate) {
-        lastDate = msgDate;
-        const dateDivider = document.createElement('div');
-        dateDivider.style.textAlign = 'center';
-        dateDivider.style.margin = '10px 0';
-        dateDivider.style.fontSize = '0.8rem';
-        dateDivider.style.color = '#666';
-        dateDivider.textContent = lastDate;
-        messagesContent.appendChild(dateDivider);
+      if (filteredConvos.length === 0) {
+        conversationsList.innerHTML = '<li>No conversations found.</li>';
+        return;
       }
 
-      const div = document.createElement('div');
-      div.className = 'message ' + (msg.sent ? 'sent' : 'received');
-      div.tabIndex = 0;
+      filteredConvos.forEach((conv, index) => {
+        const li = document.createElement('li');
+        li.style.padding = '10px';
+        li.style.borderBottom = '1px solid #ddd';
+        li.style.cursor = 'pointer';
+        li.textContent = conv.with;
+        li.addEventListener('click', () => openConversation(index));
+        conversationsList.appendChild(li);
+      });
+    }
 
-      let contentHTML = '';
+    function openConversation(index) {
+      currentConversationId = index;
+      const conv = conversations[index];
+      conversationWith.textContent = `Conversation with ${conv.with}`;
+      renderMessages(conv.messages);
+      conversationDetail.style.display = 'block';
+      conversationsList.parentElement.style.display = 'none';
+      startNewBtn.style.display = 'none';
+    }
 
-      // Text content
-      if (msg.text) {
-        contentHTML += `<div>${escapeHTML(msg.text)}</div>`;
-      }
+    function renderMessages(messages) {
+      messagesContainer.innerHTML = '';
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.style.marginBottom = '10px';
+        div.style.textAlign = msg.sender === loggedInUser ? 'right' : 'left';
 
-      // File attachment (image or pdf link)
-      if (msg.fileData) {
-        if (msg.fileType.startsWith('image/')) {
-          contentHTML += `<img src="${msg.fileData}" class="attachment" alt="Attached image" />`;
+        const bubble = document.createElement('div');
+        bubble.style.display = 'inline-block';
+        bubble.style.padding = '8px 12px';
+        bubble.style.borderRadius = '16px';
+        bubble.style.background = msg.sender === loggedInUser ? '#007aff' : '#e5e5ea';
+        bubble.style.color = msg.sender === loggedInUser ? '#fff' : '#000';
+        bubble.style.maxWidth = '70%';
+        bubble.textContent = msg.text;
+
+        const timestamp = document.createElement('div');
+        timestamp.style.fontSize = '10px';
+        timestamp.style.color = '#666';
+        timestamp.textContent = new Date(msg.time).toLocaleString();
+
+        div.appendChild(bubble);
+        div.appendChild(timestamp);
+        messagesContainer.appendChild(div);
+      });
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    messageForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = messageInput.value.trim();
+      if (!text) return;
+
+      const newMsg = {
+        sender: loggedInUser,
+        text,
+        time: new Date().toISOString()
+      };
+
+      conversations[currentConversationId].messages.push(newMsg);
+      saveConversations();
+      renderMessages(conversations[currentConversationId].messages);
+      messageInput.value = '';
+    });
+
+    backToConvosBtn.addEventListener('click', () => {
+      conversationDetail.style.display = 'none';
+      conversationsList.parentElement.style.display = 'block';
+      startNewBtn.style.display = 'inline-block';
+      currentConversationId = null;
+      renderConversations();
+    });
+
+    startNewBtn.addEventListener('click', () => {
+      const newUser = prompt('Enter username to start conversation with:');
+      if (newUser && newUser.trim()) {
+        const exists = conversations.findIndex(c => c.with.toLowerCase() === newUser.toLowerCase());
+        if (exists !== -1) {
+          openConversation(exists);
         } else {
-          contentHTML += `<a href="${msg.fileData}" target="_blank" rel="noopener" class="attachment-link">📄 ${escapeHTML(msg.fileName)}</a>`;
-        }
-      }
-
-      // Map pins
-      if (msg.mapPin) {
-        // Show two links: Apple Maps and Google Maps
-        const { lat, lng } = msg.mapPin;
-        const appleMapsUrl = `https://maps.apple.com/?ll=${lat},${lng}`;
-        const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-        contentHTML += `
-          <a href="${appleMapsUrl}" target="_blank" rel="noopener" class="map-pin">📍 Apple Maps</a>
-          <a href="${googleMapsUrl}" target="_blank" rel="noopener" class="map-pin">📍 Google Maps</a>
-        `;
-      }
-
-      div.innerHTML = contentHTML;
-
-      // Timestamp element (hidden by default, toggled on click)
-      const timestampDiv = document.createElement('div');
-      timestampDiv.className = 'timestamp';
-      timestampDiv.textContent = formatTimestamp(msg.timestamp);
-      div.appendChild(timestampDiv);
-
-      // Delete button (shows on hover)
-      const delBtn = document.createElement('button');
-      delBtn.className = 'delete-btn';
-      delBtn.title = 'Delete Message';
-      delBtn.innerHTML = '&times;';
-      delBtn.onclick = (e) => {
-        e.stopPropagation();
-        if (confirm('Delete this message?')) {
-          conv.messages.splice(index, 1);
+          conversations.push({ with: newUser.trim(), messages: [] });
           saveConversations();
-          renderMessages();
           renderConversations();
         }
-      };
-      div.appendChild(delBtn);
-
-      // Toggle timestamp on click or keyboard Enter/Space
-      div.onclick = () => div.classList.toggle('show-timestamp');
-      div.onkeydown = (e) => { if(e.key === 'Enter' || e.key === ' ') div.classList.toggle('show-timestamp'); };
-
-      messagesContent.appendChild(div);
-    });
-
-    // Scroll to bottom
-    messagesContent.scrollTop = messagesContent.scrollHeight;
-  }
-
-  // Escape HTML for safety
-  function escapeHTML(text) {
-    if (!text) return '';
-    return text.replace(/[&<>"']/g, (m) => {
-      switch (m) {
-        case '&': return '&amp;';
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '"': return '&quot;';
-        case "'": return '&#39;';
       }
     });
-  }
 
-  // Save conversations to localStorage
-  function saveConversations() {
-    localStorage.setItem('conversations', JSON.stringify(conversations));
-  }
+    searchUserInput.addEventListener('input', () => {
+      renderConversations(searchUserInput.value);
+    });
 
-  // Send a message
-  function sendMessage(text, fileData=null, fileType=null, fileName=null, mapPin=null) {
-    if (!currentConversationId) return;
-
-    const conv = conversations.find(c => c.id === currentConversationId);
-    if (!conv) return;
-
-    const message = {
-      id: Date.now() + Math.random(),
-      text: text || null,
-      fileData,
-      fileType,
-      fileName,
-      mapPin,
-      sent: true,
-      timestamp: new Date().toISOString()
-    };
-
-    conv.messages.push(message);
-    saveConversations();
-    renderMessages();
+    // Initial render
     renderConversations();
-  }
+  </script>
 
-  // Handle typing to enable/disable send button
-  messageInput.addEventListener('input', () => {
-    sendMessageBtn.disabled = messageInput.value.trim() === '' && !fileInput.files.length;
-  });
-
-  // Handle file selection
-  fileInput.addEventListener('change', () => {
-    sendMessageBtn.disabled = messageInput.value.trim() === '' && !fileInput.files.length;
-  });
-
-  // Attach button triggers file input
-  attachBtn.addEventListener('click', () => fileInput.click());
-
-  // Send message form
-  sendMessageBtn.addEventListener('click', () => {
-    if (!currentConversationId) return alert('Select a conversation first.');
-
-    let fileData = null, fileType = null, fileName = null;
-
-    if (fileInput.files.length) {
-      const file = fileInput.files[0];
-      fileName = file.name;
-      fileType = file.type;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        fileData = e.target.result;
-        sendMessage(messageInput.value.trim() || null, fileData, fileType, fileName);
-        messageInput.value = '';
-        fileInput.value = '';
-        sendMessageBtn.disabled = true;
-      };
-      reader.readAsDataURL(file);
-    } else {
-      if (messageInput.value.trim() !== '') {
-        sendMessage(messageInput.value.trim());
-        messageInput.value = '';
-        sendMessageBtn.disabled = true;
-      }
-    }
-  });
-
-  // Create a new conversation
-  newConversationBtn.addEventListener('click', () => {
-    const name = prompt('Enter conversation name or participant name(s):');
-    if (name && name.trim()) {
-      const newConv = {
-        id: Date.now() + Math.random(),
-        name: name.trim(),
-        messages: []
-      };
-      conversations.push(newConv);
-      saveConversations();
-      selectConversation(newConv.id);
-    }
-  });
-
-  // Initialize
-  if (conversations.length > 0) {
-    selectConversation(conversations[0].id);
-  } else {
-    renderConversations();
-  }
-</script>
+</body>
+</html>

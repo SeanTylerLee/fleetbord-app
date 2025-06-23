@@ -179,19 +179,37 @@
     }
 
     function exportToPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("Fleetbord Pay Sheet", 10, 10);
-      let y = 20;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y = 10;
 
-      loads.forEach(load => {
-        if (load.selected) {
-          doc.text(`${load.date} | ${load.customer} | $${load.rate}`, 10, y);
-          y += 10;
-        }
-      });
+  doc.setFontSize(16);
+  doc.text("Fleetbord Pay Sheet", 10, y);
+  y += 10;
 
-      doc.save("PaySheet.pdf");
+  doc.setFontSize(12);
+  doc.setTextColor(100);
+  doc.text("Date       | Customer      | Ticket     | Lease     | Rig     | Rate     | Overnights", 10, y);
+  y += 8;
+
+  doc.setDrawColor(200);
+  doc.line(10, y - 5, 200, y - 5); // underline
+
+  loads.forEach(load => {
+    if (load.selected) {
+      const line = `${load.date} | ${load.customer} | ${load.ticket} | ${load.lease} | ${load.rig} | $${load.rate} | ${load.overnights}`;
+      doc.text(line, 10, y);
+      y += 8;
+
+      // Start a new page if needed
+      if (y > 280) {
+        doc.addPage();
+        y = 10;
+      }
+    }
+  });
+
+  doc.save("PaySheet.pdf");
     }
 
     function emailPaySheet() {

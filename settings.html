@@ -7,13 +7,66 @@
   <title>Fleetbord - Settings</title>
   <link rel="stylesheet" href="style.css" />
   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #6E6F71;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #000;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      background: #ffffff;
+      border-bottom: 1px solid #ccc;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .back-button {
+      appearance: none;
+      background: none;
+      border: none;
+      color: #007aff;
+      font-size: 17px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .back-button:active {
+      background-color: rgba(0, 122, 255, 0.1);
+    }
+
+    .back-icon {
+      height: 22px;
+      width: auto;
+      stroke: #007aff;
+    }
+
+    .top-image {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      display: block;
+    }
+
     main {
-      padding-bottom: 80px;
       padding: 1rem;
       background: #f9f9f9;
       min-height: 100vh;
       box-sizing: border-box;
+      padding-bottom: 80px;
     }
+
     section {
       background: #fff;
       margin-bottom: 1.5rem;
@@ -21,12 +74,14 @@
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
+
     h3 {
       margin-top: 0;
       font-weight: 600;
       font-size: 1.2rem;
       margin-bottom: 0.75rem;
     }
+
     label {
       display: flex;
       justify-content: space-between;
@@ -36,6 +91,7 @@
       font-size: 1rem;
       color: #333;
     }
+
     input[type="checkbox"] {
       width: 40px;
       height: 20px;
@@ -47,9 +103,11 @@
       transition: background 0.3s;
       cursor: pointer;
     }
+
     input[type="checkbox"]:checked {
       background: #007aff;
     }
+
     input[type="checkbox"]::before {
       content: "";
       position: absolute;
@@ -62,15 +120,18 @@
       transition: 0.3s;
       box-shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
+
     input[type="checkbox"]:checked::before {
       left: 21px;
     }
+
     form {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
     }
-    input[type="password"], input[type="text"], select {
+
+    input[type="password"] {
       padding: 0.5rem 0.75rem;
       font-size: 1rem;
       border: 1px solid #ccc;
@@ -78,10 +139,12 @@
       outline: none;
       transition: border-color 0.3s;
     }
-    input[type="password"]:focus, input[type="text"]:focus, select:focus {
+
+    input[type="password"]:focus {
       border-color: #007aff;
       box-shadow: 0 0 4px rgba(0, 122, 255, 0.4);
     }
+
     button {
       margin-top: 0.5rem;
       background-color: #007aff;
@@ -94,269 +157,138 @@
       cursor: pointer;
       transition: background-color 0.2s;
     }
+
     button:hover {
       background-color: #005bb5;
     }
+
     .about-text {
       font-size: 0.9rem;
       color: #666;
       line-height: 1.4;
     }
+
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      background: #fff;
+      border-top: 1px solid #ccc;
+      padding: 0.5rem 0;
+    }
+
+    .tab-button {
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+      text-decoration: none;
+    }
+
+    .tab-button.active {
+      color: #007aff;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
 
-<header>
-  <a href="index.html" class="back-button">
-    <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 22" fill="none">
-      <path d="M11 1L2 11L11 21" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Back
-  </a>
-</header>
+  <header>
+    <a href="index.html" class="back-button">
+      <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 22" fill="none">
+        <path d="M11 1L2 11L11 21" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back
+    </a>
+  </header>
 
-<main>
+  <img src="header.png" alt="Top Banner" class="top-image" />
 
-  <!-- Display -->
-  <section>
-    <h3>Display</h3>
-    <label for="darkModeToggle">Dark Mode</label>
-    <input type="checkbox" id="darkModeToggle" />
-    <label for="animationsToggle">Enable Animations</label>
-    <input type="checkbox" id="animationsToggle" checked />
-  </section>
+  <main>
 
-  <!-- Account -->
-  <section>
-    <h3>Account Info</h3>
-    <form id="changeUsernameForm">
-      <input type="text" id="usernameInput" placeholder="Change Username" required />
-      <button type="submit">Update Username</button>
-    </form>
-  </section>
+    <!-- Dark Mode Toggle -->
+    <section>
+      <h3>Display</h3>
+      <label for="darkModeToggle">Dark Mode</label>
+      <input type="checkbox" id="darkModeToggle" />
+    </section>
 
-  <!-- Change Password -->
-  <section>
-    <h3>Change Password</h3>
-    <form id="changePasswordForm">
-      <input type="password" id="currentPassword" placeholder="Current Password" required />
-      <input type="password" id="newPassword" placeholder="New Password" required />
-      <input type="password" id="confirmPassword" placeholder="Confirm New Password" required />
-      <button type="submit">Update Password</button>
-    </form>
-  </section>
+    <!-- Change Password -->
+    <section>
+      <h3>Change Password</h3>
+      <form id="changePasswordForm">
+        <input type="password" id="currentPassword" placeholder="Current Password" required />
+        <input type="password" id="newPassword" placeholder="New Password" required />
+        <input type="password" id="confirmPassword" placeholder="Confirm New Password" required />
+        <button type="submit">Update Password</button>
+      </form>
+    </section>
 
-  <!-- Notifications -->
-  <section>
-    <h3>Notifications</h3>
-    <label for="emailNotifications">Email Notifications
-      <input type="checkbox" id="emailNotifications" />
-    </label>
-    <label for="pushNotifications">Push Notifications
-      <input type="checkbox" id="pushNotifications" />
-    </label>
-  </section>
+    <!-- Notification Preferences -->
+    <section>
+      <h3>Notifications</h3>
+      <label for="emailNotifications">Email Notifications
+        <input type="checkbox" id="emailNotifications" />
+      </label>
+      <label for="pushNotifications">Push Notifications
+        <input type="checkbox" id="pushNotifications" />
+      </label>
+    </section>
 
-  <!-- Privacy & Security -->
-  <section>
-    <h3>Privacy & Security</h3>
-    <label for="twoFactorToggle">Two-Factor Authentication (2FA)</label>
-    <input type="checkbox" id="twoFactorToggle" />
-    <button id="logoutOthersBtn">Log Out Other Devices</button>
-  </section>
+    <!-- About Section -->
+    <section>
+      <h3>About</h3>
+      <p class="about-text">
+        Fleetbord v1.0<br />
+        Built for mobile dispatch and load tracking.<br />
+        &copy; 2025 Fleetbord Inc.
+      </p>
+    </section>
 
-  <!-- Language & Region -->
-  <section>
-    <h3>Language & Region</h3>
-    <label for="languageSelect">Language</label>
-    <select id="languageSelect">
-      <option value="en" selected>English</option>
-      <option value="es">Spanish</option>
-      <option value="fr">French</option>
-      <option value="de">German</option>
-    </select>
-    <label for="timeFormatSelect">Time Format</label>
-    <select id="timeFormatSelect">
-      <option value="12h" selected>12-hour</option>
-      <option value="24h">24-hour</option>
-    </select>
-  </section>
+  </main>
 
-  <!-- About -->
-  <section>
-    <h3>About</h3>
-    <p class="about-text">
-      Fleetbord v1.0<br />
-      Designed for fleet management with simple, iOS-style web app experience.<br />
-      &copy; 2025 Fleetbord Inc.
-    </p>
-  </section>
+  <!-- Tab Bar -->
+  <nav class="tab-bar">
+    <a href="index.html" class="tab-button">Home</a>
+    <a href="loads.html" class="tab-button">Loads</a>
+    <a href="messages.html" class="tab-button">Messages</a>
+    <a href="settings.html" class="tab-button active">Settings</a>
+  </nav>
 
-</main>
-
-<nav class="tab-bar">
-  <a href="index.html" class="tab-button">Home</a>
-  <a href="loads.html" class="tab-button">Loads</a>
-  <a href="messages.html" class="tab-button">Messages</a>
-  <a href="settings.html" class="tab-button active">Settings</a>
-</nav>
-
-<script>
-  // Load saved preferences
-  const darkToggle = document.getElementById('darkModeToggle');
-  const animationsToggle = document.getElementById('animationsToggle');
-  const emailNotifications = document.getElementById('emailNotifications');
-  const pushNotifications = document.getElementById('pushNotifications');
-  const twoFactorToggle = document.getElementById('twoFactorToggle');
-  const languageSelect = document.getElementById('languageSelect');
-  const timeFormatSelect = document.getElementById('timeFormatSelect');
-  const body = document.body;
-
-  // Load saved settings from localStorage
-  if(localStorage.getItem('darkMode') === 'enabled') {
-    darkToggle.checked = true;
-    body.classList.add('dark-mode');
-  }
-  if(localStorage.getItem('animations') === 'disabled') {
-    animationsToggle.checked = false;
-  }
-  if(localStorage.getItem('emailNotifications') === 'enabled') {
-    emailNotifications.checked = true;
-  }
-  if(localStorage.getItem('pushNotifications') === 'enabled') {
-    pushNotifications.checked = true;
-  }
-  if(localStorage.getItem('twoFactor') === 'enabled') {
-    twoFactorToggle.checked = true;
-  }
-  if(localStorage.getItem('language')) {
-    languageSelect.value = localStorage.getItem('language');
-  }
-  if(localStorage.getItem('timeFormat')) {
-    timeFormatSelect.value = localStorage.getItem('timeFormat');
-  }
-
-  // Dark Mode Toggle
-  darkToggle.addEventListener('change', () => {
-    if(darkToggle.checked) {
-      body.classList.add('dark-mode');
-      localStorage.setItem('darkMode', 'enabled');
-    } else {
-      body.classList.remove('dark-mode');
-      localStorage.setItem('darkMode', 'disabled');
-    }
-  });
-
-  // Animations Toggle
-  animationsToggle.addEventListener('change', () => {
-    localStorage.setItem('animations', animationsToggle.checked ? 'enabled' : 'disabled');
-    // You can add code here to enable/disable CSS animations dynamically
-  });
-
-  // Notifications Toggle
-  emailNotifications.addEventListener('change', () => {
-    localStorage.setItem('emailNotifications', emailNotifications.checked ? 'enabled' : 'disabled');
-  });
-  pushNotifications.addEventListener('change', () => {
-    localStorage.setItem('pushNotifications', pushNotifications.checked ? 'enabled' : 'disabled');
-  });
-
-  // 2FA Toggle
-  twoFactorToggle.addEventListener('change', () => {
-    localStorage.setItem('twoFactor', twoFactorToggle.checked ? 'enabled' : 'disabled');
-  });
-
-  // Language Select
-  languageSelect.addEventListener('change', () => {
-    localStorage.setItem('language', languageSelect.value);
-    alert(`Language changed to ${languageSelect.options[languageSelect.selectedIndex].text}`);
-  });
-
-  // Time Format Select
-  timeFormatSelect.addEventListener('change', () => {
-    localStorage.setItem('timeFormat', timeFormatSelect.value);
-  });
-
-  // Change Username Form
-  const changeUsernameForm = document.getElementById('changeUsernameForm');
-  changeUsernameForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const username = document.getElementById('usernameInput').value.trim();
-    if(username.length < 3) {
-      alert('Username must be at least 3 characters.');
-      return;
-    }
-    alert(`Username changed to: ${username}`);
-    changeUsernameForm.reset();
-    // Save username or send to backend here
-  });
-
-  // Change Password Form
-  const changePasswordForm = document.getElementById('changePasswordForm');
-  changePasswordForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const current = document.getElementById('currentPassword').value.trim();
-    const newPass = document.getElementById('newPassword').value.trim();
-    const confirm = document.getElementById('confirmPassword').value.trim();
-
-    if(newPass !== confirm) {
-      alert('New passwords do not match!');
-      return;
+  <script>
+    // Dark Mode
+    const darkToggle = document.getElementById('darkModeToggle');
+    if (localStorage.getItem('darkMode') === 'enabled') {
+      darkToggle.checked = true;
+      document.body.classList.add('dark-mode');
     }
 
-    if(newPass.length < 6) {
-      alert('New password should be at least 6 characters.');
-      return;
-    }
+    darkToggle.addEventListener('change', () => {
+      if (darkToggle.checked) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    });
 
-    alert('Password changed successfully!');
-    changePasswordForm.reset();
-  });
-
-  // Log Out Other Devices Button
-  const logoutOthersBtn = document.getElementById('logoutOthersBtn');
-  logoutOthersBtn.addEventListener('click', () => {
-    if(confirm('Are you sure you want to log out of other devices?')) {
-      alert('You have been logged out of other devices.');
-      // Perform logout action on backend here
-    }
-  });
-</script>
-
-<style>
-  /* Dark mode styles */
-  body.dark-mode {
-    background-color: #121212;
-    color: #eee;
-  }
-  body.dark-mode main {
-    background: #1e1e1e;
-  }
-  body.dark-mode section {
-    background: #2c2c2c;
-    box-shadow: none;
-  }
-  body.dark-mode input[type="password"],
-  body.dark-mode input[type="text"],
-  body.dark-mode select {
-    background-color: #333;
-    border-color: #555;
-    color: #eee;
-  }
-  body.dark-mode input[type="password"]:focus,
-  body.dark-mode input[type="text"]:focus,
-  body.dark-mode select:focus {
-    border-color: #4a90e2;
-    box-shadow: 0 0 5px #4a90e2;
-  }
-  body.dark-mode button {
-    background-color: #4a90e2;
-  }
-  body.dark-mode button:hover {
-    background-color: #357abd;
-  }
-</style>
+    // Change Password Logic
+    const form = document.getElementById('changePasswordForm');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const newPass = document.getElementById('newPassword').value;
+      const confirmPass = document.getElementById('confirmPassword').value;
+      if (newPass !== confirmPass) {
+        alert("Passwords don't match!");
+      } else {
+        alert("Password changed!");
+        form.reset();
+      }
+    });
+  </script>
 
 </body>
 </html>

@@ -17,19 +17,29 @@
     .load-details {
       display: none;
       padding: 0.5rem 0;
+      flex-direction: column;
+    }
+
+    .load-photo-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
     }
 
     .load-photo {
       width: 80px;
       height: 80px;
       object-fit: cover;
-      margin-right: 6px;
       border-radius: 6px;
       cursor: pointer;
+      display: block;
     }
 
     .load-entry {
       margin-bottom: 1rem;
+      display: block;
+      width: 100%;
     }
   </style>
 </head>
@@ -121,7 +131,7 @@
           <p>Rig: ${load.rig}</p>
           <p>Rate: $${load.rate}</p>
           <p>Overnights: ${load.overnights}</p>
-          ${load.photos?.length ? `<div>${load.photos.map(photo =>
+          ${load.photos?.length ? `<div class="load-photo-container">${load.photos.map(photo =>
             `<img src="${photo}" class="load-photo" onclick="openPhoto(this.src)" />`).join('')}</div>` : ''}
           <button onclick="deleteLoad(${index})">Delete</button>
         `;

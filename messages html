@@ -4,9 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Fleetbord - Home</title>
+  <title>Fleetbord - Messages</title>
   <link rel="stylesheet" href="style.css" />
-  
 </head>
 <body>
 
@@ -23,15 +22,15 @@
 
   <main>
     <div class="card">
-      <h2>Welcome to Fleetbord</h2>
-      <p>This is the homepage. Use the bottom tabs to navigate.</p>
+      <h2>Messages</h2>
+      <p>Your private and group messages show up here.</p>
     </div>
   </main>
 
   <nav class="tab-bar">
-    <a href="index.html" class="tab-button active">Home</a>
+    <a href="index.html" class="tab-button">Home</a>
     <a href="loads.html" class="tab-button">Loads</a>
-    <a href="messages.html" class="tab-button">Messages</a>
+    <a href="messages.html" class="tab-button active">Messages</a>
     <a href="settings.html" class="tab-button">Settings</a>
   </nav>
 

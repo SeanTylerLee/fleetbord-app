@@ -6,78 +6,7 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Fleetbord - Loads</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    /* Thumbnail style */
-    .thumbnail {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin: 4px;
-      cursor: pointer;
-      border: 1px solid #ccc;
-    }
-
-    /* Expanded load styling */
-    .load-entry {
-      background: #f9f9f9;
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    /* Summary clickable area */
-    .load-summary {
-      cursor: pointer;
-      padding: 0.5rem 1rem;
-      border-radius: 12px;
-      background: #fff;
-      border: 1px solid #ccc;
-      margin-bottom: 0.5rem;
-      user-select: none;
-    }
-
-    /* Photo container */
-    .attachments {
-      display: flex;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    /* Preview modal */
-    #previewModal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 10000;
-    }
-    #previewModal img {
-      max-width: 90vw;
-      max-height: 90vh;
-      border-radius: 12px;
-      box-shadow: 0 0 20px #000;
-    }
-    #previewModal .close-btn {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      font-size: 28px;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-      user-select: none;
-    }
-  </style>
 </head>
-<script>
-  if (!localStorage.getItem('fleetbordLoggedInUser')) {
-    window.location.href = 'login.html';
-  }
-</script>
 <body>
 
   <!-- Top Header -->
@@ -99,39 +28,15 @@
     <!-- Add Load -->
     <div class="card">
       <h2>Add Load</h2>
-      <form id="loadForm" class="form-list">
-        <div>
-          <label for="date">Date</label>
-          <input type="date" id="date" required />
-        </div>
-        <div>
-          <label for="ticket">Ticket Number</label>
-          <input type="text" id="ticket" placeholder="Ticket Number" required />
-        </div>
-        <div>
-          <label for="customer">Customer</label>
-          <input type="text" id="customer" placeholder="Customer" required />
-        </div>
-        <div>
-          <label for="lease">Lease</label>
-          <input type="text" id="lease" placeholder="Lease" required />
-        </div>
-        <div>
-          <label for="rig">Rig</label>
-          <input type="text" id="rig" placeholder="Rig" required />
-        </div>
-        <div>
-          <label for="rate">Rate</label>
-          <input type="number" id="rate" placeholder="Rate" required />
-        </div>
-        <div>
-          <label for="overnights">Overnights</label>
-          <input type="number" id="overnights" placeholder="Overnights" required />
-        </div>
-        <div>
-          <label for="photo">Photos</label>
-          <input type="file" id="photo" accept="image/*" multiple />
-        </div>
+      <form id="loadForm">
+        <input type="date" id="date" required />
+        <input type="text" id="ticket" placeholder="Ticket Number" required />
+        <input type="text" id="customer" placeholder="Customer" required />
+        <input type="text" id="lease" placeholder="Lease" required />
+        <input type="text" id="rig" placeholder="Rig" required />
+        <input type="number" id="rate" placeholder="Rate" required />
+        <input type="number" id="overnights" placeholder="Overnights" required />
+        <input type="file" id="photo" accept="image/*" multiple />
         <button type="submit">Save Load</button>
       </form>
     </div>
@@ -141,18 +46,14 @@
       <h2>Filter by Date</h2>
       <input type="date" id="startDate" />
       <input type="date" id="endDate" />
-      <button onclick="filterByDate()">Apply Filter</button>
-
-      <h2>Filter by Customer</h2>
-      <input type="text" id="customerFilter" placeholder="Enter customer name" />
-      <button onclick="filterByCustomer()">Apply Customer Filter</button>
+      <button type="button" onclick="filterByDate()">Apply Filter</button>
     </div>
 
     <!-- Export Buttons -->
     <div class="card">
       <h2>Selected Loads</h2>
-      <button onclick="exportToPDF()">📄 Export to PDF</button>
-      <button onclick="emailPaySheet()">📧 Email Pay Sheet</button>
+      <button type="button" onclick="exportToPDF()">📄 Export to PDF</button>
+      <button type="button" onclick="emailPaySheet()">📧 Email Pay Sheet</button>
     </div>
 
     <!-- Load Entries -->
@@ -168,22 +69,14 @@
     <a href="settings.html" class="tab-button">Settings</a>
   </nav>
 
-  <!-- Image Preview Modal -->
-  <div id="previewModal">
-    <span class="close-btn" onclick="closePreview()">&times;</span>
-    <img id="previewImage" src="" alt="Preview" />
-  </div>
-
   <!-- JS & PDF Script -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const form = document.getElementById('loadForm');
     const loadList = document.getElementById('loadList');
-    const previewModal = document.getElementById('previewModal');
-    const previewImage = document.getElementById('previewImage');
-
     let loads = JSON.parse(localStorage.getItem('loads') || '[]');
 
+    // Render loads list with checkboxes to select
     function renderLoads(filtered = null) {
       loadList.innerHTML = '';
       const displayLoads = filtered || loads;
@@ -194,69 +87,41 @@
       }
 
       displayLoads.forEach((load, index) => {
-        // Container
-        const container = document.createElement('div');
-
-        // Summary div: shows date, customer, rate
-        const summary = document.createElement('div');
-        summary.className = 'load-summary';
-        summary.textContent = `${load.date} -- ${load.customer} -- $${load.rate}`;
-        summary.onclick = () => toggleExpanded(index);
-        container.appendChild(summary);
-
-        // Details div (hidden or shown)
-        const details = document.createElement('div');
-        details.className = 'load-entry';
-        details.style.display = load.expanded ? 'block' : 'none';
-
-        details.innerHTML = `
-          <p><strong>Ticket Number:</strong> ${load.ticket}</p>
-          <p><strong>Lease:</strong> ${load.lease}</p>
-          <p><strong>Rig:</strong> ${load.rig}</p>
-          <p><strong>Overnights:</strong> ${load.overnights}</p>
-          <button onclick="deleteLoad(${index})" style="margin-bottom:10px;">Delete Load</button>
+        const div = document.createElement('div');
+        div.className = 'load-entry';
+        div.innerHTML = `
+          <label>
+            <input type="checkbox" onchange="toggleSelection(${index})" ${load.selected ? 'checked' : ''} />
+            Select
+          </label><br/>
+          <strong>${load.customer}</strong><br/>
+          ${load.date} | Ticket: ${load.ticket}<br/>
+          Lease: ${load.lease}, Rig: ${load.rig}<br/>
+          Rate: $${load.rate} | Overnights: ${load.overnights}<br/>
+          ${load.photos ? load.photos.map(p => `<img src="${p}" class="load-photo" alt="Photo"/>`).join('') : ''}
+          <br/><button onclick="deleteLoad(${index})">Delete</button>
         `;
-
-        // Photos thumbnails container
-        if (load.photos && load.photos.length) {
-          const attachmentsDiv = document.createElement('div');
-          attachmentsDiv.className = 'attachments';
-
-          load.photos.forEach((photoSrc, i) => {
-            const img = document.createElement('img');
-            img.src = photoSrc;
-            img.alt = `Load photo ${i + 1}`;
-            img.className = 'thumbnail';
-            img.onclick = () => openPreview(photoSrc);
-            attachmentsDiv.appendChild(img);
-          });
-
-          details.appendChild(attachmentsDiv);
-        }
-
-        container.appendChild(details);
-        loadList.appendChild(container);
+        loadList.appendChild(div);
       });
     }
 
-    function toggleExpanded(index) {
-      loads[index].expanded = !loads[index].expanded;
-      saveLoads();
+    // Toggle selected property of load at index
+    function toggleSelection(index) {
+      loads[index].selected = !loads[index].selected;
+      localStorage.setItem('loads', JSON.stringify(loads));
       renderLoads();
     }
 
+    // Delete load at index
     function deleteLoad(index) {
       if (confirm('Delete this load?')) {
         loads.splice(index, 1);
-        saveLoads();
+        localStorage.setItem('loads', JSON.stringify(loads));
         renderLoads();
       }
     }
 
-    function saveLoads() {
-      localStorage.setItem('loads', JSON.stringify(loads));
-    }
-
+    // Filter loads by date
     function filterByDate() {
       const start = document.getElementById('startDate').value;
       const end = document.getElementById('endDate').value;
@@ -266,16 +131,7 @@
       renderLoads(filtered);
     }
 
-    function filterByCustomer() {
-      const customerInput = document.getElementById('customerFilter').value.trim().toLowerCase();
-      if (!customerInput) {
-        renderLoads();
-        return;
-      }
-      const filtered = loads.filter(load => load.customer.toLowerCase().includes(customerInput));
-      renderLoads(filtered);
-    }
-
+    // Export selected loads to PDF
     function exportToPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -284,7 +140,7 @@
       let y = 20;
       loads.forEach(load => {
         if (load.selected) {
-          doc.text(`${load.date} | ${load.customer} | Ticket: ${load.ticket}`, 10, y);
+          doc.text(`${load.date} | ${load.customer} | Ticket: ${load.ticket} | Rate: $${load.rate}`, 10, y);
           y += 10;
         }
       });
@@ -292,73 +148,62 @@
       doc.save("PaySheet.pdf");
     }
 
+    // Email pay sheet of selected loads
     function emailPaySheet() {
       const selected = loads.filter(load => load.selected);
       if (!selected.length) {
         alert("No loads selected.");
         return;
       }
+
       const body = selected.map(load =>
-        `${load.date} - ${load.customer} - Ticket ${load.ticket}`
+        `${load.date} - ${load.customer} - Ticket ${load.ticket} - Rate $${load.rate}`
       ).join('\n');
 
       window.location.href = `mailto:office@example.com?subject=Pay Sheet&body=${encodeURIComponent(body)}`;
     }
 
-    function openPreview(src) {
-      previewImage.src = src;
-      previewModal.style.display = 'flex';
-    }
-    function closePreview() {
-      previewModal.style.display = 'none';
-      previewImage.src = '';
-    }
-    previewModal.onclick = e => {
-      if (e.target === previewModal) closePreview();
-    };
-
-    form.addEventListener('submit', e => {
+    // Form submission handler to add a load
+    form.addEventListener('submit', function (e) {
       e.preventDefault();
       const files = document.getElementById('photo').files;
-      if (files.length === 0) {
+      const photos = [];
+
+      if (files.length > 0) {
+        let loadedCount = 0;
+        for (let i = 0; i < files.length; i++) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            photos.push(event.target.result);
+            loadedCount++;
+            if (loadedCount === files.length) {
+              saveLoad(photos);
+            }
+          };
+          reader.readAsDataURL(files[i]);
+        }
+      } else {
         saveLoad([]);
-        return;
       }
 
-      const photos = [];
-      let loadedCount = 0;
-
-      for (let i = 0; i < files.length; i++) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          photos.push(event.target.result);
-          loadedCount++;
-          if (loadedCount === files.length) {
-            saveLoad(photos);
-          }
+      function saveLoad(photos) {
+        const newLoad = {
+          date: form.date.value,
+          ticket: form.ticket.value,
+          customer: form.customer.value,
+          lease: form.lease.value,
+          rig: form.rig.value,
+          rate: form.rate.value,
+          overnights: form.overnights.value,
+          photos: photos,
+          selected: false
         };
-        reader.readAsDataURL(files[i]);
+        loads.push(newLoad);
+        localStorage.setItem('loads', JSON.stringify(loads));
+        form.reset();
+        renderLoads();
       }
     });
-
-    function saveLoad(photos) {
-      const newLoad = {
-        date: form.date.value,
-        ticket: form.ticket.value,
-        customer: form.customer.value,
-        lease: form.lease.value,
-        rig: form.rig.value,
-        rate: form.rate.value,
-        overnights: form.overnights.value,
-        photos: photos,
-        selected: false,
-        expanded: false
-      };
-      loads.push(newLoad);
-      saveLoads();
-      form.reset();
-      renderLoads();
-    }
 
     renderLoads();
   </script>

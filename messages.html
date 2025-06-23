@@ -291,6 +291,11 @@
     }
   </style>
 </head>
+<script>
+  if (!localStorage.getItem('fleetbordLoggedInUser')) {
+    window.location.href = 'login.html';
+  }
+</script>
 <body>
 
   <header>

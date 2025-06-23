@@ -58,7 +58,7 @@
           <input type="number" id="overnights" placeholder="Overnights" required />
         </div>
         <div>
-          <label for="photo">Attach Photo</label>
+          <label for="photo">Photo</label>
           <input type="file" id="photo" accept="image/*" />
         </div>
         <button type="submit">Save Load</button>
@@ -71,6 +71,10 @@
       <input type="date" id="startDate" />
       <input type="date" id="endDate" />
       <button onclick="filterByDate()">Apply Filter</button>
+
+      <h2>Filter by Customer</h2>
+      <input type="text" id="customerFilter" placeholder="Enter customer name" />
+      <button onclick="filterByCustomer()">Apply Customer Filter</button>
     </div>
 
     <!-- Export Buttons -->
@@ -148,6 +152,19 @@
       const filtered = loads.filter(load => {
         return (!start || load.date >= start) && (!end || load.date <= end);
       });
+      renderLoads(filtered);
+    }
+
+    function filterByCustomer() {
+      const customerInput = document.getElementById('customerFilter').value.trim().toLowerCase();
+
+      if (!customerInput) {
+        // If input empty, show all loads
+        renderLoads();
+        return;
+      }
+
+      const filtered = loads.filter(load => load.customer.toLowerCase().includes(customerInput));
       renderLoads(filtered);
     }
 

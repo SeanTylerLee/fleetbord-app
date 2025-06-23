@@ -28,15 +28,39 @@
     <!-- Add Load -->
     <div class="card">
       <h2>Add Load</h2>
-      <form id="loadForm">
-        <input type="date" id="date" required />
-        <input type="text" id="ticket" placeholder="Ticket Number" required />
-        <input type="text" id="customer" placeholder="Customer" required />
-        <input type="text" id="lease" placeholder="Lease" required />
-        <input type="text" id="rig" placeholder="Rig" required />
-        <input type="number" id="rate" placeholder="Rate" required />
-        <input type="number" id="overnights" placeholder="Overnights" required />
-        <input type="file" id="photo" accept="image/*" />
+      <form id="loadForm" class="form-list">
+        <div>
+          <label for="date">Date</label>
+          <input type="date" id="date" required />
+        </div>
+        <div>
+          <label for="ticket">Ticket Number</label>
+          <input type="text" id="ticket" placeholder="Ticket Number" required />
+        </div>
+        <div>
+          <label for="customer">Customer</label>
+          <input type="text" id="customer" placeholder="Customer" required />
+        </div>
+        <div>
+          <label for="lease">Lease</label>
+          <input type="text" id="lease" placeholder="Lease" required />
+        </div>
+        <div>
+          <label for="rig">Rig</label>
+          <input type="text" id="rig" placeholder="Rig" required />
+        </div>
+        <div>
+          <label for="rate">Rate</label>
+          <input type="number" id="rate" placeholder="Rate" required />
+        </div>
+        <div>
+          <label for="overnights">Overnights</label>
+          <input type="number" id="overnights" placeholder="Overnights" required />
+        </div>
+        <div>
+          <label for="photo">Attach Photo</label>
+          <input type="file" id="photo" accept="image/*" />
+        </div>
         <button type="submit">Save Load</button>
       </form>
     </div>

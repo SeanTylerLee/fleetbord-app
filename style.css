@@ -78,3 +78,63 @@ main {
   height: 22px;
   stroke: #007aff;
 }
+
+/* Form inputs stacked vertically with labels */
+
+.form-list div {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-list label {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-list input[type="text"],
+.form-list input[type="date"],
+.form-list input[type="number"],
+.form-list input[type="file"],
+.form-list input[type="email"],
+.form-list input[type="password"] {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.form-list button {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+
+.form-list button:hover {
+  background-color: #005bb5;
+}
+
+/* Load entry photos */
+.load-photo {
+  max-width: 100%;
+  max-height: 120px;
+  margin-top: 0.5rem;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* Load entry container */
+.load-entry {
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}

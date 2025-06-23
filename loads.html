@@ -9,7 +9,7 @@
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- Top Header -->
   <header>
     <a href="index.html" class="back-button">
       <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 22" fill="none">
@@ -22,42 +22,46 @@
   <!-- Banner -->
   <img src="header.png" alt="Top Banner" class="top-image" />
 
-  <!-- Main Content -->
+  <!-- Main Layout -->
   <main>
-    <!-- Load Form -->
-    <form id="loadForm">
-      <h3>Add Load</h3>
-      <input type="date" id="date" required />
-      <input type="text" id="ticket" placeholder="Ticket Number" required />
-      <input type="text" id="customer" placeholder="Customer" required />
-      <input type="text" id="lease" placeholder="Lease" required />
-      <input type="text" id="rig" placeholder="Rig" required />
-      <input type="number" id="rate" placeholder="Rate" required />
-      <input type="number" id="overnights" placeholder="Overnights" required />
-      <input type="file" id="photo" accept="image/*" />
-      <button type="submit">Save Load</button>
-    </form>
 
-    <!-- Filter by Date -->
-    <section>
-      <h3>Filter by Date</h3>
+    <!-- Add Load -->
+    <div class="card">
+      <h2>Add Load</h2>
+      <form id="loadForm">
+        <input type="date" id="date" required />
+        <input type="text" id="ticket" placeholder="Ticket Number" required />
+        <input type="text" id="customer" placeholder="Customer" required />
+        <input type="text" id="lease" placeholder="Lease" required />
+        <input type="text" id="rig" placeholder="Rig" required />
+        <input type="number" id="rate" placeholder="Rate" required />
+        <input type="number" id="overnights" placeholder="Overnights" required />
+        <input type="file" id="photo" accept="image/*" />
+        <button type="submit">Save Load</button>
+      </form>
+    </div>
+
+    <!-- Filters -->
+    <div class="card">
+      <h2>Filter by Date</h2>
       <input type="date" id="startDate" />
       <input type="date" id="endDate" />
-      <button type="button" onclick="filterByDate()">Apply Filter</button>
-    </section>
+      <button onclick="filterByDate()">Apply Filter</button>
+    </div>
 
-    <!-- Export/Email -->
-    <section>
-      <h3>Selected Loads</h3>
-      <button type="button" onclick="exportToPDF()">📄 Export to PDF</button>
-      <button type="button" onclick="emailPaySheet()">📧 Email Pay Sheet</button>
-    </section>
+    <!-- Export Buttons -->
+    <div class="card">
+      <h2>Selected Loads</h2>
+      <button onclick="exportToPDF()">📄 Export to PDF</button>
+      <button onclick="emailPaySheet()">📧 Email Pay Sheet</button>
+    </div>
 
-    <!-- Load List -->
-    <div id="loadList"></div>
+    <!-- Load Entries -->
+    <div id="loadList" class="card"></div>
+
   </main>
 
-  <!-- Tab Bar -->
+  <!-- Bottom Tab Bar -->
   <nav class="tab-bar">
     <a href="index.html" class="tab-button">Home</a>
     <a href="loads.html" class="tab-button active">Loads</a>
@@ -65,7 +69,7 @@
     <a href="settings.html" class="tab-button">Settings</a>
   </nav>
 
-  <!-- JS & PDF Library -->
+  <!-- JS & PDF Script -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const form = document.getElementById('loadForm');
@@ -76,6 +80,11 @@
       loadList.innerHTML = '';
       const displayLoads = filtered || loads;
 
+      if (displayLoads.length === 0) {
+        loadList.innerHTML = '<p>No loads yet.</p>';
+        return;
+      }
+
       displayLoads.forEach((load, index) => {
         const div = document.createElement('div');
         div.className = 'load-entry';
@@ -83,13 +92,13 @@
           <label>
             <input type="checkbox" onchange="toggleSelection(${index})" ${load.selected ? 'checked' : ''} />
             Select
-          </label>
+          </label><br/>
           <strong>${load.customer}</strong><br/>
           ${load.date} | Ticket: ${load.ticket}<br/>
           Lease: ${load.lease}, Rig: ${load.rig}<br/>
           Rate: $${load.rate} | Overnights: ${load.overnights}<br/>
           ${load.photo ? `<img src="${load.photo}" class="load-photo" alt="Attached Photo" />` : ''}
-          <button onclick="deleteLoad(${index})">Delete</button>
+          <br/><button onclick="deleteLoad(${index})">Delete</button>
         `;
         loadList.appendChild(div);
       });

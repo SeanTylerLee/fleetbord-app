@@ -41,6 +41,29 @@
       display: block;
       width: 100%;
     }
+
+    /* Stack inputs vertically */
+    form#loadForm {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    form#loadForm input,
+    form#loadForm button {
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    form#loadForm button {
+      background-color: #007aff;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>

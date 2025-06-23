@@ -9,17 +9,20 @@
 </head>
 <body>
 
+  <!-- Top Header -->
   <header>
-    <button class="back-button" onclick="history.back()">
+    <a href="index.html" class="back-button">
       <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 22" fill="none">
         <path d="M11 1L2 11L11 21" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       Back
-    </button>
+    </a>
   </header>
 
+  <!-- Top Banner Image -->
   <img src="header.png" alt="Header" class="top-image">
 
+  <!-- Main Content -->
   <main>
     <div class="card">
       <h2>Messages</h2>
@@ -27,6 +30,7 @@
     </div>
   </main>
 
+  <!-- Bottom Tab Bar -->
   <nav class="tab-bar">
     <a href="index.html" class="tab-button">Home</a>
     <a href="loads.html" class="tab-button">Loads</a>

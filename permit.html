@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+        content="width=device-width, initial-scale=1.0" />
   <title>Permit Route Scanner</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f9f9f9;
+      background: #f2f2f7;
       color: #333;
     }
-
     header {
       background: #007aff;
       color: white;
@@ -20,24 +20,33 @@
       text-align: center;
       font-weight: bold;
     }
-
     main {
       padding: 1rem;
     }
-
     .card {
       background: white;
       border-radius: 12px;
       padding: 1rem;
       margin-bottom: 1rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
-
-    input[type="file"] {
-      display: block;
-      margin: 1rem 0;
+    input[type="file"],
+    textarea,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
-
+    button {
+      background: #007aff;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
     #map {
       height: 400px;
       width: 100%;
@@ -45,104 +54,123 @@
       margin-top: 1rem;
     }
   </style>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
 
-  <header>Oversize Permit Route Scanner</header>
+<header>Permit Route Scanner</header>
 
-  <main>
-    <div class="card">
-      <p>Select or take a picture of the permit with driving directions:</p>
-      <input type="file" id="imageInput" accept="image/*" />
-      <button onclick="processImage()">Scan Directions</button>
-      <p id="status"></p>
-    </div>
+<main>
+  <div class="card">
+    <p>Upload or take a photo of a permit with written driving directions:</p>
+    <input type="file" id="imageInput" accept="image/*" capture="environment" />
+    <button onclick="processImage()">Scan Permit</button>
+    <p id="status"></p>
+  </div>
 
-    <div class="card" style="display: none;" id="mapCard">
-      <h3>Route Preview</h3>
-      <div id="map"></div>
-    </div>
-  </main>
+  <div class="card" id="manualEntryCard" style="display: none;">
+    <p>OCR failed or not enough addresses found. You can enter up to 10 addresses manually, one per line:</p>
+    <textarea id="manualAddresses" rows="6" placeholder="123 Main St, Houston, TX&#10;456 Oak Dr, Dallas, TX"></textarea>
+    <button onclick="processManualAddresses()">Build Map from Text</button>
+  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <div class="card" id="mapCard" style="display: none;">
+    <h3>Route Preview</h3>
+    <div id="map"></div>
+  </div>
+</main>
 
-  <script>
-    const imageInput = document.getElementById('imageInput');
-    const status = document.getElementById('status');
-    const mapCard = document.getElementById('mapCard');
-    const ORS_API_KEY = '5b3ce3597851110001cf6248c217e0b44f394c4e9750235cfa09dee0'; // Replace with your free OpenRouteService key
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    async function processImage() {
-      const file = imageInput.files[0];
-      if (!file) return alert("Please upload a photo first.");
+<script>
+  const ORS_API_KEY = 'YOUR_ORS_API_KEY'; // Replace with real key
 
-      status.textContent = "Scanning image for text...";
-      const { data: { text } } = await Tesseract.recognize(file, 'eng');
-      status.textContent = "Parsing addresses...";
+  const status = document.getElementById('status');
+  const mapCard = document.getElementById('mapCard');
+  const manualEntryCard = document.getElementById('manualEntryCard');
 
-      const addresses = extractAddresses(text);
-      if (addresses.length < 2) {
-        status.textContent = "Could not find enough addresses. Try a clearer image.";
-        return;
-      }
+  async function processImage() {
+    const file = document.getElementById('imageInput').files[0];
+    if (!file) return alert("Please choose a photo.");
 
-      status.textContent = "Found " + addresses.length + " location(s), building map...";
-      showRouteOnMap(addresses);
+    status.textContent = "Scanning image...";
+    const { data: { text } } = await Tesseract.recognize(file, 'eng');
+    console.log("OCR result:", text);
+    status.textContent = "Extracting addresses...";
+
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const addressPattern = /[0-9]{1,5}\s+[A-Za-z0-9\s.,#-]+/;
+    const addresses = lines.filter(l => addressPattern.test(l));
+
+    if (addresses.length < 2) {
+      status.textContent = "Could not find enough addresses. You may enter them manually.";
+      manualEntryCard.style.display = 'block';
+      return;
     }
 
-    function extractAddresses(text) {
-      const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
-      const addressPattern = /[0-9]{1,5} .+/;
-      return lines.filter(line => addressPattern.test(line)).slice(0, 10); // up to 10 points
-    }
+    buildRouteMap(addresses.slice(0, 10));
+  }
 
-    async function showRouteOnMap(addresses) {
-      mapCard.style.display = 'block';
+  function processManualAddresses() {
+    const input = document.getElementById('manualAddresses').value.trim();
+    const addresses = input.split('\n').map(a => a.trim()).filter(Boolean);
+    if (addresses.length < 2) return alert("Enter at least two valid addresses.");
+    buildRouteMap(addresses.slice(0, 10));
+  }
 
-      const coords = [];
-      for (let addr of addresses) {
+  async function buildRouteMap(addresses) {
+    status.textContent = "Geocoding addresses...";
+    mapCard.style.display = 'block';
+
+    const coords = [];
+    for (let addr of addresses) {
+      try {
         const res = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(addr)}`);
         const json = await res.json();
         if (json.features.length > 0) {
           const [lon, lat] = json.features[0].geometry.coordinates;
           coords.push([lat, lon]);
         }
+      } catch (e) {
+        console.warn("Failed to geocode:", addr);
       }
-
-      if (coords.length < 2) {
-        status.textContent = "Unable to geocode enough addresses.";
-        return;
-      }
-
-      const map = L.map('map').setView(coords[0], 8);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-      }).addTo(map);
-
-      coords.forEach((coord, i) => {
-        L.marker(coord).addTo(map).bindPopup(`Stop ${i + 1}`);
-      });
-
-      fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
-        method: 'POST',
-        headers: {
-          'Authorization': ORS_API_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          coordinates: coords.map(c => [c[1], c[0]])
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        const routeLayer = L.geoJSON(data).addTo(map);
-        map.fitBounds(routeLayer.getBounds());
-        status.textContent = "Route loaded.";
-      })
-      .catch(() => status.textContent = "Error building route.");
     }
-  </script>
+
+    if (coords.length < 2) {
+      status.textContent = "Could not geocode enough addresses.";
+      return;
+    }
+
+    const map = L.map('map').setView(coords[0], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    coords.forEach((c, i) => {
+      L.marker(c).addTo(map).bindPopup(`Stop ${i + 1}`);
+    });
+
+    fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
+      method: 'POST',
+      headers: {
+        'Authorization': ORS_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        coordinates: coords.map(c => [c[1], c[0]])
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      L.geoJSON(data).addTo(map);
+      map.fitBounds(L.geoJSON(data).getBounds());
+      status.textContent = "Route loaded.";
+    })
+    .catch(() => {
+      status.textContent = "Failed to build route.";
+    });
+  }
+</script>
+
 </body>
 </html>

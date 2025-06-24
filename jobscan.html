@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Fleetbord - Scan Job</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    .card {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    select, input[type="file"], button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    button {
+      background: #007aff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .thumb-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 1rem;
+    }
+
+    .thumb-preview img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Scan Job Documents</h2>
+
+    <label for="loadSelect">Select Load</label>
+    <select id="loadSelect" required>
+      <option value="">-- Choose a Load --</option>
+    </select>
+
+    <label for="docUpload">Scan / Upload Documents</label>
+    <input type="file" id="docUpload" accept="image/*,application/pdf" multiple capture="environment" />
+
+    <div class="thumb-preview" id="previewContainer"></div>
+
+    <button id="sendBtn">📧 Send to Office</button>
+  </div>
+
+  <script>
+    const loadSelect = document.getElementById('loadSelect');
+    const docUpload = document.getElementById('docUpload');
+    const previewContainer = document.getElementById('previewContainer');
+    const sendBtn = document.getElementById('sendBtn');
+
+    let selectedFiles = [];
+
+    // Load saved loads from localStorage
+    const loads = JSON.parse(localStorage.getItem('loads') || '[]');
+
+    loads.forEach((load, index) => {
+      const opt = document.createElement('option');
+      opt.value = index;
+      opt.textContent = `${load.date} - ${load.customer}`;
+      loadSelect.appendChild(opt);
+    });
+
+    // Show thumbnail previews
+    docUpload.addEventListener('change', (e) => {
+      selectedFiles = Array.from(e.target.files);
+      previewContainer.innerHTML = '';
+
+      selectedFiles.forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const img = document.createElement('img');
+            img.src = reader.result;
+            previewContainer.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          const placeholder = document.createElement('div');
+          placeholder.textContent = file.name;
+          previewContainer.appendChild(placeholder);
+        }
+      });
+    });
+
+    // Compose email with load info + attachments
+    sendBtn.addEventListener('click', () => {
+      const selectedIndex = loadSelect.value;
+      if (selectedIndex === '') return alert("Please select a load.");
+      if (!selectedFiles.length) return alert("Please scan/upload documents.");
+
+      const load = loads[selectedIndex];
+      const email = 'office@example.com';
+
+      let body = `
+Load Scan Submission
+
+Date: ${load.date}
+Customer: ${load.customer}
+Ticket #: ${load.ticket}
+Lease: ${load.lease}
+Rig: ${load.rig}
+Rate: $${load.rate}
+Overnights: ${load.overnights}
+
+Attached: ${selectedFiles.length} document(s)
+`;
+
+      const mailto = `mailto:${email}?subject=Scanned Load - ${load.customer}&body=${encodeURIComponent(body)}`;
+
+      // Open mail app
+      window.location.href = mailto;
+
+      alert("Email window opened. Please attach scanned documents manually in your mail app.");
+    });
+  </script>
+</body>
+</html>

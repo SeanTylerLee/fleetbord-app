@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Route Map Preview with Zoom & Pan</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      margin: 0;
+      background-color: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      user-select: none; /* Disable text selection during drag */
+    }
+
+    header {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .image-container {
+      flex-grow: 1;
+      width: 100%;
+      max-width: 800px;
+      height: 450px;
+      border: 2px solid #007aff;
+      border-radius: 12px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
+      touch-action: none; /* Important for touch panning */
+    }
+
+    #routeImage {
+      max-width: none; /* We control size via transform */
+      max-height: none;
+      cursor: grab;
+      user-select: none;
+      will-change: transform;
+      border-radius: 12px;
+      /* Start centered */
+      transform-origin: top left;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      transition: transform 0.1s ease-out;
+    }
+
+    .controls {
+      margin-top: 1rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    button, input[type="file"] {
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover, input[type="file"]:hover {
+      background-color: #005bb5;
+    }
+
+    input[type="file"] {
+      padding: 6px 12px;
+      background-color: #007aff;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Route Map Preview</h1>
+  </header>
+
+  <div class="image-container" id="imageContainer">
+    <img id="routeImage" src="" alt="Route map will appear here" draggable="false" />
+  </div>
+
+  <div class="controls">
+    <input type="file" id="uploadImage" accept="image/*" />
+    <button id="zoomIn">Zoom In +</button>
+    <button id="zoomOut">Zoom Out −</button>
+    <button id="reset">Reset</button>
+    <button id="clearButton">Clear Image</button>
+  </div>
+
+  <script>
+    const uploadInput = document.getElementById('uploadImage');
+    const routeImage = document.getElementById('routeImage');
+    const clearButton = document.getElementById('clearButton');
+    const zoomInBtn = document.getElementById('zoomIn');
+    const zoomOutBtn = document.getElementById('zoomOut');
+    const resetBtn = document.getElementById('reset');
+    const imageContainer = document.getElementById('imageContainer');
+
+    // Transform state
+    let scale = 1;
+    let translateX = 0; 
+    let translateY = 0;
+
+    // Drag state
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let lastTranslateX = 0;
+    let lastTranslateY = 0;
+
+    function updateTransform() {
+      routeImage.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`;
+    }
+
+    uploadInput.addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        routeImage.src = e.target.result;
+        // Reset transform
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        updateTransform();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    clearButton.addEventListener('click', () => {
+      routeImage.src = '';
+      uploadInput.value = '';
+      scale = 1;
+      translateX = 0;
+      translateY = 0;
+      updateTransform();
+    });
+
+    zoomInBtn.addEventListener('click', () => {
+      scale = Math.min(scale + 0.2, 5);
+      updateTransform();
+    });
+
+    zoomOutBtn.addEventListener('click', () => {
+      scale = Math.max(scale - 0.2, 0.5);
+      updateTransform();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      scale = 1;
+      translateX = 0;
+      translateY = 0;
+      updateTransform();
+    });
+
+    // Mouse and touch drag handlers
+    function dragStart(event) {
+      event.preventDefault();
+      isDragging = true;
+      dragStartX = event.type === 'touchstart' ? event.touches[0].clientX : event.clientX;
+      dragStartY = event.type === 'touchstart' ? event.touches[0].clientY : event.clientY;
+      lastTranslateX = translateX;
+      lastTranslateY = translateY;
+      routeImage.style.cursor = 'grabbing';
+    }
+
+    function dragMove(event) {
+      if (!isDragging) return;
+      const clientX = event.type === 'touchmove' ? event.touches[0].clientX : event.clientX;
+      const clientY = event.type === 'touchmove' ? event.touches[0].clientY : event.clientY;
+
+      translateX = lastTranslateX + (clientX - dragStartX);
+      translateY = lastTranslateY + (clientY - dragStartY);
+      updateTransform();
+    }
+
+    function dragEnd(event) {
+      isDragging = false;
+      routeImage.style.cursor = 'grab';
+    }
+
+    routeImage.addEventListener('mousedown', dragStart);
+    routeImage.addEventListener('touchstart', dragStart);
+
+    window.addEventListener('mousemove', dragMove);
+    window.addEventListener('touchmove', dragMove);
+
+    window.addEventListener('mouseup', dragEnd);
+    window.addEventListener('touchend', dragEnd);
+    window.addEventListener('touchcancel', dragEnd);
+
+    // Prevent image dragging default behavior
+    routeImage.ondragstart = () => false;
+
+  </script>
+
+</body>
+</html>

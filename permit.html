@@ -62,7 +62,7 @@
 <main>
   <div class="card">
     <p>Upload or take a photo of a permit with written driving directions:</p>
-    <input type="file" id="imageInput" accept="image/*" capture="environment" />
+    <input type="file" id="imageInput" accept="image/*" />
     <button onclick="processImage()">Scan Permit</button>
     <p id="status"></p>
   </div>
@@ -83,7 +83,7 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-  const ORS_API_KEY = '5b3ce3597851110001cf6248c217e0b44f394c4e9750235cfa09dee0'; // Replace with real key
+  const ORS_API_KEY = '5b3ce3597851110001cf6248c217e0b44f394c4e9750235cfa09dee0'; // Your OpenRouteService key
 
   const status = document.getElementById('status');
   const mapCard = document.getElementById('mapCard');

@@ -54,7 +54,7 @@
   <main>
     <div class="card">
       <p>Select or take a picture of the permit with driving directions:</p>
-      <input type="file" id="imageInput" accept="image/*" capture="environment" />
+      <input type="file" id="imageInput" accept="image/*" />
       <button onclick="processImage()">Scan Directions</button>
       <p id="status"></p>
     </div>
@@ -122,7 +122,7 @@
       }).addTo(map);
 
       coords.forEach((coord, i) => {
-        L.marker(coord).addTo(map).bindPopup(`Stop ${i + 1}`).openPopup();
+        L.marker(coord).addTo(map).bindPopup(`Stop ${i + 1}`);
       });
 
       fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
@@ -137,8 +137,8 @@
       })
       .then(res => res.json())
       .then(data => {
-        L.geoJSON(data).addTo(map);
-        map.fitBounds(L.geoJSON(data).getBounds());
+        const routeLayer = L.geoJSON(data).addTo(map);
+        map.fitBounds(routeLayer.getBounds());
         status.textContent = "Route loaded.";
       })
       .catch(() => status.textContent = "Error building route.");

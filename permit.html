@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0" />
-  <title>Permit Route Scanner</title>
+  <title>Permit Route Builder</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
@@ -22,8 +22,6 @@
     }
     main {
       padding: 1rem;
-      max-width: 600px;
-      margin: auto;
     }
     .card {
       background: white;
@@ -42,12 +40,6 @@
       font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-    label {
-      font-weight: 600;
-      margin-top: 10px;
-      display: block;
     }
     button {
       background: #007aff;
@@ -62,45 +54,26 @@
       border-radius: 12px;
       margin-top: 1rem;
     }
-    #ocrText {
-      font-family: monospace;
-      font-size: 14px;
-      white-space: pre-wrap;
-      background: #f0f0f5;
-      padding: 10px;
-      border-radius: 8px;
-      height: 100px;
-      overflow-y: auto;
-    }
-    #status {
-      margin-top: 0.5rem;
-      font-weight: 600;
-    }
   </style>
 </head>
 <body>
 
-<header>Permit Route Scanner</header>
+<header>Permit Route Builder</header>
 
 <main>
   <div class="card">
-    <label for="startCoord">Start Coordinates (lat, lon)</label>
-    <input type="text" id="startCoord" placeholder="e.g. 29.7604, -95.3698" />
+    <p><strong>1.</strong> Upload or take a photo of the permit (image with written directions):</p>
+    <input type="file" id="imageInput" accept="image/*" />
 
-    <label for="endCoord">End Coordinates (lat, lon)</label>
-    <input type="text" id="endCoord" placeholder="e.g. 32.7767, -96.7970" />
+    <p><strong>2.</strong> Enter starting and ending coordinates (lat,lng):</p>
+    <input type="text" id="startCoords" placeholder="Start (e.g. 29.7604,-95.3698)" />
+    <input type="text" id="endCoords" placeholder="End (e.g. 32.7767,-96.7970)" />
 
-    <label for="imageInput">Upload permit photo (optional)</label>
-    <input type="file" id="imageInput" accept="image/*" capture="environment" />
-
-    <button onclick="buildRoute()">Build Route</button>
+    <button onclick="processImage()">Build Route</button>
     <p id="status"></p>
-
-    <label>OCR Extracted Text (optional preview)</label>
-    <textarea id="ocrText" readonly placeholder="OCR results will appear here..."></textarea>
   </div>
 
-  <div class="card" id="mapCard" style="display:none;">
+  <div class="card" id="mapCard" style="display: none;">
     <h3>Route Preview</h3>
     <div id="map"></div>
   </div>
@@ -111,84 +84,65 @@
 
 <script>
   const ORS_API_KEY = '5b3ce3597851110001cf6248c217e0b44f394c4e9750235cfa09dee0';
-  const statusEl = document.getElementById('status');
-  const ocrTextEl = document.getElementById('ocrText');
+  const status = document.getElementById('status');
   const mapCard = document.getElementById('mapCard');
-  let map, routeLayer;
 
-  function parseCoords(input) {
-    const parts = input.split(',').map(s => parseFloat(s.trim()));
-    if (parts.length !== 2 || parts.some(isNaN)) return null;
-    return [parts[0], parts[1]];
-  }
+  async function processImage() {
+    const file = document.getElementById('imageInput').files[0];
+    const start = document.getElementById('startCoords').value.trim();
+    const end = document.getElementById('endCoords').value.trim();
 
-  async function performOCR(file) {
-    statusEl.textContent = "Scanning image...";
-    try {
-      const { data: { text } } = await Tesseract.recognize(file, 'eng');
-      ocrTextEl.value = text.trim();
-      statusEl.textContent = "OCR complete.";
-    } catch (err) {
-      ocrTextEl.value = "";
-      statusEl.textContent = "OCR failed: " + err.message;
-    }
-  }
-
-  async function buildRoute() {
-    statusEl.textContent = "";
-    ocrTextEl.value = "";
-    mapCard.style.display = 'none';
-
-    const startCoord = parseCoords(document.getElementById('startCoord').value);
-    const endCoord = parseCoords(document.getElementById('endCoord').value);
-
-    if (!startCoord || !endCoord) {
-      alert("Please enter valid start and end coordinates.");
+    if (!file || !start || !end) {
+      alert("Please upload a photo AND enter start and end coordinates.");
       return;
     }
 
-    const file = document.getElementById('imageInput').files[0];
-    if (file) await performOCR(file);
+    status.textContent = "Scanning permit image for text...";
+    const { data: { text } } = await Tesseract.recognize(file, 'eng');
+    console.log("OCR text:", text);
+    status.textContent = "Building route...";
 
-    const coordinates = [[startCoord[1], startCoord[0]], [endCoord[1], endCoord[0]]]; // [lon, lat]
+    const startCoords = start.split(',').map(Number);
+    const endCoords = end.split(',').map(Number);
 
-    if (!map) {
-      map = L.map('map').setView(startCoord, 10);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-    } else {
-      map.setView(startCoord, 10);
-      if (routeLayer) {
-        map.removeLayer(routeLayer);
-        routeLayer = null;
-      }
-    }
+    buildMap(startCoords, endCoords);
+  }
 
-    statusEl.textContent = "Requesting route...";
-    try {
-      const res = await fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
-        method: 'POST',
-        headers: {
-          'Authorization': ORS_API_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ coordinates })
-      });
+  function buildMap(startCoords, endCoords) {
+    mapCard.style.display = 'block';
+    const map = L.map('map').setView(startCoords, 7);
 
-      const data = await res.json();
-      if (!data.features || data.features.length === 0) {
-        statusEl.textContent = "No route found.";
-        return;
-      }
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-      routeLayer = L.geoJSON(data).addTo(map);
-      map.fitBounds(routeLayer.getBounds());
-      mapCard.style.display = 'block';
-      statusEl.textContent = "Route loaded.";
-    } catch (err) {
-      statusEl.textContent = "Error building route: " + err.message;
-    }
+    const routeCoords = [startCoords, endCoords];
+
+    // Add markers
+    L.marker(startCoords).addTo(map).bindPopup("Start").openPopup();
+    L.marker(endCoords).addTo(map).bindPopup("End");
+
+    // Build route via ORS
+    fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
+      method: 'POST',
+      headers: {
+        'Authorization': ORS_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        coordinates: routeCoords.map(c => [c[1], c[0]]) // ORS uses [lng, lat]
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      L.geoJSON(data).addTo(map);
+      map.fitBounds(L.geoJSON(data).getBounds());
+      status.textContent = "Route loaded.";
+    })
+    .catch(err => {
+      console.error(err);
+      status.textContent = "Failed to build route.";
+    });
   }
 </script>
 

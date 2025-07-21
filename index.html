@@ -2,162 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Money Master</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <style>
-    /* Passcode overlay styles */
-    #passcodeOverlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      font-family: -apple-system, BlinkMacSystemFont, "San Francisco", sans-serif;
-      padding: 20px;
-    }
-    #passcodeOverlay.dark {
-      background: #121212;
-      color: #eee;
-    }
-    #passcodeOverlay h2 {
-      margin-bottom: 20px;
-      font-size: 28px;
-      color: #007aff;
-    }
-    #passcodeInput {
-      font-size: 32px;
-      width: 160px;
-      padding: 12px;
-      text-align: center;
-      border-radius: 16px;
-      border: 2px solid #007aff;
-      margin-bottom: 10px;
-      letter-spacing: 10px;
-      font-family: monospace;
-      outline: none;
-    }
-    #passcodeError {
-      color: #ff3b30;
-      margin-bottom: 10px;
-      height: 24px;
-    }
-    #passcodeSubmit {
-      background-color: #007aff;
-      color: white;
-      font-size: 20px;
-      padding: 12px 30px;
-      border: none;
-      border-radius: 16px;
-      cursor: pointer;
-      user-select: none;
-    }
-    #passcodeSubmit:active {
-      background-color: #005ecb;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <title>My PWA</title>
 </head>
 <body>
-  <div id="passcodeOverlay">
-    <h2>Enter Passcode</h2>
-    <input id="passcodeInput" type="password" maxlength="4" pattern="\d{4}" inputmode="numeric" autofocus />
-    <div id="passcodeError"></div>
-    <button id="passcodeSubmit">Unlock</button>
+  <div class="app-container">
+    <header>
+      <h1>Fleetbord</h1>
+    </header>
+    <main>
+      <p>Welcome to your dashboard</p>
+      <button class="primary-btn">Start</button>
+    </main>
+    <footer>
+      <small>© 2025 Fleetbord</small>
+    </footer>
   </div>
-
-  <header>💸 Money Master</header>
-
-  <main style="display:none;">
-    <h2>Your Balance: <span id="balance">$0.00</span></h2>
-
-    <div class="app-grid">
-      <div class="app-button" onclick="goTo('income')">📥 Income</div>
-      <div class="app-button" onclick="goTo('bills')">📆 Bills</div>
-      <div class="app-button" onclick="goTo('spending')">🧾 Spending</div>
-      <div class="app-button" onclick="goTo('settings')">⚙️ Settings</div>
-    </div>
-
-    <div class="summary">
-      <p><strong>Income:</strong> <span id="summary-income">$0.00</span></p>
-      <p><strong>Bills:</strong> <span id="summary-bills">$0.00</span></p>
-      <p><strong>Spending:</strong> <span id="summary-spending">$0.00</span></p>
-    </div>
-  </main>
-
-  <footer>Sean Lee</footer>
-
-  <script>
-    const passcodeOverlay = document.getElementById('passcodeOverlay');
-    const passcodeInput = document.getElementById('passcodeInput');
-    const passcodeError = document.getElementById('passcodeError');
-    const passcodeSubmit = document.getElementById('passcodeSubmit');
-    const mainContent = document.querySelector('main');
-
-    function goTo(page) {
-      window.location.href = page + '.html';
-    }
-
-    function loadTotals() {
-      const income = JSON.parse(localStorage.getItem('income') || '[]');
-      const bills = JSON.parse(localStorage.getItem('bills') || '[]');
-      const spending = JSON.parse(localStorage.getItem('spending') || '[]');
-
-      const totalIncome = income.reduce((sum, i) => sum + parseFloat(i.amount || 0), 0);
-      const totalBills = bills.reduce((sum, b) => sum + parseFloat(b.amount || 0), 0);
-      const totalSpending = spending.reduce((sum, s) => sum + parseFloat(s.amount || 0), 0);
-
-      const balance = totalIncome - totalBills - totalSpending;
-
-      document.getElementById('balance').textContent = `$${balance.toFixed(2)}`;
-      document.getElementById('summary-income').textContent = `$${totalIncome.toFixed(2)}`;
-      document.getElementById('summary-bills').textContent = `$${totalBills.toFixed(2)}`;
-      document.getElementById('summary-spending').textContent = `$${totalSpending.toFixed(2)}`;
-    }
-
-    // Passcode check logic
-    passcodeSubmit.addEventListener('click', () => {
-      const savedPasscode = localStorage.getItem('appPasscode') || '5335';
-      if (passcodeInput.value === savedPasscode) {
-        passcodeOverlay.style.display = 'none';
-        mainContent.style.display = 'block';
-        loadTotals();
-      } else {
-        passcodeError.textContent = 'Incorrect passcode. Try again.';
-        passcodeInput.value = '';
-        passcodeInput.focus();
-      }
-    });
-
-    // Optional: submit on enter key
-    passcodeInput.addEventListener('keyup', e => {
-      if (e.key === 'Enter') passcodeSubmit.click();
-    });
-
-    // Dark mode if enabled in settings
-    const darkModeStored = localStorage.getItem('darkMode') === 'true';
-    if (darkModeStored) {
-      document.body.classList.add('dark');
-      passcodeOverlay.classList.add('dark');
-    }
-
-    // Service worker update check and reload
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').then(reg => {
-        reg.onupdatefound = () => {
-          const newWorker = reg.installing;
-          newWorker.onstatechange = () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              window.location.reload();
-            }
-          };
-        };
-      });
-    }
-  </script>
 </body>
 </html>

@@ -5,21 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Page 4</title>
   <link rel="stylesheet" href="styles.css" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 </head>
 <body>
-  <header class="ios-header">
-    <span class="ios-header-title">Page 4</span>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
   </header>
+
   <div class="ios-list">
-    <div class="ios-item">Page 4</div>
-    <a class="ios-item" href="index.html">← Back</a>
+    <div class="ios-item">Page 1 Content</div>
+    <a class="ios-item" href="index.html">← Back to Home</a>
   </div>
+
   <script>
     const userTheme = localStorage.getItem('theme');
     if (userTheme === 'dark') {
       document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
     }
   </script>
 </body>

@@ -6,11 +6,14 @@
   <title>Home</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 </head>
 <body>
-  <header class="ios-header">
-    <span class="ios-header-title">Home</span>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
   </header>
+
   <div class="ios-list">
     <a class="ios-item" href="page1.html">Page 1</a>
     <a class="ios-item" href="page2.html">Page 2</a>
@@ -19,12 +22,11 @@
     <a class="ios-item" href="page5.html">Page 5</a>
     <a class="ios-item" href="settings.html">Settings</a>
   </div>
+
   <script>
     const userTheme = localStorage.getItem('theme');
     if (userTheme === 'dark') {
       document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
     }
   </script>
   <script>

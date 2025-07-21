@@ -1,9 +1,9 @@
 {
-  "name": "Auto Refresh PWA",
-  "short_name": "RefreshPWA",
-  "start_url": "/",
+  "name": "My PWA App",
+  "short_name": "PWA",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
   "theme_color": "#000000",
+  "background_color": "#ffffff",
   "icons": []
 }

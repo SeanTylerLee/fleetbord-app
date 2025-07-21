@@ -5,11 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Settings</title>
   <link rel="stylesheet" href="styles.css" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 </head>
 <body>
-  <header class="ios-header">
-    <span class="ios-header-title">Settings</span>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
   </header>
+
   <div class="ios-list">
     <label class="ios-item toggle-label">
       <span>Dark Mode</span>
@@ -22,20 +25,20 @@
     const toggle = document.getElementById('darkModeToggle');
     const currentMode = localStorage.getItem('theme');
 
-    if (currentMode === 'dark') {{
+    if (currentMode === 'dark') {
       document.documentElement.classList.add('dark-mode');
       toggle.checked = true;
-    }}
+    }
 
-    toggle.addEventListener('change', () => {{
-      if (toggle.checked) {{
+    toggle.addEventListener('change', () => {
+      if (toggle.checked) {
         document.documentElement.classList.add('dark-mode');
         localStorage.setItem('theme', 'dark');
-      }} else {{
+      } else {
         document.documentElement.classList.remove('dark-mode');
         localStorage.setItem('theme', 'light');
-      }}
-    }});
+      }
+    });
   </script>
 </body>
 </html>

@@ -12,7 +12,6 @@ body, html {
   overflow: hidden; /* Prevent scrolling */
 }
 
-/* Outer container */
 .app {
   display: flex;
   flex-direction: column;
@@ -20,14 +19,12 @@ body, html {
   padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
 }
 
-/* Top header like iOS Settings title */
 .header {
   padding: 20px 20px 10px;
   font-size: 24px;
   font-weight: 700;
 }
 
-/* List container */
 .list {
   display: flex;
   flex-direction: column;
@@ -36,7 +33,6 @@ body, html {
   border-top: 1px solid #2c2c2e;
 }
 
-/* List item (rounded style, like Settings cells) */
 .list-item {
   display: flex;
   align-items: center;
@@ -48,13 +44,11 @@ body, html {
   border-bottom: 1px solid #2c2c2e;
 }
 
-/* Chevron (>) icon to simulate iOS disclosure indicator */
 .chevron {
   font-size: 20px;
   color: #888;
 }
 
-/* Subtitle below user item */
 .list-subtitle {
   color: #ff3b30;
   font-size: 13px;
@@ -62,7 +56,6 @@ body, html {
   margin-bottom: 10px;
 }
 
-/* Toggle switch visual placeholder */
 .toggle {
   width: 50px;
   height: 28px;
@@ -81,7 +74,6 @@ body, html {
   background: #fff;
 }
 
-/* Sub text inside right side of item */
 .sub {
   color: #888;
   font-size: 14px;
@@ -90,7 +82,6 @@ body, html {
   color: #0a84ff;
 }
 
-/* Avatar circle */
 .avatar {
   width: 50px;
   height: 50px;
@@ -104,7 +95,6 @@ body, html {
   flex-shrink: 0;
 }
 
-/* Text next to avatar */
 .list-text {
   flex-grow: 1;
   display: flex;

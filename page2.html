@@ -6,73 +6,94 @@
   <title>Reimbursement</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    .form-wrapper {
-      max-width: 500px;
-      margin: 20px auto;
-      padding: 10px;
-      background: var(--card);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
 
-    .form-wrapper h2, .form-wrapper h3 {
-      text-align: center;
-    }
+  .form-wrapper {
+    max-width: 100%;
+    padding: 16px;
+    background: var(--card);
+    border-radius: 12px;
+    margin: 20px auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    box-sizing: border-box;
+  }
 
-    .form-wrapper input, .form-wrapper select, .form-wrapper textarea {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
+  .form-wrapper h2,
+  .form-wrapper h3 {
+    text-align: center;
+    margin: 10px 0;
+  }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 15px;
-    }
+  .form-wrapper input,
+  .form-wrapper select,
+  .form-wrapper textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
 
-    table th, table td {
-      border: 1px solid #ccc;
-      padding: 6px;
-      font-size: 14px;
-    }
+  .table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
 
-    table th {
-      background: #eee;
-    }
+  table {
+    min-width: 600px;
+    width: 100%;
+    border-collapse: collapse;
+  }
 
-    .receipt-preview {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+  table th,
+  table td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    font-size: 14px;
+    text-align: left;
+  }
 
-    .receipt-preview img {
-      width: 100px;
-      border-radius: 6px;
-      object-fit: cover;
-    }
+  table th {
+    background: #eee;
+  }
 
-    button {
-      background: var(--button);
-      color: var(--text);
-      padding: 10px;
-      width: 100%;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+  .receipt-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 
-    .dark-mode table th {
-      background: #222;
-    }
-  </style>
+  .receipt-preview img {
+    width: 100px;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
+  button {
+    background: var(--button);
+    color: var(--text);
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .dark-mode table th {
+    background: #222;
+  }
+</style>
 </head>
 <body>
   <div class="ios-header-image">
@@ -88,22 +109,24 @@
 
     <p>Please attach your receipts to this request form</p>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Business</th>
-          <th>City</th>
-          <th>State</th>
-          <th>Amount</th>
-          <th>Receipt Y/N</th>
-          <th>Items</th>
-        </tr>
-      </thead>
-      <tbody id="expenseRows">
-        <!-- JS will generate 5 rows -->
-      </tbody>
-    </table>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Business</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Amount</th>
+            <th>Receipt Y/N</th>
+            <th>Items</th>
+          </tr>
+        </thead>
+        <tbody id="expenseRows">
+          <!-- JS will generate 5 rows -->
+        </tbody>
+      </table>
+    </div>
 
     <label>Upload Receipt Images:</label>
     <input type="file" id="receiptUpload" accept="image/*" multiple />

@@ -3,30 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <link rel="stylesheet" href="styles.css">
   <title>Loads</title>
+  <link rel="stylesheet" href="styles.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-  <img src="header.jpg" class="header" alt="Header">
+  <div class="app-wrapper">
+    <img src="header.jpg" class="header" alt="Header">
 
-  <div class="container">
-    <h2>Enter Load</h2>
-    <form id="loadForm">
-      <input type="date" id="date" required>
-      <input type="text" id="ticket" placeholder="Ticket Number" required>
-      <input type="text" id="customer" placeholder="Customer" required>
-      <input type="text" id="rig" placeholder="Rig" required>
-      <input type="text" id="lease" placeholder="Lease" required>
-      <input type="number" id="price" placeholder="Price" required>
-      <input type="number" id="overnights" placeholder="Overnights" required>
-      <button type="submit">Save Load</button>
-      <input type="hidden" id="editIndex">
-    </form>
+    <div class="container">
+      <h2>Enter Load</h2>
+      <form id="loadForm" autocomplete="off">
+        <input type="date" id="date" required />
+        <input type="text" id="ticket" placeholder="Ticket Number" required />
+        <input type="text" id="customer" placeholder="Customer" required />
+        <input type="text" id="rig" placeholder="Rig" required />
+        <input type="text" id="lease" placeholder="Lease" required />
+        <input type="number" id="price" placeholder="Price" required />
+        <input type="number" id="overnights" placeholder="Overnights" required />
+        <button type="submit">Save Load</button>
+        <input type="hidden" id="editIndex" />
+      </form>
 
-    <h2>Saved Loads</h2>
-    <div id="loadList"></div>
-    <button onclick="generatePaySheet()">Generate Pay Sheet PDF</button>
+      <h2>Saved Loads</h2>
+      <div id="loadList"></div>
+
+      <button class="export-btn" onclick="generatePaySheet()">Generate Pay Sheet PDF</button>
+    </div>
   </div>
 
   <script src="app.js"></script>

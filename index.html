@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
-<header class="ios-header-image">
-  <img src="header.jpg" alt="Header" />
-</header>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Home</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
 </head>
 <body>
+  <header class="ios-header">
+    <span class="ios-header-title">Home</span>
+  </header>
   <div class="ios-list">
     <a class="ios-item" href="page1.html">Page 1</a>
     <a class="ios-item" href="page2.html">Page 2</a>
@@ -19,6 +19,14 @@
     <a class="ios-item" href="page5.html">Page 5</a>
     <a class="ios-item" href="settings.html">Settings</a>
   </div>
+  <script>
+    const userTheme = localStorage.getItem('theme');
+    if (userTheme === 'dark') {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
+  </script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/service-worker.js').then(reg => {

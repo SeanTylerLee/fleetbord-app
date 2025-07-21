@@ -6,6 +6,19 @@ body {
   color: #000;
 }
 
+.ios-header {
+  background-color: #f9f9f9;
+  padding: 12px 20px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  color: #000;
+  border-bottom: 1px solid #ccc;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
 .ios-list {
   margin: 20px;
   border-radius: 10px;
@@ -15,7 +28,9 @@ body {
 }
 
 .ios-item {
-  display: block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 16px;
   border-bottom: 1px solid #ccc;
   color: #000;
@@ -27,41 +42,53 @@ body {
   border-bottom: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #000;
-    color: #fff;
-  }
-  .ios-list {
-    background: #1c1c1e;
-  }
-  .ios-item {
-    color: #fff;
-    border-bottom: 1px solid #333;
-    background: #1c1c1e;
-  }
-   
-}
-.ios-header-image {
-  width: 100vw; /* Full device width */
-  overflow: hidden;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background-color: #f2f2f7;
-  border-bottom: 1px solid #ccc;
+.toggle-label input[type="checkbox"] {
+  width: 40px;
+  height: 20px;
+  appearance: none;
+  background-color: #ccc;
+  border-radius: 20px;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.ios-header-image img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
+.toggle-label input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 1px;
+  top: 1px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
 }
 
-@media (prefers-color-scheme: dark) {
-  .ios-header-image {
-    background-color: #1c1c1e;
-    border-bottom: 1px solid #333;
-  }
+.toggle-label input[type="checkbox"]:checked {
+  background-color: #007aff;
+}
+
+.toggle-label input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+/* Dark mode class */
+.dark-mode body {
+  background-color: #000;
+  color: #fff;
+}
+.dark-mode .ios-list {
+  background: #1c1c1e;
+}
+.dark-mode .ios-item {
+  color: #fff;
+  background: #1c1c1e;
+  border-bottom: 1px solid #333;
+}
+.dark-mode .ios-header {
+  background-color: #1c1c1e;
+  color: #fff;
+  border-bottom: 1px solid #333;
 }

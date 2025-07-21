@@ -1,8 +1,25 @@
-body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+:root {
+  --bg: #f2f2f7;
+  --text: #000;
+  --card: #fff;
+  --button: #007aff;
+}
+
+.dark-mode {
+  --bg: #000;
+  --text: #fff;
+  --card: #1c1c1e;
+  --button: #0a84ff;
+}
+
+html, body {
   margin: 0;
-  background-color: #f2f2f7;
-  color: #000;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
 }
 
 .ios-header-image {
@@ -11,9 +28,10 @@ body {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: #f2f2f7;
+  background-color: var(--bg);
   border-bottom: 1px solid #ccc;
 }
+
 .ios-header-image img {
   width: 100%;
   max-height: 150px;
@@ -25,7 +43,7 @@ body {
   margin: 20px;
   border-radius: 10px;
   overflow: hidden;
-  background: #fff;
+  background: var(--card);
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
@@ -36,9 +54,10 @@ body {
   padding: 16px;
   border-bottom: 1px solid #ccc;
   text-decoration: none;
-  background: #fff;
-  color: #000;
+  background: var(--card);
+  color: var(--text);
 }
+
 .ios-item:last-child {
   border-bottom: none;
 }
@@ -60,6 +79,7 @@ body {
   cursor: pointer;
   transition: background-color 0.3s;
 }
+
 .toggle-label input[type="checkbox"]::before {
   content: "";
   position: absolute;
@@ -71,36 +91,24 @@ body {
   border-radius: 50%;
   transition: transform 0.3s;
 }
+
 .toggle-label input[type="checkbox"]:checked {
-  background-color: #007aff;
+  background-color: var(--button);
 }
+
 .toggle-label input[type="checkbox"]:checked::before {
   transform: translateX(20px);
 }
 
-/* Dark Mode */
-.dark-mode body {
-  background-color: #000;
-  color: #fff;
-}
-.dark-mode .ios-list {
-  background: #1c1c1e;
-}
-.dark-mode .ios-item {
-  color: #fff;
-  background: #1c1c1e;
-  border-bottom: 1px solid #333;
-}
-.dark-mode .ios-header-image {
-  background-color: #1c1c1e;
-  border-bottom: 1px solid #333;
-}
+/* Loads page styles */
 .load-entry {
   background: var(--card);
   padding: 10px;
   border-radius: 8px;
   margin: 10px 0;
   font-size: 14px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .load-entry button {
@@ -111,4 +119,70 @@ body {
   border: none;
   background: var(--button);
   color: var(--text);
+  cursor: pointer;
+}
+
+form input,
+form button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+form button {
+  background-color: var(--button);
+  color: var(--text);
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
+/* Dark Mode overrides */
+.dark-mode body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.dark-mode .ios-list {
+  background: var(--card);
+}
+
+.dark-mode .ios-item {
+  color: var(--text);
+  background: var(--card);
+  border-bottom: 1px solid #333;
+}
+
+.dark-mode .ios-header-image {
+  background-color: var(--card);
+  border-bottom: 1px solid #333;
+}
+
+.dark-mode .load-entry {
+  background: var(--card);
+}
+
+.dark-mode .load-entry button {
+  background: var(--button);
+  color: var(--text);
+}
+
+/* Responsive tweaks */
+@media (max-width: 500px) {
+  .ios-list {
+    margin: 12px;
+  }
+
+  form input,
+  form button {
+    font-size: 15px;
+  }
+
+  .load-entry {
+    font-size: 13px;
+  }
 }

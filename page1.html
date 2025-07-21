@@ -1,28 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Page 1</title>
-  <link rel="stylesheet" href="styles.css" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="stylesheet" href="styles.css">
+  <title>Loads</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Header" />
-  </header>
+  <img src="header.jpg" class="header" alt="Header">
 
-  <div class="ios-list">
-    <div class="ios-item">Page 1 Content</div>
-    <a class="ios-item" href="index.html">← Back to Home</a>
+  <div class="container">
+    <h2>Enter Load</h2>
+    <form id="loadForm">
+      <input type="date" id="date" required>
+      <input type="text" id="ticket" placeholder="Ticket Number" required>
+      <input type="text" id="customer" placeholder="Customer" required>
+      <input type="text" id="rig" placeholder="Rig" required>
+      <input type="text" id="lease" placeholder="Lease" required>
+      <input type="number" id="price" placeholder="Price" required>
+      <input type="number" id="overnights" placeholder="Overnights" required>
+      <button type="submit">Save Load</button>
+      <input type="hidden" id="editIndex">
+    </form>
+
+    <h2>Saved Loads</h2>
+    <div id="loadList"></div>
+    <button onclick="generatePaySheet()">Generate Pay Sheet PDF</button>
   </div>
 
-  <script>
-    const userTheme = localStorage.getItem('theme');
-    if (userTheme === 'dark') {
-      document.documentElement.classList.add('dark-mode');
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

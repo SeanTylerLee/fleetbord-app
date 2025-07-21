@@ -95,3 +95,20 @@ body {
   background-color: #1c1c1e;
   border-bottom: 1px solid #333;
 }
+.load-entry {
+  background: var(--card);
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+.load-entry button {
+  margin: 5px 5px 0 0;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: none;
+  background: var(--button);
+  color: var(--text);
+}

@@ -6,6 +6,7 @@
   <title>Reimbursement</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 <style>
   body {
     margin: 0;
@@ -90,6 +91,17 @@
     cursor: pointer;
   }
 
+  /* Signature pad container */
+  .signature-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+    height: 150px;
+    touch-action: none;
+    margin-bottom: 8px;
+  }
+
   .dark-mode table th {
     background: #222;
   }
@@ -132,11 +144,14 @@
     <input type="file" id="receiptUpload" accept="image/*" multiple />
     <div class="receipt-preview" id="receiptPreview"></div>
 
-<label>Total Amount Paid:</label>
-<input type="number" id="totalAmount" readonly placeholder="Leave Blank" />
+    <label>Total Amount Paid:</label>
+    <input type="number" id="totalAmount" readonly placeholder="Leave Blank" />
 
     <label>Employee Signature:</label>
-    <input type="text" id="signature" placeholder="Type your name as signature" />
+    <div class="signature-container">
+      <canvas id="signature-pad" style="width:100%; height:150px;"></canvas>
+    </div>
+    <button type="button" onclick="clearSignature()" style="margin-bottom: 16px;">Clear Signature</button>
 
     <button onclick="generateReimbursementPDF()">Generate PDF</button>
   </div>
@@ -183,11 +198,29 @@
       });
     });
 
+    // Initialize signature pad
+    const canvas = document.getElementById('signature-pad');
+    const signaturePad = new SignaturePad(canvas);
+
+    function resizeCanvas() {
+      const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      canvas.getContext("2d").scale(ratio, ratio);
+      signaturePad.clear(); // Clear after resize
+    }
+    window.onresize = resizeCanvas;
+    resizeCanvas();
+
+    function clearSignature() {
+      signaturePad.clear();
+    }
+
     async function generateReimbursementPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       const name = document.getElementById("employeeName").value;
-      const sig = document.getElementById("signature").value;
+      const sigDataUrl = signaturePad.isEmpty() ? "" : signaturePad.toDataURL("image/png");
       const rows = document.querySelectorAll("#expenseRows tr");
       const data = [];
 
@@ -220,7 +253,12 @@
       });
 
       doc.text("Total Amount Paid: $" + total.toFixed(2), 20, y + 10);
-      doc.text("Signature: " + sig, 20, y + 20);
+
+      if (sigDataUrl) {
+        doc.addImage(sigDataUrl, "PNG", 20, y + 15, 60, 30);
+      } else {
+        doc.text("Signature: (none)", 20, y + 20);
+      }
 
       const receipts = document.getElementById("receiptUpload").files;
       if (receipts.length > 0) {

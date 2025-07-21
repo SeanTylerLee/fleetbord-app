@@ -12,5 +12,21 @@
     <p>This is the Settings page. Feature coming soon.</p>
     <div><a href="index.html">← Back to Home</a></div>
   </main>
+  <footer>Sean Lee</footer>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').then(reg => {
+        reg.onupdatefound = () => {
+          const newWorker = reg.installing;
+          newWorker.onstatechange = () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('🔁 New version available, reloading...');
+              window.location.reload();
+            }
+          };
+        };
+      });
+    }
+  </script>
 </body>
 </html>

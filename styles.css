@@ -12,6 +12,10 @@ header {
   font-weight: bold;
   color: #007aff;
 }
+main {
+  padding: 20px;
+  font-size: 18px;
+}
 .app-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -35,4 +39,8 @@ footer {
   margin-top: 30px;
   font-size: 14px;
   color: #888;
+}
+a {
+  color: #007aff;
+  text-decoration: none;
 }

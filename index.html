@@ -12,19 +12,33 @@
 </head>
 <body>
   <header>💸 Money Master</header>
+
   <div class="app-grid">
     <div class="app-button" onclick="goTo('income')">📥 Income</div>
     <div class="app-button" onclick="goTo('bills')">📆 Bills</div>
     <div class="app-button" onclick="goTo('spending')">🧾 Spending</div>
     <div class="app-button" onclick="goTo('settings')">⚙️ Settings</div>
   </div>
-  <footer>Track your money like a pro.</footer>
+
+  <footer>Sean Lee</footer>
+
   <script>
     function goTo(page) {
       window.location.href = page + '.html';
     }
+
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
+      navigator.serviceWorker.register('service-worker.js').then(reg => {
+        reg.onupdatefound = () => {
+          const newWorker = reg.installing;
+          newWorker.onstatechange = () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('🔁 New version available, reloading...');
+              window.location.reload();
+            }
+          };
+        };
+      });
     }
   </script>
 </body>

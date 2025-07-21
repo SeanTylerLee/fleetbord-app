@@ -5,20 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Money Master</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#ffffff" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#ffffff" />
 </head>
 <body>
   <header>💸 Money Master</header>
 
-  <div class="app-grid">
-    <div class="app-button" onclick="goTo('income')">📥 Income</div>
-    <div class="app-button" onclick="goTo('bills')">📆 Bills</div>
-    <div class="app-button" onclick="goTo('spending')">🧾 Spending</div>
-    <div class="app-button" onclick="goTo('settings')">⚙️ Settings</div>
-  </div>
+  <main>
+    <h2>Your Balance: <span id="balance">$0.00</span></h2>
+
+    <div class="app-grid">
+      <div class="app-button" onclick="goTo('income')">📥 Income</div>
+      <div class="app-button" onclick="goTo('bills')">📆 Bills</div>
+      <div class="app-button" onclick="goTo('spending')">🧾 Spending</div>
+      <div class="app-button" onclick="goTo('settings')">⚙️ Settings</div>
+    </div>
+
+    <div class="summary">
+      <p><strong>Income:</strong> <span id="summary-income">$0.00</span></p>
+      <p><strong>Bills:</strong> <span id="summary-bills">$0.00</span></p>
+      <p><strong>Spending:</strong> <span id="summary-spending">$0.00</span></p>
+    </div>
+  </main>
 
   <footer>Sean Lee</footer>
 
@@ -27,13 +35,31 @@
       window.location.href = page + '.html';
     }
 
+    function loadTotals() {
+      const income = JSON.parse(localStorage.getItem('income') || '[]');
+      const bills = JSON.parse(localStorage.getItem('bills') || '[]');
+      const spending = JSON.parse(localStorage.getItem('spending') || '[]');
+
+      const totalIncome = income.reduce((sum, i) => sum + parseFloat(i.amount || 0), 0);
+      const totalBills = bills.reduce((sum, b) => sum + parseFloat(b.amount || 0), 0);
+      const totalSpending = spending.reduce((sum, s) => sum + parseFloat(s.amount || 0), 0);
+
+      const balance = totalIncome - totalBills - totalSpending;
+
+      document.getElementById('balance').textContent = `$${balance.toFixed(2)}`;
+      document.getElementById('summary-income').textContent = `$${totalIncome.toFixed(2)}`;
+      document.getElementById('summary-bills').textContent = `$${totalBills.toFixed(2)}`;
+      document.getElementById('summary-spending').textContent = `$${totalSpending.toFixed(2)}`;
+    }
+
+    loadTotals();
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js').then(reg => {
         reg.onupdatefound = () => {
           const newWorker = reg.installing;
           newWorker.onstatechange = () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('🔁 New version available, reloading...');
               window.location.reload();
             }
           };

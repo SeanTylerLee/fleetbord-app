@@ -1,27 +1,44 @@
-body {
+html, body {
+  overscroll-behavior-y: contain; /* Prevent bounce scroll */
+  touch-action: manipulation; /* Improve touch handling */
+  overflow-y: hidden; /* Disable vertical scrolling */
+  height: 100%;
+  -webkit-overflow-scrolling: auto; /* Disable momentum scroll */
+  margin: 0;
+  padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "San Francisco", sans-serif;
   background-color: #f2f2f7;
   color: #000;
-  margin: 0;
-  padding: 0;
   text-align: center;
 }
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 header {
   padding: 40px 20px 20px;
   font-size: 32px;
   font-weight: bold;
   color: #007aff;
 }
+
 main {
+  flex-grow: 1;
   padding: 20px;
   font-size: 18px;
+  overflow-y: auto; /* Allow internal scroll if needed */
 }
+
 .app-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   padding: 20px;
 }
+
 .app-button {
   background-color: white;
   border-radius: 16px;
@@ -31,15 +48,20 @@ main {
   color: #007aff;
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
   transition: background-color 0.2s;
+  user-select: none;
 }
+
 .app-button:active {
   background-color: #e5e5ea;
+  cursor: pointer;
 }
+
 footer {
   margin-top: 30px;
   font-size: 14px;
   color: #888;
 }
+
 a {
   color: #007aff;
   text-decoration: none;

@@ -3,23 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#ffffff" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="manifest.json" />
-  <title>My PWA</title>
+  <meta name="theme-color" content="#000000" />
+  <link rel="stylesheet" href="style.css?v=1.0"> <!-- v=1.0 forces refresh -->
+  <title>Fleetbord</title>
+
+  <!-- Prevent user from scrolling -->
+  <style>body { overflow: hidden; }</style>
+
+  <!-- Refresh when new code is deployed -->
+  <script>
+    // This reloads the app when the file changes (for development use)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(reg => reg.unregister());
+        location.reload(true);
+      });
+    }
+  </script>
 </head>
 <body>
-  <div class="app-container">
-    <header>
-      <h1>Fleetbord</h1>
-    </header>
-    <main>
-      <p>Welcome to your dashboard</p>
-      <button class="primary-btn">Start</button>
-    </main>
-    <footer>
-      <small>© 2025 Fleetbord</small>
-    </footer>
+  <div class="app">
+    <!-- App Header (like iOS Settings title) -->
+    <div class="header">
+      <h1>Settings</h1>
+    </div>
+
+    <!-- List of Setting-Like Options -->
+    <div class="list">
+      <div class="list-item">
+        <div class="avatar">SL</div>
+        <div class="list-text">
+          <strong>Sean Lee</strong>
+          <span>Apple Account, iCloud+, and more</span>
+        </div>
+        <div class="chevron">›</div>
+      </div>
+
+      <div class="list-subtitle">Some iCloud Data Isn’t Syncing</div>
+
+      <div class="list-item"><span>Airplane Mode</span><div class="toggle off"></div></div>
+      <div class="list-item"><span>Wi‑Fi</span><span class="sub">Not Connected</span></div>
+      <div class="list-item"><span>Bluetooth</span><span class="sub blue">On</span></div>
+      <div class="list-item"><span>Cellular</span></div>
+      <div class="list-item"><span>Battery</span></div>
+
+      <div class="list-item"><span>General</span><div class="chevron">›</div></div>
+    </div>
   </div>
 </body>
 </html>

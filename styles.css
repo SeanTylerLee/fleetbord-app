@@ -1,68 +1,119 @@
-/* iOS style base reset */
-html, body {
+/* style.css - iPhone Settings app look for your PWA */
+
+body, html {
   margin: 0;
   padding: 0;
   height: 100%;
+  background-color: #000; /* Dark background like iOS */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #f8f8f8;
-  color: #111;
-  overflow: hidden; /* prevents scroll */
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-}
-
-body.dark-mode {
-  background-color: #000;
   color: #fff;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  overflow: hidden; /* Prevent scrolling */
 }
 
-/* App layout */
-.app-container {
+/* Outer container */
+.app {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
 }
 
-/* Header */
-header {
-  padding: 20px;
+/* Top header like iOS Settings title */
+.header {
+  padding: 20px 20px 10px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* List container */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background-color: #1c1c1e;
+  border-top: 1px solid #2c2c2e;
+}
+
+/* List item (rounded style, like Settings cells) */
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background-color: #1c1c1e;
+  color: #fff;
+  font-size: 16px;
+  border-bottom: 1px solid #2c2c2e;
+}
+
+/* Chevron (>) icon to simulate iOS disclosure indicator */
+.chevron {
+  font-size: 20px;
+  color: #888;
+}
+
+/* Subtitle below user item */
+.list-subtitle {
+  color: #ff3b30;
+  font-size: 13px;
+  padding: 8px 20px;
+  margin-bottom: 10px;
+}
+
+/* Toggle switch visual placeholder */
+.toggle {
+  width: 50px;
+  height: 28px;
+  border-radius: 14px;
+  background-color: #3a3a3c;
+  position: relative;
+}
+.toggle.off::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+/* Sub text inside right side of item */
+.sub {
+  color: #888;
+  font-size: 14px;
+}
+.sub.blue {
+  color: #0a84ff;
+}
+
+/* Avatar circle */
+.avatar {
+  width: 50px;
+  height: 50px;
+  background-color: #666;
+  color: #fff;
+  border-radius: 50%;
   text-align: center;
-  background: #ffffffee;
-  font-weight: 600;
-  font-size: 1.5rem;
-  border-bottom: 1px solid #ccc;
+  line-height: 50px;
+  font-weight: bold;
+  margin-right: 12px;
+  flex-shrink: 0;
 }
 
-/* Main content */
-main {
+/* Text next to avatar */
+.list-text {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
-
-/* Button */
-.primary-btn {
-  padding: 14px 30px;
-  font-size: 1rem;
-  background: #007aff;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  transition: background 0.3s;
+.list-text strong {
+  font-size: 16px;
 }
-
-.primary-btn:active {
-  background: #005ecb;
-}
-
-/* Footer */
-footer {
-  padding: 10px;
-  text-align: center;
-  font-size: 0.8rem;
-  color: #888;
+.list-text span {
+  font-size: 13px;
+  color: #aaa;
 }

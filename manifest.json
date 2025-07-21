@@ -1,11 +1,11 @@
 {
-  "name": "My PWA App",
-  "short_name": "PWA App",
+  "name": "Money Master",
+  "short_name": "MoneyMaster",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007aff",
-  "description": "An installable Progressive Web App example.",
+  "description": "Track your bills, income, and spending easily.",
   "icons": [
     {
       "src": "icons/icon-192.png",

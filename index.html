@@ -3,30 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My PWA App.</title>
+  <title>Money Master</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#007aff" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>📱 My PWA daddy App</h1>
-  </header>
-
-  <main>
-    <p>Welcome! daddy This is your PWA home screen.</p>
-    <p>You can customize this app into a photo vault, calendar, calculator, etc.</p>
-  </main>
-
-  <footer>
-    <p>💡 Add this to your Home Screen for iOS app-like experience.</p>
-  </footer>
-
+  <header>💸 Money Master</header>
+  <div class="app-grid">
+    <div class="app-button" onclick="goTo('income')">📥 Income</div>
+    <div class="app-button" onclick="goTo('bills')">📆 Bills</div>
+    <div class="app-button" onclick="goTo('spending')">🧾 Spending</div>
+    <div class="app-button" onclick="goTo('settings')">⚙️ Settings</div>
+  </div>
+  <footer>Track your money like a pro.</footer>
   <script>
+    function goTo(page) {
+      window.location.href = page + '.html';
+    }
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log('✅ Service Worker registered'))
-        .catch(err => console.error('❌ Service Worker error:', err));
+      navigator.serviceWorker.register('service-worker.js');
     }
   </script>
 </body>

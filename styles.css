@@ -1,1 +1,43 @@
-body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 2rem; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+  background-color: #f2f2f7;
+  color: #000;
+}
+
+.ios-list {
+  margin: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background: #fff;
+}
+
+.ios-item {
+  display: block;
+  padding: 16px;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+  text-decoration: none;
+  background: #fff;
+}
+
+.ios-item:last-child {
+  border-bottom: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #000;
+    color: #fff;
+  }
+  .ios-list {
+    background: #1c1c1e;
+  }
+  .ios-item {
+    color: #fff;
+    border-bottom: 1px solid #333;
+    background: #1c1c1e;
+  }
+}

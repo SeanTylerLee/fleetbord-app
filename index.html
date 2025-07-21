@@ -1,22 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PWA Auto Refresh App</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
-  <h1>Welcome to the Auto-Refreshing PWA</h1>
-  <ul>
-    <li><a href="page1.html">Page 1</a></li>
-    <li><a href="page2.html">Page 2</a></li>
-    <li><a href="page3.html">Page 3</a></li>
-    <li><a href="page4.html">Page 4</a></li>
-    <li><a href="page5.html">Page 5</a></li>
-    <li><a href="settings.html">Settings</a></li>
-  </ul>
+  <div class="ios-list">
+    <a class="ios-item" href="page1.html">Page 1</a>
+    <a class="ios-item" href="page2.html">Page 2</a>
+    <a class="ios-item" href="page3.html">Page 3</a>
+    <a class="ios-item" href="page4.html">Page 4</a>
+    <a class="ios-item" href="page5.html">Page 5</a>
+    <a class="ios-item" href="settings.html">Settings</a>
+  </div>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/service-worker.js').then(reg => {

@@ -2,44 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Fleetbord - Home</title>
-  <link rel="stylesheet" href="style.css" />
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My PWA App</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#007aff" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<script>
-  if (!localStorage.getItem('fleetbordLoggedInUser')) {
-    window.location.href = 'login.html';
-  }
-</script>
-
 <body>
-
   <header>
-    <button class="back-button" onclick="history.back()">
-      <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 22" fill="none">
-        <path d="M11 1L2 11L11 21" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Back
-    </button>
+    <h1>📱 My PWA App</h1>
   </header>
 
-  <img src="header.png" alt="Header" class="top-image">
-
   <main>
-    <div class="card">
-      <h2>Welcome to Fleetbord</h2>
-      <p>This is the homepage. Use the bottom tabs to navigate.</p>
-    </div>
+    <p>Welcome! This is your PWA home screen.</p>
+    <p>You can customize this app into a photo vault, calendar, calculator, etc.</p>
   </main>
 
-  <nav class="tab-bar">
-    <a href="index.html" class="tab-button active">Home</a>
-    <a href="loads.html" class="tab-button">Loads</a>
-    <a href="messages.html" class="tab-button">Messages</a>
-    <a href="settings.html" class="tab-button">Settings</a>
-  </nav>
+  <footer>
+    <p>💡 Add this to your Home Screen for iOS app-like experience.</p>
+  </footer>
 
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('✅ Service Worker registered'))
+        .catch(err => console.error('❌ Service Worker error:', err));
+    }
+  </script>
 </body>
 </html>

@@ -14,18 +14,12 @@
   </header>
 
   <div class="container">
-    <h2>Dispatched Loads</h2>
-    <div id="dispatchList" class="ios-list">
-      <div class="ios-item">
-        <strong>No loads currently dispatched.</strong>
-        <p>Once a load is dispatched to you, it will appear here.</p>
-      </div>
-    </div>
+    <h2 style="text-align:center; padding: 15px;">Dispatched Loads</h2>
+    <div id="dispatchList"></div>
     <a class="ios-item" href="index.html">← Back to Home</a>
   </div>
 
   <script>
-    // Load example load structure
     const sampleDispatches = [
       {
         id: 1,
@@ -43,35 +37,46 @@
       }
     ];
 
-    const currentUser = "driver1"; // Placeholder: Normally set after login
+    const currentUser = "driver1"; // Placeholder (to be replaced with actual login system)
     const dispatchList = document.getElementById("dispatchList");
     dispatchList.innerHTML = "";
 
-    sampleDispatches.forEach(load => {
-      if (load.assignedTo.includes(currentUser)) {
+    const relevantLoads = sampleDispatches.filter(load => load.assignedTo.includes(currentUser));
+
+    if (relevantLoads.length === 0) {
+      dispatchList.innerHTML = `
+        <div class="ios-list">
+          <div class="ios-item">
+            <strong>No loads currently dispatched.</strong>
+            <p>Once a load is dispatched to you, it will appear here.</p>
+          </div>
+        </div>`;
+    } else {
+      relevantLoads.forEach(load => {
         const div = document.createElement("div");
-        div.className = "ios-item";
+        div.className = "dispatch-entry";
         div.innerHTML = `
-          <strong>Pickup: </strong>${load.pickupLocation} at ${load.pickupTime}<br>
-          <strong>Delivery: </strong>${load.deliveryLocation} at ${load.deliveryTime}<br>
-          <strong>Rate: </strong>${load.rate}<br>
-          <strong>Customer: </strong>${load.customer}<br>
-          <strong>Fuel Surcharge: </strong>${load.fuelSurcharge}<br>
-          <strong>Tickets: </strong>${load.ticketType}<br>
-          <strong>Notes: </strong>${load.notes}<br><br>
+          <strong>Pickup:</strong> ${load.pickupLocation}<br>
+          <strong>Pickup Time:</strong> ${load.pickupTime}<br>
+          <strong>Delivery:</strong> ${load.deliveryLocation}<br>
+          <strong>Delivery Time:</strong> ${load.deliveryTime}<br>
+          <strong>Rate:</strong> ${load.rate}<br>
+          <strong>Customer:</strong> ${load.customer}<br>
+          <strong>Fuel Surcharge:</strong> ${load.fuelSurcharge}<br>
+          <strong>Ticket Type:</strong> ${load.ticketType}<br>
+          <strong>Notes:</strong> ${load.notes}<br><br>
           <button onclick="acceptLoad(${load.id})">✅ Accept Load</button>
         `;
         dispatchList.appendChild(div);
-      }
-    });
+      });
+    }
 
     function acceptLoad(id) {
       alert("Load #" + id + " accepted.");
-      // Future: Save accepted status to backend or localStorage
+      // TODO: Save to backend or localStorage
     }
 
-    const theme = localStorage.getItem('theme');
-    if (theme === 'dark') {
+    if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.classList.add('dark-mode');
     }
   </script>

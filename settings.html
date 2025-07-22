@@ -7,6 +7,120 @@
   <link rel="stylesheet" href="styles.css" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      background: #f2f2f7;
+    }
+
+    .dark-mode {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .ios-header-image img {
+      width: 100%;
+      height: auto;
+    }
+
+    .container {
+      padding: 10px 0;
+    }
+
+    h2 {
+      font-size: 1.4em;
+      margin: 16px;
+      color: #888;
+    }
+
+    h3 {
+      margin: 25px 16px 10px;
+      font-size: 1.1em;
+      color: #888;
+    }
+
+    .ios-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .ios-item {
+      background: #fff;
+      padding: 15px 16px;
+      border-top: 1px solid #ccc;
+      font-size: 1em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #000;
+      text-decoration: none;
+    }
+
+    .ios-item:first-child {
+      border-top: none;
+    }
+
+    .ios-item:active {
+      background: #e5e5ea;
+    }
+
+    .dark-mode .ios-item {
+      background: #1c1c1e;
+      color: #fff;
+      border-color: #3a3a3c;
+    }
+
+    .ios-item button {
+      font-size: 1em;
+      background: none;
+      border: none;
+      color: inherit;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      text-align: left;
+    }
+
+    .toggle-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    input[type="checkbox"] {
+      width: 45px;
+      height: 26px;
+      appearance: none;
+      background: #ccc;
+      border-radius: 13px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    input[type="checkbox"]:checked {
+      background: #34c759;
+    }
+
+    input[type="checkbox"]::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      top: 3px;
+      left: 3px;
+      transition: 0.3s;
+    }
+
+    input[type="checkbox"]:checked::before {
+      transform: translateX(19px);
+    }
+  </style>
 </head>
 <body>
   <header class="ios-header-image">
@@ -15,53 +129,68 @@
 
   <div class="container">
     <h2>Settings</h2>
-    <div class="ios-list">
-
-      <!-- Regular Settings -->
-      <label class="ios-item toggle-label">
+    <ul class="ios-list">
+      <li class="ios-item toggle-label">
         <span>Dark Mode</span>
         <input type="checkbox" id="darkModeToggle">
-      </label>
-
-      <label class="ios-item toggle-label">
+      </li>
+      <li class="ios-item toggle-label">
         <span>Notifications</span>
         <input type="checkbox" id="notifyToggle">
-      </label>
-
-      <label class="ios-item toggle-label">
-        <span>Auto Refresh on Update</span>
+      </li>
+      <li class="ios-item toggle-label">
+        <span>Auto Refresh</span>
         <input type="checkbox" id="autoRefreshToggle">
-      </label>
+      </li>
+      <li class="ios-item">
+        <button onclick="clearData()">🧹 Clear Local Data</button>
+      </li>
+    </ul>
 
-      <button class="ios-item" onclick="clearData()">🧹 Clear Local Data</button>
-
-      <!-- Advanced Settings -->
-      <h3 style="margin: 10px 15px;">Advanced</h3>
-
-      <div class="ios-item">App Version: <span id="version">1.0.0</span></div>
-
-      <button class="ios-item" onclick="forceUpdate()">🔄 Check for Update</button>
-      <button class="ios-item" onclick="unregisterSW()">❌ Unregister Service Worker</button>
-      <button class="ios-item" onclick="checkStorage()">📦 Check Storage Usage</button>
-
-      <a class="ios-item" href="index.html">← Back</a>
-    </div>
+    <h3>Advanced</h3>
+    <ul class="ios-list">
+      <li class="ios-item">App Version: <span id="version">1.0.0</span></li>
+      <li class="ios-item">
+        <button onclick="forceUpdate()">🔄 Check for Update</button>
+      </li>
+      <li class="ios-item">
+        <button onclick="unregisterSW()">❌ Unregister Service Worker</button>
+      </li>
+      <li class="ios-item">
+        <button onclick="checkStorage()">📦 Check Storage Usage</button>
+      </li>
+      <li class="ios-item">
+        <a href="index.html">← Back</a>
+      </li>
+    </ul>
   </div>
 
   <script>
-    // Dark Mode Toggle
     const darkToggle = document.getElementById('darkModeToggle');
-    const mode = localStorage.getItem('theme');
-    if (mode === 'dark') {
+    const notifyToggle = document.getElementById('notifyToggle');
+    const autoRefreshToggle = document.getElementById('autoRefreshToggle');
+
+    if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.classList.add('dark-mode');
       darkToggle.checked = true;
     }
+
     darkToggle.addEventListener('change', () => {
       document.documentElement.classList.toggle('dark-mode', darkToggle.checked);
       localStorage.setItem('theme', darkToggle.checked ? 'dark' : 'light');
     });
 
-    // Clear Local Data
+    notifyToggle.checked = localStorage.getItem('notifications') === 'on';
+    notifyToggle.addEventListener('change', () => {
+      localStorage.setItem('notifications', notifyToggle.checked ? 'on' : 'off');
+      alert('Notifications ' + (notifyToggle.checked ? 'enabled' : 'disabled') + ' (simulated)');
+    });
+
+    autoRefreshToggle.checked = localStorage.getItem('autoRefresh') === 'true';
+    autoRefreshToggle.addEventListener('change', () => {
+      localStorage.setItem('autoRefresh', autoRefreshToggle.checked.toString());
+    });
+
     function clearData() {
       if (confirm('Clear all saved app data?')) {
         localStorage.clear();
@@ -70,7 +199,6 @@
       }
     }
 
-    // Force Update (Check for new service worker)
     function forceUpdate() {
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         navigator.serviceWorker.getRegistration().then(reg => {
@@ -81,7 +209,6 @@
       }
     }
 
-    // Unregister Service Worker
     function unregisterSW() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => {
@@ -91,7 +218,6 @@
       }
     }
 
-    // Storage Estimate
     function checkStorage() {
       if (navigator.storage && navigator.storage.estimate) {
         navigator.storage.estimate().then(estimate => {
@@ -103,21 +229,6 @@
         alert('Storage estimate not supported on this device.');
       }
     }
-
-    // Notifications Placeholder
-    const notifyToggle = document.getElementById('notifyToggle');
-    notifyToggle.checked = localStorage.getItem('notifications') === 'on';
-    notifyToggle.addEventListener('change', () => {
-      localStorage.setItem('notifications', notifyToggle.checked ? 'on' : 'off');
-      alert('Notifications ' + (notifyToggle.checked ? 'enabled' : 'disabled') + ' (simulated)');
-    });
-
-    // Auto-refresh toggle (simulated storage flag)
-    const autoRefreshToggle = document.getElementById('autoRefreshToggle');
-    autoRefreshToggle.checked = localStorage.getItem('autoRefresh') === 'true';
-    autoRefreshToggle.addEventListener('change', () => {
-      localStorage.setItem('autoRefresh', autoRefreshToggle.checked.toString());
-    });
   </script>
 </body>
 </html>

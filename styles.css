@@ -237,3 +237,14 @@ form button:hover {
     font-size: 13px;
   }
 }
+.form-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.form-row input {
+  flex: 1;
+  min-width: 100px;
+}

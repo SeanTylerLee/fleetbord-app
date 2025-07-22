@@ -122,6 +122,38 @@ html, body {
   cursor: pointer;
 }
 
+/* Dispatch page styles */
+.dispatch-entry {
+  background: var(--card);
+  padding: 15px;
+  margin: 15px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-size: 15px;
+}
+
+.dispatch-entry strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.dispatch-entry p {
+  margin: 5px 0;
+}
+
+.dispatch-entry button {
+  margin-top: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--button);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
+
 /* Form with bubble-style inputs */
 form {
   max-width: 400px;
@@ -178,11 +210,13 @@ form button:hover {
   border-bottom: 1px solid #333;
 }
 
-.dark-mode .load-entry {
+.dark-mode .load-entry,
+.dark-mode .dispatch-entry {
   background: var(--card);
 }
 
-.dark-mode .load-entry button {
+.dark-mode .load-entry button,
+.dark-mode .dispatch-entry button {
   background: var(--button);
   color: var(--text);
 }
@@ -198,7 +232,8 @@ form button:hover {
     font-size: 15px;
   }
 
-  .load-entry {
+  .load-entry,
+  .dispatch-entry {
     font-size: 13px;
   }
 }

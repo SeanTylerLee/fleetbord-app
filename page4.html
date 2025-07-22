@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Page 4</title>
+  <title>Dispatch</title>
   <link rel="stylesheet" href="styles.css" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
@@ -13,14 +13,65 @@
     <img src="header.jpg" alt="Header" />
   </header>
 
-  <div class="ios-list">
-    <div class="ios-item">Page 1 Content</div>
+  <div class="container">
+    <h2>Dispatched Loads</h2>
+    <div id="dispatchList" class="ios-list">
+      <div class="ios-item">
+        <strong>No loads currently dispatched.</strong>
+        <p>Once a load is dispatched to you, it will appear here.</p>
+      </div>
+    </div>
     <a class="ios-item" href="index.html">← Back to Home</a>
   </div>
 
   <script>
-    const userTheme = localStorage.getItem('theme');
-    if (userTheme === 'dark') {
+    // Load example load structure
+    const sampleDispatches = [
+      {
+        id: 1,
+        pickupLocation: "Yard A",
+        pickupTime: "2025-07-22 08:00 AM",
+        deliveryLocation: "Site B",
+        deliveryTime: "2025-07-22 01:00 PM",
+        rate: "$850",
+        customer: "ABC Energy Co.",
+        fuelSurcharge: "$75",
+        ticketType: "Individual Tickets",
+        notes: "Watch out for site road construction.",
+        assignedTo: ["driver1", "driver2"],
+        accepted: false
+      }
+    ];
+
+    const currentUser = "driver1"; // Placeholder: Normally set after login
+    const dispatchList = document.getElementById("dispatchList");
+    dispatchList.innerHTML = "";
+
+    sampleDispatches.forEach(load => {
+      if (load.assignedTo.includes(currentUser)) {
+        const div = document.createElement("div");
+        div.className = "ios-item";
+        div.innerHTML = `
+          <strong>Pickup: </strong>${load.pickupLocation} at ${load.pickupTime}<br>
+          <strong>Delivery: </strong>${load.deliveryLocation} at ${load.deliveryTime}<br>
+          <strong>Rate: </strong>${load.rate}<br>
+          <strong>Customer: </strong>${load.customer}<br>
+          <strong>Fuel Surcharge: </strong>${load.fuelSurcharge}<br>
+          <strong>Tickets: </strong>${load.ticketType}<br>
+          <strong>Notes: </strong>${load.notes}<br><br>
+          <button onclick="acceptLoad(${load.id})">✅ Accept Load</button>
+        `;
+        dispatchList.appendChild(div);
+      }
+    });
+
+    function acceptLoad(id) {
+      alert("Load #" + id + " accepted.");
+      // Future: Save accepted status to backend or localStorage
+    }
+
+    const theme = localStorage.getItem('theme');
+    if (theme === 'dark') {
       document.documentElement.classList.add('dark-mode');
     }
   </script>

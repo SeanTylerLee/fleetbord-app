@@ -1,44 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings</title>
-  <link rel="stylesheet" href="styles.css" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Header" />
-  </header>
-
-  <div class="ios-list">
-    <label class="ios-item toggle-label">
-      <span>Dark Mode</span>
-      <input type="checkbox" id="darkModeToggle">
-    </label>
-    <a class="ios-item" href="index.html">← Back</a>
+  <img src="header.jpg" alt="Header" class="header-img">
+  <div class="container">
+    <h2>Settings</h2>
+    <label><input type="checkbox" id="darkModeToggle"> Dark Mode</label><br>
+    <label><input type="checkbox"> Enable Notifications</label><br>
+    <label><input type="checkbox"> Require Login on Start</label><br>
+    <button onclick="localStorage.clear(); alert('Data cleared');">Clear Local Data</button>
   </div>
-
-  <script>
-    const toggle = document.getElementById('darkModeToggle');
-    const currentMode = localStorage.getItem('theme');
-
-    if (currentMode === 'dark') {
-      document.documentElement.classList.add('dark-mode');
-      toggle.checked = true;
-    }
-
-    toggle.addEventListener('change', () => {
-      if (toggle.checked) {
-        document.documentElement.classList.add('dark-mode');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark-mode');
-        localStorage.setItem('theme', 'light');
-      }
-    });
-  </script>
 </body>
 </html>

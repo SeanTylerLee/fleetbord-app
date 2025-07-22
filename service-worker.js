@@ -1,11 +1,22 @@
-self.addEventListener('install', event => {
-  self.skipWaiting();
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open('login-app-v1').then(function(cache) {
+      return cache.addAll([
+        './',
+        './login.html',
+        './admin.html',
+        './driver.html',
+        './style.css',
+        './script.js',
+        './manifest.json'
+      ]);
+    })
+  );
 });
-self.addEventListener('activate', event => {
-  clients.claim();
-});
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+self.addEventListener('fetch', function(e) {
+  e.respondWith(
+    caches.match(e.request).then(function(response) {
+      return response || fetch(e.request);
+    })
   );
 });

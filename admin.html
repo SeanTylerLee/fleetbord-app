@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <img src="header.jpg" alt="Header" class="header-img">
+  <div class="container">
+    <h2>Admin Dashboard</h2>
+    <div id="user-list"></div>
+    <h3>Add New User</h3>
+    <input type="text" id="new-username" placeholder="Username">
+    <input type="password" id="new-password" placeholder="5-digit Password" maxlength="5">
+    <button onclick="addUser()">Add User</button>
+    <p id="admin-message"></p>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,75 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Loads</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    /* Override form styles for bubble inputs */
-    form {
-      max-width: 400px;
-      margin: 0 auto 20px auto;
-      padding: 0 10px;
-      box-sizing: border-box;
-    }
-
-    form input,
-    form button {
-      width: 100%;
-      padding: 12px 16px;
-      margin-bottom: 12px;
-      font-size: 16px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-      background: var(--card);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    form button {
-      background-color: var(--button);
-      color: var(--text);
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0, 122, 255, 0.5);
-      transition: background-color 0.3s ease;
-    }
-
-    form button:hover {
-      background-color: #005bb5;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page 1</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-wrapper">
-    <div class="ios-header-image">
-      <img src="header.jpg" alt="Header" />
-    </div>
-
-    <div class="container">
-      <h2>   Enter Load</h2>
-      <form id="loadForm" autocomplete="off">
-        <input type="date" id="date" required />
-        <input type="text" id="ticket" placeholder="Ticket Number" required />
-        <input type="text" id="customer" placeholder="Customer" required />
-        <input type="text" id="rig" placeholder="Rig" required />
-        <input type="text" id="lease" placeholder="Lease" required />
-        <input type="number" id="price" placeholder="Price" required />
-        <input type="number" id="overnights" placeholder="Overnights" required />
-        <button type="submit">Save Load</button>
-        <input type="hidden" id="editIndex" />
-      </form>
-
-      <h2>Saved Loads</h2>
-      <div id="loadList"></div>
-
-      <button class="export-btn" onclick="generatePaySheet()">Generate Pay Sheet PDF</button>
-    </div>
+  <img src="header.jpg" alt="Header" class="header-img">
+  <div class="container">
+    <h2>Page 1</h2>
+    <p>This is Page 1.</p>
   </div>
-
-  <script src="app.js"></script>
 </body>
 </html>

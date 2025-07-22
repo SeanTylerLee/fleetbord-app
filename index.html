@@ -1,47 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Header" />
-  </header>
-
-  <div class="ios-list">
-    <a class="ios-item" href="page1.html">Loads</a>
-    <a class="ios-item" href="page2.html">Reimbursements</a>
-    <a class="ios-item" href="page3.html">Page 3</a>
-    <a class="ios-item" href="page4.html">Page 4</a>
-    <a class="ios-item" href="page5.html">Page 5</a>
-    <a class="ios-item" href="settings.html">Settings</a>
+  <img src="header.jpg" alt="Header" class="header-img">
+  <div class="container">
+    <h2>Home</h2>
+    <ul>
+      <li><a href="page1.html">Page 1</a></li>
+      <li><a href="page2.html">Page 2</a></li>
+      <li><a href="page3.html">Page 3</a></li>
+      <li><a href="page4.html">Page 4</a></li>
+      <li><a href="page5.html">Page 5</a></li>
+      <li><a href="settings.html">Settings</a></li>
+    </ul>
   </div>
-
-  <script>
-    const userTheme = localStorage.getItem('theme');
-    if (userTheme === 'dark') {
-      document.documentElement.classList.add('dark-mode');
-    }
-  </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js').then(reg => {
-        reg.onupdatefound = () => {
-          const newWorker = reg.installing;
-          newWorker.onstatechange = () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              window.location.reload();
-            }
-          };
-        };
-      });
-    }
-  </script>
 </body>
 </html>

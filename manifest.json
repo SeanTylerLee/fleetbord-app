@@ -1,9 +1,9 @@
 {
-  "name": "My PWA App",
-  "short_name": "PWA",
-  "start_url": "./index.html",
+  "name": "Login PWA",
+  "short_name": "LoginApp",
+  "start_url": "login.html",
   "display": "standalone",
-  "theme_color": "#000000",
   "background_color": "#ffffff",
+  "theme_color": "#007aff",
   "icons": []
 }

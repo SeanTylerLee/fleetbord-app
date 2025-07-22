@@ -2,14 +2,100 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Page 1</title>
+  <title>Loads</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <img src="header.jpg" alt="Header" class="header-img">
   <div class="container">
-    <h2>Page 1</h2>
-    <p>This is Page 1.</p>
+    <h2>Loads</h2>
+    <form id="loadForm" onsubmit="return addLoad()">
+      <input type="date" id="date" required>
+      <input type="text" id="ticket" placeholder="Ticket Number" required>
+      <input type="text" id="customer" placeholder="Customer" required>
+      <input type="text" id="rig" placeholder="Rig" required>
+      <input type="text" id="lease" placeholder="Lease" required>
+      <input type="number" id="price" placeholder="Price" required step="0.01" min="0">
+      <input type="number" id="overnights" placeholder="Overnights" required min="0" step="1">
+      <button type="submit">Add Load</button>
+    </form>
+    <hr>
+    <h3>Your Loads</h3>
+    <ul id="loadsList"></ul>
   </div>
+  <script>
+    const user = localStorage.getItem('loggedInUser') || 'guest';
+    let loads = JSON.parse(localStorage.getItem('loads_' + user)) || [];
+
+    function saveLoads() {
+      localStorage.setItem('loads_' + user, JSON.stringify(loads));
+    }
+
+    function renderLoads() {
+      const list = document.getElementById('loadsList');
+      list.innerHTML = '';
+      if(loads.length === 0) {
+        list.innerHTML = '<li>No loads added yet.</li>';
+        return;
+      }
+      loads.forEach((load, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <strong>${load.date}</strong> | Ticket: ${load.ticket} | Customer: ${load.customer} | Rig: ${load.rig} | Lease: ${load.lease} | Price: $${load.price.toFixed(2)} | Overnights: ${load.overnights}
+          <button onclick="editLoad(${index})" style="margin-left:10px;">Edit</button>
+          <button onclick="deleteLoad(${index})" style="margin-left:5px;">Delete</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function addLoad() {
+      const date = document.getElementById('date').value;
+      const ticket = document.getElementById('ticket').value.trim();
+      const customer = document.getElementById('customer').value.trim();
+      const rig = document.getElementById('rig').value.trim();
+      const lease = document.getElementById('lease').value.trim();
+      const price = parseFloat(document.getElementById('price').value);
+      const overnights = parseInt(document.getElementById('overnights').value);
+
+      if(!date || !ticket || !customer || !rig || !lease || isNaN(price) || isNaN(overnights)) {
+        alert('Please fill all fields correctly.');
+        return false;
+      }
+
+      loads.push({date, ticket, customer, rig, lease, price, overnights});
+      saveLoads();
+      renderLoads();
+      document.getElementById('loadForm').reset();
+      return false; // prevent submit reload
+    }
+
+    function editLoad(index) {
+      const load = loads[index];
+      document.getElementById('date').value = load.date;
+      document.getElementById('ticket').value = load.ticket;
+      document.getElementById('customer').value = load.customer;
+      document.getElementById('rig').value = load.rig;
+      document.getElementById('lease').value = load.lease;
+      document.getElementById('price').value = load.price;
+      document.getElementById('overnights').value = load.overnights;
+
+      // Remove the old load
+      loads.splice(index, 1);
+      saveLoads();
+      renderLoads();
+    }
+
+    function deleteLoad(index) {
+      if(confirm('Delete this load?')) {
+        loads.splice(index, 1);
+        saveLoads();
+        renderLoads();
+      }
+    }
+
+    // Initialize
+    renderLoads();
+  </script>
 </body>
 </html>

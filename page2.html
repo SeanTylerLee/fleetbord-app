@@ -2,14 +2,87 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Page 2</title>
+  <title>Reimbursement</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <img src="header.jpg" alt="Header" class="header-img">
   <div class="container">
-    <h2>Page 2</h2>
-    <p>This is Page 2.</p>
+    <h2>Reimbursement</h2>
+    <form id="reimbForm" onsubmit="return addReimbursement()">
+      <input type="date" id="rdate" required>
+      <input type="number" id="amount" placeholder="Amount" required step="0.01" min="0">
+      <input type="text" id="description" placeholder="Description" required>
+      <button type="submit">Add Reimbursement</button>
+    </form>
+    <hr>
+    <h3>Your Reimbursements</h3>
+    <ul id="reimbList"></ul>
   </div>
+  <script>
+    const user = localStorage.getItem('loggedInUser') || 'guest';
+    let reimb = JSON.parse(localStorage.getItem('reimb_' + user)) || [];
+
+    function saveReimb() {
+      localStorage.setItem('reimb_' + user, JSON.stringify(reimb));
+    }
+
+    function renderReimb() {
+      const list = document.getElementById('reimbList');
+      list.innerHTML = '';
+      if(reimb.length === 0) {
+        list.innerHTML = '<li>No reimbursements added yet.</li>';
+        return;
+      }
+      reimb.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <strong>${item.date}</strong> | $${item.amount.toFixed(2)} | ${item.description}
+          <button onclick="editReimb(${index})" style="margin-left:10px;">Edit</button>
+          <button onclick="deleteReimb(${index})" style="margin-left:5px;">Delete</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function addReimbursement() {
+      const date = document.getElementById('rdate').value;
+      const amount = parseFloat(document.getElementById('amount').value);
+      const description = document.getElementById('description').value.trim();
+
+      if(!date || isNaN(amount) || !description) {
+        alert('Please fill all fields correctly.');
+        return false;
+      }
+
+      reimb.push({date, amount, description});
+      saveReimb();
+      renderReimb();
+      document.getElementById('reimbForm').reset();
+      return false; // prevent reload
+    }
+
+    function editReimb(index) {
+      const item = reimb[index];
+      document.getElementById('rdate').value = item.date;
+      document.getElementById('amount').value = item.amount;
+      document.getElementById('description').value = item.description;
+
+      reimb.splice(index, 1);
+      saveReimb();
+      renderReimb();
+    }
+
+    function deleteReimb(index) {
+      if(confirm('Delete this reimbursement?')) {
+        reimb.splice(index, 1);
+        saveReimb();
+        renderReimb();
+      }
+    }
+
+    // Initialize
+    renderReimb();
+  </script>
 </body>
 </html>

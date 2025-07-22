@@ -13,31 +13,110 @@
     <img src="header.jpg" alt="Header" />
   </header>
 
-  <div class="ios-list">
-    <label class="ios-item toggle-label">
-      <span>Dark Mode</span>
-      <input type="checkbox" id="darkModeToggle">
-    </label>
-    <a class="ios-item" href="index.html">← Back</a>
+  <div class="container">
+    <h2>Settings</h2>
+    <div class="ios-list">
+
+      <!-- Regular Settings -->
+      <label class="ios-item toggle-label">
+        <span>Dark Mode</span>
+        <input type="checkbox" id="darkModeToggle">
+      </label>
+
+      <label class="ios-item toggle-label">
+        <span>Notifications</span>
+        <input type="checkbox" id="notifyToggle">
+      </label>
+
+      <label class="ios-item toggle-label">
+        <span>Auto Refresh on Update</span>
+        <input type="checkbox" id="autoRefreshToggle">
+      </label>
+
+      <button class="ios-item" onclick="clearData()">🧹 Clear Local Data</button>
+
+      <!-- Advanced Settings -->
+      <h3 style="margin: 10px 15px;">Advanced</h3>
+
+      <div class="ios-item">App Version: <span id="version">1.0.0</span></div>
+
+      <button class="ios-item" onclick="forceUpdate()">🔄 Check for Update</button>
+      <button class="ios-item" onclick="unregisterSW()">❌ Unregister Service Worker</button>
+      <button class="ios-item" onclick="checkStorage()">📦 Check Storage Usage</button>
+
+      <a class="ios-item" href="index.html">← Back</a>
+    </div>
   </div>
 
   <script>
-    const toggle = document.getElementById('darkModeToggle');
-    const currentMode = localStorage.getItem('theme');
-
-    if (currentMode === 'dark') {
+    // Dark Mode Toggle
+    const darkToggle = document.getElementById('darkModeToggle');
+    const mode = localStorage.getItem('theme');
+    if (mode === 'dark') {
       document.documentElement.classList.add('dark-mode');
-      toggle.checked = true;
+      darkToggle.checked = true;
+    }
+    darkToggle.addEventListener('change', () => {
+      document.documentElement.classList.toggle('dark-mode', darkToggle.checked);
+      localStorage.setItem('theme', darkToggle.checked ? 'dark' : 'light');
+    });
+
+    // Clear Local Data
+    function clearData() {
+      if (confirm('Clear all saved app data?')) {
+        localStorage.clear();
+        caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
+        alert('Local data cleared.');
+      }
     }
 
-    toggle.addEventListener('change', () => {
-      if (toggle.checked) {
-        document.documentElement.classList.add('dark-mode');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark-mode');
-        localStorage.setItem('theme', 'light');
+    // Force Update (Check for new service worker)
+    function forceUpdate() {
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.getRegistration().then(reg => {
+          if (reg) {
+            reg.update().then(() => alert('Checked for update.'));
+          }
+        });
       }
+    }
+
+    // Unregister Service Worker
+    function unregisterSW() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          regs.forEach(reg => reg.unregister());
+          alert('Service Worker unregistered.');
+        });
+      }
+    }
+
+    // Storage Estimate
+    function checkStorage() {
+      if (navigator.storage && navigator.storage.estimate) {
+        navigator.storage.estimate().then(estimate => {
+          const used = (estimate.usage / 1024).toFixed(1);
+          const quota = (estimate.quota / 1024).toFixed(1);
+          alert(`Storage used: ${used} KB of ${quota} KB`);
+        });
+      } else {
+        alert('Storage estimate not supported on this device.');
+      }
+    }
+
+    // Notifications Placeholder
+    const notifyToggle = document.getElementById('notifyToggle');
+    notifyToggle.checked = localStorage.getItem('notifications') === 'on';
+    notifyToggle.addEventListener('change', () => {
+      localStorage.setItem('notifications', notifyToggle.checked ? 'on' : 'off');
+      alert('Notifications ' + (notifyToggle.checked ? 'enabled' : 'disabled') + ' (simulated)');
+    });
+
+    // Auto-refresh toggle (simulated storage flag)
+    const autoRefreshToggle = document.getElementById('autoRefreshToggle');
+    autoRefreshToggle.checked = localStorage.getItem('autoRefresh') === 'true';
+    autoRefreshToggle.addEventListener('change', () => {
+      localStorage.setItem('autoRefresh', autoRefreshToggle.checked.toString());
     });
   </script>
 </body>

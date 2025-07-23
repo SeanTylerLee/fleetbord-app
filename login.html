@@ -10,15 +10,19 @@
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg, #fff);
       color: var(--text, #000);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
       margin: 0;
+      padding: 0;
+    }
+
+    header img {
+      width: 100%;
+      height: auto;
+      display: block;
     }
 
     .login-box {
       background: var(--card, #fff);
+      margin: 2rem auto;
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
@@ -51,6 +55,10 @@
   </style>
 </head>
 <body>
+  <header>
+    <img src="header.jpg" alt="Fleetbord Header" />
+  </header>
+
   <div class="login-box">
     <h2>Fleetbord Login</h2>
     <input type="text" id="username" placeholder="Username" required />
@@ -59,8 +67,9 @@
   </div>
 
   <script>
-    // Initialize default admin user if needed
-    if (!localStorage.getItem("users")) {
+    // Set up default admin user if not present
+    const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    if (!existingUsers.length) {
       localStorage.setItem("users", JSON.stringify([
         { username: "admin", password: "31345", role: "admin", active: true }
       ]));
@@ -68,25 +77,23 @@
 
     function login() {
       const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value;
+      const password = document.getElementById("password").value.trim();
       const users = JSON.parse(localStorage.getItem("users") || "[]");
 
-      const match = users.find(u => u.username === username && u.password === password);
+      const match = users.find(user =>
+        user.username === username &&
+        user.password === password &&
+        user.active !== false
+      );
 
       if (!match) {
         alert("Invalid login.");
         return;
       }
 
-      if (!match.active) {
-        alert("Account is locked.");
-        return;
-      }
-
-      // Save session
       localStorage.setItem("currentUser", JSON.stringify(match));
 
-      // Log login event
+      // Add to login log
       const log = JSON.parse(localStorage.getItem("loginLog") || "[]");
       log.push({
         username: match.username,
@@ -96,7 +103,6 @@
       });
       localStorage.setItem("loginLog", JSON.stringify(log));
 
-      // Redirect to homepage
       window.location.href = "index.html";
     }
   </script>

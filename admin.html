@@ -5,22 +5,195 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Admin Panel</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 1rem;
+      background: var(--bg, #fff);
+      color: var(--text, #000);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    label, select, input {
+      display: block;
+      margin: 0.5rem 0 0.3rem;
+      width: 100%;
+    }
+
+    button {
+      padding: 0.5rem;
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      margin-top: 0.5rem;
+      cursor: pointer;
+    }
+
+    .user-entry {
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.3rem;
+    }
+
+    th {
+      background: var(--card);
+    }
+  </style>
   <script>
-    // Allow only admins to access this page
-    const user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null');
+    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
     if (!user || user.role !== 'admin') {
-      alert('Access denied. Admins only.');
+      alert('Admins only');
       window.location.replace('index.html');
     }
+
+    function createUser(e) {
+      e.preventDefault();
+      const username = document.getElementById('newUsername').value;
+      const password = document.getElementById('newPassword').value;
+      const role = document.getElementById('newRole').value;
+
+      let users = JSON.parse(localStorage.getItem('users') || '[]');
+      if (users.find(u => u.username === username)) {
+        alert('User already exists!');
+        return;
+      }
+
+      users.push({ username, password, role, active: true });
+      localStorage.setItem('users', JSON.stringify(users));
+      alert('User created!');
+      e.target.reset();
+      loadUsers();
+    }
+
+    function loadUsers() {
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const out = document.getElementById('userList');
+      out.innerHTML = '';
+      users.forEach(u => {
+        out.innerHTML += \`
+        <div class="user-entry">
+          <strong>\${u.username}</strong> -- \${u.role} -- \${u.active ? '✅ Active' : '⛔ Locked'}
+          <br>
+          <button onclick="toggleUser('\${u.username}')">\${u.active ? 'Lock' : 'Unlock'}</button>
+          <button onclick="resetPassword('\${u.username}')">Reset Password</button>
+          <button onclick="editRolePrompt('\${u.username}')">Edit Role</button>
+          <button onclick="forceLogout('\${u.username}')">Force Logout</button>
+        </div>\`;
+      });
+    }
+
+    function toggleUser(username) {
+      let users = JSON.parse(localStorage.getItem('users') || '[]');
+      users = users.map(u => u.username === username ? { ...u, active: !u.active } : u);
+      localStorage.setItem('users', JSON.stringify(users));
+      loadUsers();
+    }
+
+    function resetPassword(username) {
+      const newPass = prompt("Enter new password:");
+      if (newPass) {
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        users = users.map(u => u.username === username ? { ...u, password: newPass } : u);
+        localStorage.setItem('users', JSON.stringify(users));
+        alert("Password reset.");
+      }
+    }
+
+    function editRolePrompt(username) {
+      const newRole = prompt("New role: admin, driver, office, mechanic");
+      if (newRole) {
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        users = users.map(u => u.username === username ? { ...u, role: newRole } : u);
+        localStorage.setItem('users', JSON.stringify(users));
+        alert("Role updated.");
+        loadUsers();
+      }
+    }
+
+    function forceLogout(username) {
+      let sessions = JSON.parse(localStorage.getItem('sessions') || '{}');
+      delete sessions[username];
+      localStorage.setItem('sessions', JSON.stringify(sessions));
+      alert("User session cleared.");
+    }
+
+    function loadActivityLog() {
+      const log = JSON.parse(localStorage.getItem('loginLog') || '[]');
+      const table = document.getElementById('activityTable');
+      table.innerHTML = "<tr><th>User</th><th>Role</th><th>Action</th><th>Timestamp</th></tr>";
+      log.reverse().forEach(entry => {
+        const row = document.createElement('tr');
+        row.innerHTML = \`
+          <td>\${entry.username}</td>
+          <td>\${entry.role}</td>
+          <td>\${entry.action}</td>
+          <td>\${new Date(entry.timestamp).toLocaleString()}</td>
+        \`;
+        table.appendChild(row);
+      });
+    }
+
+    window.onload = () => {
+      loadUsers();
+      loadActivityLog();
+    };
   </script>
 </head>
 <body>
-  <header>
-    <h1>Admin Panel</h1>
-  </header>
-  <main>
-    <p>Here you can manage users, view logs, and configure access control features.</p>
-    <!-- Admin tools go here -->
-  </main>
+  <h1>Admin Control Panel</h1>
+
+  <div class="card">
+    <h3>Create New User</h3>
+    <form onsubmit="createUser(event)">
+      <label>Username</label>
+      <input id="newUsername" required />
+      <label>Password</label>
+      <input id="newPassword" type="password" required />
+      <label>Role</label>
+      <select id="newRole" required>
+        <option value="driver">Driver</option>
+        <option value="office">Office</option>
+        <option value="mechanic">Mechanic</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button type="submit">Create User</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>User Management</h3>
+    <div id="userList"></div>
+  </div>
+
+  <div class="card">
+    <h3>Activity Log</h3>
+    <table id="activityTable"></table>
+  </div>
 </body>
 </html>

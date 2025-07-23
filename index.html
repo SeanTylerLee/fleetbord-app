@@ -1,47 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Home</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Fleetbord</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <script>
+    // Redirect to login page if not logged in
+    const user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null');
+    if (!user || !user.username) {
+      window.location.replace('login.html');
+    }
+  </script>
 </head>
 <body>
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Header" />
+  <header>
+    <img src="header.jpg" alt="Fleetbord" class="header-image">
   </header>
 
-  <div class="ios-list">
-    <a class="ios-item" href="page1.html">Loads</a>
-    <a class="ios-item" href="page2.html">Reimbursements</a>
-    <a class="ios-item" href="page3.html">Forms</a>
-    <a class="ios-item" href="page4.html">Dispatch</a>
-    <a class="ios-item" href="page5.html">Ticket</a>
-    <a class="ios-item" href="settings.html">Settings</a>
-  </div>
-
-  <script>
-    const userTheme = localStorage.getItem('theme');
-    if (userTheme === 'dark') {
-      document.documentElement.classList.add('dark-mode');
-    }
-  </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js').then(reg => {
-        reg.onupdatefound = () => {
-          const newWorker = reg.installing;
-          newWorker.onstatechange = () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              window.location.reload();
-            }
-          };
-        };
-      });
-    }
-  </script>
+  <main class="main-menu">
+    <h2>Welcome to Fleetbord</h2>
+    <ul class="menu-list">
+      <li><a href="page1.html">🚛 Loads</a></li>
+      <li><a href="page2.html">💰 Reimbursements</a></li>
+      <li><a href="page3.html">📄 Forms</a></li>
+      <li><a href="page4.html">📦 Dispatch</a></li>
+      <li><a href="page5.html">🎫 Tickets</a></li>
+      <li><a href="page6.html">🛠 Repairs</a></li>
+      <li><a href="page7.html">💬 Messaging</a></li>
+      <li><a href="settings.html">⚙️ Settings</a></li>
+      <li><a href="admin.html">👤 User Manager (Admin)</a></li>
+    </ul>
+  </main>
 </body>
 </html>

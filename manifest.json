@@ -1,9 +1,16 @@
 {
-  "name": "My PWA App",
-  "short_name": "PWA",
-  "start_url": "./index.html",
+  "name": "Fleetbord",
+  "short_name": "Fleetbord",
+  "start_url": "login.html",
   "display": "standalone",
-  "theme_color": "#000000",
   "background_color": "#ffffff",
-  "icons": []
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "header.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
 }

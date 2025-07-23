@@ -65,46 +65,45 @@
     <input type="password" id="password" placeholder="Password" required />
     <button onclick="login()">Login</button>
   </div>
+  <button onclick="createDefaultAdmin()">🔧 Reset Admin (Temporary)</button>
 
-  <script>
-    // Set up default admin user if not present
-    const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
-    if (!existingUsers.length) {
-      localStorage.setItem("users", JSON.stringify([
-        { username: "admin", password: "31345", role: "admin", active: true }
-      ]));
+<script>
+  function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    const match = users.find(user =>
+      user.username === username &&
+      user.password === password &&
+      user.active !== false
+    );
+
+    if (!match) {
+      alert("Invalid login.");
+      return;
     }
 
-    function login() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
+    localStorage.setItem("currentUser", JSON.stringify(match));
 
-      const match = users.find(user =>
-        user.username === username &&
-        user.password === password &&
-        user.active !== false
-      );
+    const log = JSON.parse(localStorage.getItem("loginLog") || "[]");
+    log.push({
+      username: match.username,
+      role: match.role,
+      action: "login",
+      timestamp: Date.now()
+    });
+    localStorage.setItem("loginLog", JSON.stringify(log));
 
-      if (!match) {
-        alert("Invalid login.");
-        return;
-      }
+    window.location.href = "index.html";
+  }
 
-      localStorage.setItem("currentUser", JSON.stringify(match));
-
-      // Add to login log
-      const log = JSON.parse(localStorage.getItem("loginLog") || "[]");
-      log.push({
-        username: match.username,
-        role: match.role,
-        action: "login",
-        timestamp: Date.now()
-      });
-      localStorage.setItem("loginLog", JSON.stringify(log));
-
-      window.location.href = "index.html";
-    }
-  </script>
+  function createDefaultAdmin() {
+    localStorage.setItem("users", JSON.stringify([
+      { username: "admin", password: "31345", role: "admin", active: true }
+    ]));
+    alert("✅ Default admin created!");
+  }
+</script>
 </body>
 </html>

@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Dispatch</title>
   <link rel="stylesheet" href="styles.css" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -13,72 +14,111 @@
     <img src="header.jpg" alt="Header" />
   </header>
 
-  <div class="container">
-    <h2 style="text-align:center; padding: 15px;">Dispatched Loads</h2>
+  <div class="container" style="padding: 20px;">
+    <h2 style="text-align:center;">Dispatch Center</h2>
+
+    <div id="adminDispatchForm" style="display:none;">
+      <h3>Create Dispatch</h3>
+      <form id="dispatchForm">
+        <input type="text" id="pickup" placeholder="Pickup Location" required />
+        <input type="text" id="delivery" placeholder="Delivery Location" required />
+        <input type="text" id="rate" placeholder="Rate" />
+        <textarea id="notes" placeholder="Notes (optional)"></textarea>
+        <label>Select Drivers:</label>
+        <div id="userCheckboxes"></div>
+        <button type="submit">Send Dispatch</button>
+      </form>
+    </div>
+
     <div id="dispatchList"></div>
     <a class="ios-item" href="index.html">← Back to Home</a>
   </div>
 
   <script>
-    const sampleDispatches = [
-      {
-        id: 1,
-        pickupLocation: "Yard A",
-        pickupTime: "2025-07-22 08:00 AM",
-        deliveryLocation: "Site B",
-        deliveryTime: "2025-07-22 01:00 PM",
-        rate: "$850",
-        customer: "ABC Energy Co.",
-        fuelSurcharge: "$75",
-        ticketType: "Individual Tickets",
-        notes: "Watch out for site road construction.",
-        assignedTo: ["driver1", "driver2"],
-        accepted: false
-      }
-    ];
-
-    const currentUser = "driver1"; // Placeholder (to be replaced with actual login system)
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const allDispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
     const dispatchList = document.getElementById("dispatchList");
-    dispatchList.innerHTML = "";
 
-    const relevantLoads = sampleDispatches.filter(load => load.assignedTo.includes(currentUser));
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const form = document.getElementById("dispatchForm");
 
-    if (relevantLoads.length === 0) {
-      dispatchList.innerHTML = `
-        <div class="ios-list">
-          <div class="ios-item">
-            <strong>No loads currently dispatched.</strong>
-            <p>Once a load is dispatched to you, it will appear here.</p>
-          </div>
-        </div>`;
-    } else {
-      relevantLoads.forEach(load => {
+    if (currentUser.role === "admin") {
+      document.getElementById("adminDispatchForm").style.display = "block";
+      const userBox = document.getElementById("userCheckboxes");
+      users.forEach(user => {
+        if (user.role === "driver") {
+          const label = document.createElement("label");
+          label.innerHTML = `<input type="checkbox" value="${user.username}" /> ${user.username}`;
+          userBox.appendChild(label);
+          userBox.appendChild(document.createElement("br"));
+        }
+      });
+    }
+
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const selectedDrivers = Array.from(document.querySelectorAll("#userCheckboxes input:checked")).map(cb => cb.value);
+        if (selectedDrivers.length === 0) return alert("Select at least one driver.");
+        const newDispatch = {
+          id: Date.now(),
+          pickup: form.pickup.value,
+          delivery: form.delivery.value,
+          rate: form.rate.value,
+          notes: form.notes.value,
+          assignedTo: selectedDrivers,
+          acceptedBy: []
+        };
+        allDispatches.push(newDispatch);
+        localStorage.setItem("dispatches", JSON.stringify(allDispatches));
+        form.reset();
+        renderDispatches();
+      });
+    }
+
+    function renderDispatches() {
+      dispatchList.innerHTML = "";
+      const filtered = allDispatches.filter(d =>
+        currentUser.role === "admin" || d.assignedTo.includes(currentUser.username)
+      );
+
+      if (filtered.length === 0) {
+        dispatchList.innerHTML = "<p>No dispatches available.</p>";
+        return;
+      }
+
+      filtered.forEach(d => {
         const div = document.createElement("div");
         div.className = "dispatch-entry";
         div.innerHTML = `
-          <strong>Pickup:</strong> ${load.pickupLocation}<br>
-          <strong>Pickup Time:</strong> ${load.pickupTime}<br>
-          <strong>Delivery:</strong> ${load.deliveryLocation}<br>
-          <strong>Delivery Time:</strong> ${load.deliveryTime}<br>
-          <strong>Rate:</strong> ${load.rate}<br>
-          <strong>Customer:</strong> ${load.customer}<br>
-          <strong>Fuel Surcharge:</strong> ${load.fuelSurcharge}<br>
-          <strong>Ticket Type:</strong> ${load.ticketType}<br>
-          <strong>Notes:</strong> ${load.notes}<br><br>
-          <button onclick="acceptLoad(${load.id})">✅ Accept Load</button>
+          <strong>Pickup:</strong> ${d.pickup}<br>
+          <strong>Delivery:</strong> ${d.delivery}<br>
+          <strong>Rate:</strong> ${d.rate}<br>
+          <strong>Notes:</strong> ${d.notes}<br>
+          <strong>Assigned To:</strong> ${d.assignedTo.join(", ")}<br>
+          <strong>Accepted By:</strong> ${d.acceptedBy.length ? d.acceptedBy.join(", ") : "None"}<br>
         `;
+
+        if (currentUser.role === "driver" && d.assignedTo.includes(currentUser.username) && !d.acceptedBy.includes(currentUser.username)) {
+          const btn = document.createElement("button");
+          btn.textContent = "✅ Accept Load";
+          btn.onclick = () => {
+            d.acceptedBy.push(currentUser.username);
+            localStorage.setItem("dispatches", JSON.stringify(allDispatches));
+            renderDispatches();
+          };
+          div.appendChild(btn);
+        }
+
         dispatchList.appendChild(div);
       });
     }
 
-    function acceptLoad(id) {
-      alert("Load #" + id + " accepted.");
-      // TODO: Save to backend or localStorage
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.classList.add("dark-mode");
     }
 
-    if (localStorage.getItem('theme') === 'dark') {
-      document.documentElement.classList.add('dark-mode');
-    }
+    renderDispatches();
   </script>
 </body>
 </html>

@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Messages</title>
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <style>
+    .chat-thread {
+      background: var(--card);
+      padding: 10px;
+      border-radius: 10px;
+      margin: 10px 0;
+    }
+
+    .message-bubble {
+      padding: 10px 14px;
+      margin: 8px;
+      border-radius: 16px;
+      max-width: 75%;
+      display: inline-block;
+      clear: both;
+      font-size: 15px;
+      line-height: 1.4em;
+    }
+
+    .from-me {
+      background-color: var(--button);
+      color: white;
+      float: right;
+    }
+
+    .from-them {
+      background-color: #e5e5ea;
+      color: black;
+      float: left;
+    }
+
+    .chat-footer {
+      display: flex;
+      padding: 8px;
+      gap: 8px;
+    }
+
+    .chat-footer input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .chat-footer button {
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--button);
+      border: none;
+      color: white;
+      font-weight: bold;
+    }
+
+    .dark-mode .from-them {
+      background-color: #333;
+      color: white;
+    }
+
+    .dark-mode .message-bubble {
+      border-color: #444;
+    }
+  </style>
+</head>
+<body>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
+  </header>
+
+  <div class="container" style="padding: 20px;">
+    <h2 style="text-align:center;">Messages</h2>
+
+    <div>
+      <label>Select Users to Message:</label>
+      <div id="recipientList"></div>
+      <button onclick="startChat()">Start Chat</button>
+    </div>
+
+    <div id="chatWindow" style="display:none;">
+      <h3 id="chatTitle"></h3>
+      <div id="chatThread" class="chat-thread"></div>
+      <div class="chat-footer">
+        <input type="text" id="chatInput" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+
+    <a class="ios-item" href="index.html">← Back to Home</a>
+  </div>
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const users = JSON.parse(localStorage.getItem("users") || "[]").filter(u => u.username !== currentUser.username);
+    const recipientList = document.getElementById("recipientList");
+    const chatThread = document.getElementById("chatThread");
+    const chatTitle = document.getElementById("chatTitle");
+
+    let activeRecipients = [];
+
+    function renderRecipients() {
+      users.forEach(u => {
+        const label = document.createElement("label");
+        label.innerHTML = '<input type="checkbox" value="' + u.username + '"> ' + u.username;
+        recipientList.appendChild(label);
+        recipientList.appendChild(document.createElement("br"));
+      });
+    }
+
+    function startChat() {
+      const checked = Array.from(recipientList.querySelectorAll("input:checked"));
+      if (!checked.length) return alert("Select at least one user.");
+      activeRecipients = checked.map(cb => cb.value);
+      const title = [...activeRecipients, currentUser.username].sort().join(", ");
+      chatTitle.innerText = "Chat with: " + activeRecipients.join(", ");
+      document.getElementById("chatWindow").style.display = "block";
+      loadMessages(title);
+    }
+
+    function getChatKey() {
+      return "chat_" + [...activeRecipients, currentUser.username].sort().join("_");
+    }
+
+    function loadMessages(keyName) {
+      const key = keyName || getChatKey();
+      const messages = JSON.parse(localStorage.getItem(key) || "[]");
+      chatThread.innerHTML = "";
+      messages.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = "message-bubble " + (msg.from === currentUser.username ? "from-me" : "from-them");
+        div.textContent = msg.text;
+        chatThread.appendChild(div);
+      });
+      chatThread.scrollTop = chatThread.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      const key = getChatKey();
+      const messages = JSON.parse(localStorage.getItem(key) || "[]");
+      messages.push({ from: currentUser.username, text, time: Date.now() });
+      localStorage.setItem(key, JSON.stringify(messages));
+      input.value = "";
+      loadMessages(key);
+    }
+
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.classList.add("dark-mode");
+    }
+
+    renderRecipients();
+  </script>
+</body>
+</html>

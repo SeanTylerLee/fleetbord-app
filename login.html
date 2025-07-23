@@ -1,0 +1,32 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Login</title>
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+</head>
+<body>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
+  </header>
+
+  <div class="container" style="padding: 20px;">
+    <h2 style="text-align: center;">Fleetbord Login</h2>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="5-digit Password" required pattern="\d{5}" />
+      <button type="submit">Login</button>
+    </form>
+
+    <div id="loginError" style="color:red;text-align:center;display:none;margin-top:10px;">
+      Invalid credentials. Try again.
+    </div>
+  </div>
+
+  <script src="users.js"></script>
+</body>
+</html>

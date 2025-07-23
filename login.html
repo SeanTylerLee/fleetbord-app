@@ -1,33 +1,104 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
   <link rel="stylesheet" href="styles.css" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg, #fff);
+      color: var(--text, #000);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-box {
+      background: var(--card, #fff);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    input, button {
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: var(--button, #007aff);
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+  </style>
 </head>
 <body>
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Header" />
-  </header>
-
-  <div class="container" style="padding: 20px;">
-    <h2 style="text-align: center;">Fleetbord Login</h2>
-    <form id="loginForm">
-      <input type="text" id="username" placeholder="Username" required />
-      <input type="password" id="password" placeholder="5-digit Password" required pattern="\d{5}" />
-      <label><input type="checkbox" id="rememberMe" /> Remember Me</label>
-      <button type="submit">Login</button>
-    </form>
-
-    <div id="loginError" style="color:red;text-align:center;display:none;margin-top:10px;">
-      Invalid credentials. Try again.
-    </div>
+  <div class="login-box">
+    <h2>Fleetbord Login</h2>
+    <input type="text" id="username" placeholder="Username" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button onclick="login()">Login</button>
   </div>
 
-  <script src="users.js"></script>
+  <script>
+    // Initialize default admin user if needed
+    if (!localStorage.getItem("users")) {
+      localStorage.setItem("users", JSON.stringify([
+        { username: "admin", password: "31345", role: "admin", active: true }
+      ]));
+    }
+
+    function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+      const match = users.find(u => u.username === username && u.password === password);
+
+      if (!match) {
+        alert("Invalid login.");
+        return;
+      }
+
+      if (!match.active) {
+        alert("Account is locked.");
+        return;
+      }
+
+      // Save session
+      localStorage.setItem("currentUser", JSON.stringify(match));
+
+      // Log login event
+      const log = JSON.parse(localStorage.getItem("loginLog") || "[]");
+      log.push({
+        username: match.username,
+        role: match.role,
+        action: "login",
+        timestamp: Date.now()
+      });
+      localStorage.setItem("loginLog", JSON.stringify(log));
+
+      // Redirect to homepage
+      window.location.href = "index.html";
+    }
+  </script>
 </body>
 </html>

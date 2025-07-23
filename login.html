@@ -13,13 +13,11 @@
       margin: 0;
       padding: 0;
     }
-
     header img {
       width: 100%;
       height: auto;
       display: block;
     }
-
     .login-box {
       background: var(--card, #fff);
       margin: 2rem auto;
@@ -29,7 +27,6 @@
       width: 90%;
       max-width: 400px;
     }
-
     input, button {
       width: 100%;
       margin-bottom: 1rem;
@@ -39,7 +36,6 @@
       font-size: 16px;
       box-sizing: border-box;
     }
-
     button {
       background-color: var(--button, #007aff);
       color: white;
@@ -47,7 +43,6 @@
       border: none;
       cursor: pointer;
     }
-
     h2 {
       text-align: center;
       margin-bottom: 1rem;
@@ -64,46 +59,46 @@
     <input type="text" id="username" placeholder="Username" required />
     <input type="password" id="password" placeholder="Password" required />
     <button onclick="login()">Login</button>
+    <button onclick="createDefaultAdmin()">🔧 Reset Admin</button>
   </div>
-  <button onclick="createDefaultAdmin()">🔧 Reset Admin (Temporary)</button>
 
-<script>
-  function login() {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
+  <script>
+    function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
 
-    const match = users.find(user =>
-      user.username === username &&
-      user.password === password &&
-      user.active !== false
-    );
+      const match = users.find(user =>
+        user.username === username &&
+        user.password === password &&
+        user.active !== false
+      );
 
-    if (!match) {
-      alert("Invalid login.");
-      return;
+      if (!match) {
+        alert("Invalid login.");
+        return;
+      }
+
+      localStorage.setItem("currentUser", JSON.stringify(match));
+
+      const log = JSON.parse(localStorage.getItem("loginLog") || "[]");
+      log.push({
+        username: match.username,
+        role: match.role,
+        action: "login",
+        timestamp: Date.now()
+      });
+      localStorage.setItem("loginLog", JSON.stringify(log));
+
+      window.location.href = "index.html";
     }
 
-    localStorage.setItem("currentUser", JSON.stringify(match));
-
-    const log = JSON.parse(localStorage.getItem("loginLog") || "[]");
-    log.push({
-      username: match.username,
-      role: match.role,
-      action: "login",
-      timestamp: Date.now()
-    });
-    localStorage.setItem("loginLog", JSON.stringify(log));
-
-    window.location.href = "index.html";
-  }
-
-  function createDefaultAdmin() {
-    localStorage.setItem("users", JSON.stringify([
-      { username: "admin", password: "31345", role: "admin", active: true }
-    ]));
-    alert("✅ Default admin created!");
-  }
-</script>
+    function createDefaultAdmin() {
+      localStorage.setItem("users", JSON.stringify([
+        { username: "admin", password: "31345", role: "admin", active: true }
+      ]));
+      alert("✅ Default admin created!");
+    }
+  </script>
 </body>
 </html>

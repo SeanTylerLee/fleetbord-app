@@ -1,88 +1,26 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Admin Panel</title>
-  <link rel="stylesheet" href="styles.css">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Allow only admins to access this page
+    const user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null');
+    if (!user || user.role !== 'admin') {
+      alert('Access denied. Admins only.');
+      window.location.replace('index.html');
+    }
+  </script>
 </head>
 <body>
-<button id="logoutButton" style="position:fixed;top:10px;right:10px;z-index:1000;">Logout</button>
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Header" />
+  <header>
+    <h1>Admin Panel</h1>
   </header>
-
-  <div class="container" style="padding: 20px;">
-    <h2 style="text-align:center;">Admin – User Management</h2>
-
-    <form id="createUserForm">
-      <input type="text" id="newUsername" placeholder="New Username" required />
-      <input type="password" id="newPassword" placeholder="5-digit Password" required pattern="\d{5}" />
-      <select id="newRole" required>
-        <option value="">Select Role</option>
-        <option value="driver">Driver</option>
-        <option value="office">Office</option>
-        <option value="mechanic">Mechanic</option>
-      </select>
-      <button type="submit">➕ Create Account</button>
-    </form>
-
-    <h3>All Accounts</h3>
-    <ul id="userList" class="ios-list"></ul>
-
-    <a class="ios-item" href="index.html">← Back to Home</a>
-  </div>
-
-  <script>
-    const userList = document.getElementById('userList');
-    const form = document.getElementById('createUserForm');
-
-    function loadUsers() {
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      userList.innerHTML = '';
-      users.forEach((u, i) => {
-        const li = document.createElement('li');
-        li.className = 'ios-item';
-        li.innerHTML = `
-          <strong>${u.username}</strong> – ${u.role}
-          ${u.username !== 'admin' ? `<button onclick="deleteUser(${i})" style="float:right;">🗑️</button>` : ''}
-        `;
-        userList.appendChild(li);
-      });
-    }
-
-    function deleteUser(index) {
-      if (!confirm("Delete this user?")) return;
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      users.splice(index, 1);
-      localStorage.setItem('users', JSON.stringify(users));
-      loadUsers();
-    }
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const username = document.getElementById('newUsername').value.trim();
-      const password = document.getElementById('newPassword').value.trim();
-      const role = document.getElementById('newRole').value;
-
-      if (!username || !password || !role) return;
-
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      if (users.some(u => u.username === username)) {
-        alert("Username already exists.");
-        return;
-      }
-
-      users.push({ username, password, role });
-      localStorage.setItem('users', JSON.stringify(users));
-      form.reset();
-      loadUsers();
-    });
-
-    loadUsers();
-  </script>
+  <main>
+    <p>Here you can manage users, view logs, and configure access control features.</p>
+    <!-- Admin tools go here -->
+  </main>
 </body>
 </html>

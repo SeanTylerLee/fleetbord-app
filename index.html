@@ -6,7 +6,6 @@
   <title>Fleetbord</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
-
   <script>
     // Redirect to login page if not logged in
     const user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null');
@@ -14,24 +13,71 @@
       window.location.replace('login.html');
     }
   </script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg, #fff);
+      color: var(--text, #000);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header img.header-image {
+      width: 100%;
+      max-width: 600px;
+      display: block;
+    }
+
+    main.main-menu {
+      width: 100%;
+      max-width: 600px;
+      padding: 1rem;
+    }
+
+    .menu-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .menu-list li {
+      margin: 0.5rem 0;
+    }
+
+    .menu-list a {
+      display: block;
+      padding: 1rem;
+      border-radius: 10px;
+      background: #f0f0f0;
+      color: #000;
+      text-decoration: none;
+      font-size: 1.1rem;
+      transition: background 0.2s;
+    }
+
+    .menu-list a:hover {
+      background: #e0e0e0;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <img src="header.jpg" alt="Fleetbord" class="header-image">
+    <img src="header.jpg" alt="Fleetbord Header" class="header-image" />
   </header>
-
   <main class="main-menu">
-    <h2>Welcome to Fleetbord</h2>
     <ul class="menu-list">
-      <li><a href="page1.html">🚛 Loads</a></li>
-      <li><a href="page2.html">💰 Reimbursements</a></li>
-      <li><a href="page3.html">📄 Forms</a></li>
-      <li><a href="page4.html">📦 Dispatch</a></li>
-      <li><a href="page5.html">🎫 Tickets</a></li>
-      <li><a href="page6.html">🛠 Repairs</a></li>
-      <li><a href="page7.html">💬 Messaging</a></li>
-      <li><a href="settings.html">⚙️ Settings</a></li>
-      <li><a href="admin.html">👤 User Manager (Admin)</a></li>
+      <li><a href="page1.html">Loads</a></li>
+      <li><a href="page2.html">Reimbursements</a></li>
+      <li><a href="page3.html">Forms</a></li>
+      <li><a href="page4.html">Dispatch</a></li>
+      <li><a href="page5.html">Tickets</a></li>
+      <li><a href="page6.html">Repairs</a></li>
+      <li><a href="page7.html">Messaging</a></li>
+      <li><a href="settings.html">Settings</a></li>
+      <li><a href="admin.html">User Manager (Admin)</a></li>
     </ul>
   </main>
 </body>

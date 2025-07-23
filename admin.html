@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
+  if (!user) {
+    window.location.href = "login.html";
+  }
+</script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel</title>
@@ -12,26 +19,21 @@
       background: var(--bg, #fff);
       color: var(--text, #000);
     }
-
     header img {
       width: 100%;
       height: auto;
       display: block;
     }
-
     .container {
       padding: 1rem;
     }
-
     h2 {
       text-align: center;
       margin-bottom: 1rem;
     }
-
     .form-group {
       margin-bottom: 1rem;
     }
-
     input, select, button {
       width: 100%;
       padding: 0.6rem;
@@ -40,7 +42,6 @@
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
-
     button {
       background: #007aff;
       color: white;
@@ -48,34 +49,28 @@
       border: none;
       cursor: pointer;
     }
-
     ul {
       list-style: none;
       padding: 0;
     }
-
     li {
       background: #f0f0f0;
       padding: 0.8rem;
       border-radius: 8px;
       margin-bottom: 0.5rem;
     }
-
     li span {
       display: block;
       margin-bottom: 0.5rem;
     }
-
     .user-actions button {
       margin-right: 0.5rem;
       font-size: 0.9rem;
     }
-
     .dark-mode li {
       background: #1c1c1e;
       color: white;
     }
-
     .log-button {
       margin-top: 2rem;
       width: 100%;
@@ -90,96 +85,105 @@
   </style>
 </head>
 <body>
-  <header>
-    <img src="header.jpg" alt="Header" />
-  </header>
+<div style="padding: 1em;">
+  <button onclick="history.back()" style="padding: 10px 16px; font-size: 16px; border-radius: 12px; background: #007AFF; color: white; border: none;">
+    ⬅ Back
+  </button>
+</div>
 
-  <div class="container">
-    <h2>Admin Panel - Manage Users</h2>
+<header>
+  <img src="header.jpg" alt="Header" />
+</header>
 
-    <div class="form-group">
-      <input type="text" id="newUsername" placeholder="Username" />
-    </div>
-    <div class="form-group">
-      <input type="password" id="newPassword" placeholder="Password" />
-    </div>
-    <div class="form-group">
-      <select id="newRole">
-        <option value="driver">Driver</option>
-        <option value="office">Office</option>
-        <option value="mechanic">Mechanic</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
-    <button onclick="createUser()">Create User</button>
+<div class="container">
+  <h2>Admin Panel - Manage Users</h2>
 
-    <div class="user-list">
-      <h3 style="margin-top: 2rem;">Current Users:</h3>
-      <ul id="userList"></ul>
-    </div>
+  <div class="form-group">
+    <input type="text" id="newUsername" placeholder="Username" />
+  </div>
+  <div class="form-group">
+    <input type="password" id="newPassword" placeholder="Password" />
+  </div>
+  <div class="form-group">
+    <select id="newRole">
+      <option value="driver">Driver</option>
+      <option value="office">Office</option>
+      <option value="mechanic">Mechanic</option>
+      <option value="admin">Admin</option>
+    </select>
+  </div>
+  <button onclick="createUser()">Create User</button>
 
-    <button class="log-button" onclick="location.href='logs.html'">📋 View Login Logs</button>
+  <div class="user-list">
+    <h3 style="margin-top: 2rem;">Current Users:</h3>
+    <ul id="userList"></ul>
   </div>
 
-  <script>
-    function loadUserList() {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const list = document.getElementById("userList");
-      list.innerHTML = "";
+  <button class="log-button" onclick="location.href='logs.html'"> View Login Logs</button>
+</div>
 
-      users.forEach((user, index) => {
-        const li = document.createElement("li");
+<script>
+function loadUserList() {
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const list = document.getElementById("userList");
+  list.innerHTML = "";
+  users.forEach((u, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span><strong>${u.username}</strong> (${u.role})</span>
+      <div class="user-actions">
+        <button onclick="editUser(${i})">Edit</button>
+        <button onclick="deleteUser(${i})" style="background: #ff3b30;">Delete</button>
+      </div>
+    `;
+    list.appendChild(li);
+  });
+}
 
-        li.innerHTML = `
-          <span><strong>${user.username}</strong> (${user.role}) - ${user.active === false ? "🚫 Locked" : "✅ Active"}</span>
-          <div class="user-actions">
-            <button onclick="toggleLock(${index})">${user.active === false ? "Unlock" : "Lock"}</button>
-            <button onclick="deleteUser(${index})">Delete</button>
-          </div>
-        `;
-        list.appendChild(li);
-      });
-    }
+function createUser() {
+  const username = document.getElementById("newUsername").value.trim();
+  const password = document.getElementById("newPassword").value.trim();
+  const role = document.getElementById("newRole").value;
 
-    function createUser() {
-      const username = document.getElementById("newUsername").value.trim();
-      const password = document.getElementById("newPassword").value.trim();
-      const role = document.getElementById("newRole").value;
+  if (!username || !password) return alert("Enter valid credentials.");
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  users.push({ username, password, role });
+  localStorage.setItem("users", JSON.stringify(users));
+  loadUserList();
+  document.getElementById("newUsername").value = "";
+  document.getElementById("newPassword").value = "";
+}
 
-      if (!username || !password) {
-        alert("Enter username and password");
-        return;
-      }
+function deleteUser(index) {
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  if (confirm("Are you sure you want to delete this user?")) {
+    users.splice(index, 1);
+    localStorage.setItem("users", JSON.stringify(users));
+    loadUserList();
+  }
+}
 
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      if (users.find(u => u.username === username)) {
-        alert("User already exists!");
-        return;
-      }
+function editUser(index) {
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const user = users[index];
+  const newUsername = prompt("New username:", user.username);
+  const newPassword = prompt("New password:", user.password);
+  if (newUsername && newPassword) {
+    users[index].username = newUsername;
+    users[index].password = newPassword;
+    localStorage.setItem("users", JSON.stringify(users));
+    loadUserList();
+  }
+}
 
-      users.push({ username, password, role, active: true });
-      localStorage.setItem("users", JSON.stringify(users));
-      loadUserList();
-      alert("✅ User created.");
-    }
+loadUserList();
 
-    function toggleLock(index) {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      users[index].active = !users[index].active;
-      localStorage.setItem("users", JSON.stringify(users));
-      loadUserList();
-    }
+document.addEventListener('touchstart', function(event) {
+  if (event.touches.length > 1) event.preventDefault();
+}, { passive: false });
 
-    function deleteUser(index) {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      if (confirm(`Delete user "${users[index].username}"?`)) {
-        users.splice(index, 1);
-        localStorage.setItem("users", JSON.stringify(users));
-        loadUserList();
-      }
-    }
-
-    window.onload = loadUserList;
-  </script>
+window.history.pushState(null, null, window.location.href);
+window.onpopstate = () => window.history.go(1);
+</script>
 </body>
 </html>

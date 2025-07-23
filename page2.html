@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
+  if (!user) {
+    window.location.href = "login.html";
+  }
+</script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Reimbursement</title>
@@ -16,7 +23,6 @@
     color: var(--text);
     overflow-x: hidden;
   }
-
   .form-wrapper {
     max-width: 100%;
     padding: 16px;
@@ -26,15 +32,7 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     box-sizing: border-box;
   }
-
-  .form-wrapper h2,
-  .form-wrapper h3 {
-    text-align: center;
-    margin: 10px 0;
-  }
-
   .form-wrapper input,
-  .form-wrapper select,
   .form-wrapper textarea {
     width: 100%;
     padding: 10px;
@@ -44,42 +42,15 @@
     font-size: 16px;
     box-sizing: border-box;
   }
-
-  .table-wrapper {
-    overflow-x: auto;
-    margin-bottom: 16px;
-  }
-
-  table {
-    min-width: 600px;
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  table th,
-  table td {
+  .signature-container {
     border: 1px solid #ccc;
-    padding: 6px;
-    font-size: 14px;
-    text-align: left;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+    height: 150px;
+    touch-action: none;
+    margin-bottom: 8px;
   }
-
-  table th {
-    background: #eee;
-  }
-
-  .receipt-preview {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .receipt-preview img {
-    width: 100px;
-    border-radius: 6px;
-    object-fit: cover;
-  }
-
   button {
     background: var(--button);
     color: var(--text);
@@ -90,196 +61,61 @@
     font-weight: bold;
     cursor: pointer;
   }
-
-  /* Signature pad container */
-  .signature-container {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    width: 100%;
-    max-width: 400px;
-    height: 150px;
-    touch-action: none;
-    margin-bottom: 8px;
-  }
-
-  .dark-mode table th {
-    background: #222;
-  }
 </style>
 </head>
 <body>
-  <div class="ios-header-image">
-    <img src="header.jpg" alt="Header" />
-  </div>
+<div style="padding: 1em;">
+  <button onclick="history.back()" style="padding: 10px 16px; font-size: 16px; border-radius: 12px; background: #007AFF; color: white; border: none;">
+    ⬅ Back
+  </button>
+</div>
 
-  <div class="form-wrapper">
-    <h2>Monster Services</h2>
-    <h3>Employee Expense Reimbursement Request Form</h3>
+<div class="ios-header-image">
+  <img src="header.jpg" alt="Header" />
+</div>
 
-    <label>Employee Name:</label>
-    <input type="text" id="employeeName" placeholder="Enter your name" />
+<div class="form-wrapper">
+  <h2>Expense Reimbursement Request</h2>
 
-    <p>Please attach your receipts to this request form</p>
+  <label>Employee Name:</label>
+  <input type="text" id="employeeName" placeholder="Enter your name" />
 
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Business</th>
-            <th>City</th>
-            <th>State</th>
-            <th>Amount</th>
-            <th>Receipt Y/N</th>
-            <th>Items</th>
-          </tr>
-        </thead>
-        <tbody id="expenseRows">
-          <!-- JS will generate 5 rows -->
-        </tbody>
-      </table>
-    </div>
+  <label>Total Amount Paid:</label>
+  <input type="number" id="totalAmount" placeholder="Leave blank if unsure" />
 
-    <label>Upload Receipt Images:</label>
-    <input type="file" id="receiptUpload" accept="image/*" multiple />
-    <div class="receipt-preview" id="receiptPreview"></div>
+  <label>Notes:</label>
+  <textarea id="notes" rows="3" placeholder="Describe the expenses..."></textarea>
 
-    <label>Total Amount Paid:</label>
-    <input type="number" id="totalAmount" readonly placeholder="Leave Blank" />
+  <label>Signature:</label>
+  <canvas id="signaturePad" style="display: block; width: 100%; height: 150px; border: 1px solid #ccc; margin-bottom: 8px;"></canvas>
+  <button onclick="signaturePad.clear()">Clear Signature</button>
 
-    <label>Employee Signature:</label>
-    <div class="signature-container">
-      <canvas id="signature-pad" style="width:100%; height:150px;"></canvas>
-    </div>
-    <button type="button" onclick="clearSignature()" style="margin-bottom: 16px;">Clear Signature</button>
+  <br><br>
+  <button onclick="generatePDF()">Submit & Export</button>
+</div>
 
-    <button onclick="generateReimbursementPDF()">Generate PDF</button>
-  </div>
+<script>
+  const canvas = document.getElementById("signaturePad");
+  const signaturePad = new SignaturePad(canvas);
 
-  <script>
-    const expenseRows = document.getElementById("expenseRows");
-    const receiptPreview = document.getElementById("receiptPreview");
+  function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
 
-    // Generate 5 empty expense rows
-    for (let i = 0; i < 5; i++) {
-      const row = document.createElement("tr");
-      ["date", "text", "text", "text", "number", "select", "text"].forEach((type) => {
-        const td = document.createElement("td");
-        if (type === "select") {
-          const sel = document.createElement("select");
-          ["", "Yes", "No"].forEach(opt => {
-            const o = document.createElement("option");
-            o.value = opt;
-            o.textContent = opt;
-            sel.appendChild(o);
-          });
-          td.appendChild(sel);
-        } else {
-          const input = document.createElement("input");
-          input.type = type;
-          td.appendChild(input);
-        }
-        row.appendChild(td);
-      });
-      expenseRows.appendChild(row);
-    }
+    doc.text("Employee: " + document.getElementById("employeeName").value, 10, 10);
+    doc.text("Total Paid: $" + document.getElementById("totalAmount").value, 10, 20);
+    doc.text("Notes: " + document.getElementById("notes").value, 10, 30);
+    doc.addImage(signaturePad.toDataURL(), "PNG", 10, 40, 100, 30);
 
-    // Show receipt previews
-    document.getElementById("receiptUpload").addEventListener("change", function () {
-      receiptPreview.innerHTML = "";
-      Array.from(this.files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const img = document.createElement("img");
-          img.src = e.target.result;
-          receiptPreview.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-      });
-    });
+    doc.save("reimbursement.pdf");
+  }
 
-    // Initialize signature pad
-    const canvas = document.getElementById('signature-pad');
-    const signaturePad = new SignaturePad(canvas);
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) e.preventDefault();
+  }, { passive: false });
 
-    function resizeCanvas() {
-      const ratio =  Math.max(window.devicePixelRatio || 1, 1);
-      canvas.width = canvas.offsetWidth * ratio;
-      canvas.height = canvas.offsetHeight * ratio;
-      canvas.getContext("2d").scale(ratio, ratio);
-      signaturePad.clear(); // Clear after resize
-    }
-    window.onresize = resizeCanvas;
-    resizeCanvas();
-
-    function clearSignature() {
-      signaturePad.clear();
-    }
-
-    async function generateReimbursementPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const name = document.getElementById("employeeName").value;
-      const sigDataUrl = signaturePad.isEmpty() ? "" : signaturePad.toDataURL("image/png");
-      const rows = document.querySelectorAll("#expenseRows tr");
-      const data = [];
-
-      let total = 0;
-      rows.forEach(row => {
-        const cells = row.querySelectorAll("td");
-        const rowData = Array.from(cells).map(td => {
-          const val = td.querySelector("input, select")?.value || "";
-          return val;
-        });
-        if (rowData[4]) {
-          total += parseFloat(rowData[4]) || 0;
-        }
-        data.push(rowData);
-      });
-
-      document.getElementById("totalAmount").value = total.toFixed(2);
-
-      doc.setFontSize(14);
-      doc.text("Monster Services", 20, 20);
-      doc.setFontSize(12);
-      doc.text("Employee Expense Reimbursement Request Form", 20, 30);
-      doc.text("Employee Name: " + name, 20, 40);
-
-      let y = 50;
-      doc.setFontSize(10);
-      data.forEach(row => {
-        doc.text(row.join(" | "), 20, y);
-        y += 8;
-      });
-
-      doc.text("Total Amount Paid: $" + total.toFixed(2), 20, y + 10);
-
-      if (sigDataUrl) {
-        doc.addImage(sigDataUrl, "PNG", 20, y + 15, 60, 30);
-      } else {
-        doc.text("Signature: (none)", 20, y + 20);
-      }
-
-      const receipts = document.getElementById("receiptUpload").files;
-      if (receipts.length > 0) {
-        doc.addPage();
-        for (let i = 0; i < receipts.length; i++) {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            const img = new Image();
-            img.onload = function () {
-              doc.addImage(img, "JPEG", 15, 20, 180, 160);
-              if (i < receipts.length - 1) doc.addPage();
-              if (i === receipts.length - 1) doc.save("Reimbursement.pdf");
-            };
-            img.src = e.target.result;
-          };
-          reader.readAsDataURL(receipts[i]);
-        }
-      } else {
-        doc.save("Reimbursement.pdf");
-      }
-    }
-  </script>
+  window.history.pushState(null, null, window.location.href);
+  window.onpopstate = () => window.history.go(1);
+</script>
 </body>
 </html>

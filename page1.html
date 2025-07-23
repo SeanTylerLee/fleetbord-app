@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
+  if (!user) {
+    window.location.href = "login.html";
+  }
+</script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Loads</title>
@@ -44,13 +51,19 @@
   </style>
 </head>
 <body>
+<div style="padding: 1em;">
+  <button onclick="history.back()" style="padding: 10px 16px; font-size: 16px; border-radius: 12px; background: #007AFF; color: white; border: none;">
+     ⬅ Back
+  </button>
+</div>
+
   <div class="app-wrapper">
     <div class="ios-header-image">
       <img src="header.jpg" alt="Header" />
     </div>
 
     <div class="container">
-      <h2>   Enter Load</h2>
+      <h2>Enter Load</h2>
       <form id="loadForm" autocomplete="off">
         <input type="date" id="date" required />
         <input type="text" id="ticket" placeholder="Ticket Number" required />
@@ -71,5 +84,19 @@
   </div>
 
   <script src="app.js"></script>
+
+<script>
+  document.addEventListener('touchstart', function(event) {
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
+  }, { passive: false });
+
+  window.history.pushState(null, null, window.location.href);
+  window.onpopstate = function () {
+    window.history.go(1);
+  };
+</script>
+
 </body>
 </html>

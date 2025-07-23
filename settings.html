@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script>
+  const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
+  if (!user) {
+    window.location.href = "login.html";
+  }
+</script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Settings</title>
@@ -13,40 +20,33 @@
       margin: 0;
       background: #f2f2f7;
     }
-
     .dark-mode {
       background-color: #000;
       color: #fff;
     }
-
     .ios-header-image img {
       width: 100%;
       height: auto;
     }
-
     .user-info {
       text-align: center;
       font-size: 1em;
       color: #555;
       padding: 5px 0;
     }
-
     .container {
       padding: 10px 0;
     }
-
     h2 {
       font-size: 1.4em;
       margin: 16px;
       color: #888;
     }
-
     .ios-list {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-
     .ios-item {
       background: #fff;
       padding: 15px 16px;
@@ -58,39 +58,22 @@
       color: #000;
       text-decoration: none;
     }
-
     .ios-item:first-child {
       border-top: none;
     }
-
     .ios-item:active {
       background: #e5e5ea;
     }
-
     .dark-mode .ios-item {
       background: #1c1c1e;
       color: #fff;
       border-color: #3a3a3c;
     }
-
-    .ios-item button, .ios-item a {
-      font-size: 1em;
-      background: none;
-      border: none;
-      color: inherit;
-      padding: 0;
-      margin: 0;
-      width: 100%;
-      text-align: left;
-      text-decoration: none;
-    }
-
     .toggle-label {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-
     input[type="checkbox"] {
       width: 45px;
       height: 26px;
@@ -102,11 +85,9 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-
     input[type="checkbox"]:checked {
       background: #34c759;
     }
-
     input[type="checkbox"]::before {
       content: "";
       position: absolute;
@@ -118,90 +99,64 @@
       left: 3px;
       transition: 0.3s;
     }
-
     input[type="checkbox"]:checked::before {
       transform: translateX(19px);
     }
   </style>
 </head>
 <body>
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Header" />
-  </header>
-  <div class="user-info" id="userInfo">Logged in as: ...</div>
+<div style="padding: 1em;">
+  <button onclick="history.back()" style="padding: 10px 16px; font-size: 16px; border-radius: 12px; background: #007AFF; color: white; border: none;">
+    ⬅ Back
+  </button>
+</div>
 
-  <div class="container">
-    <h2>Settings</h2>
-    <ul class="ios-list">
-      <li class="ios-item toggle-label">
-        <span>Dark Mode</span>
-        <input type="checkbox" id="darkModeToggle">
-      </li>
-      <li class="ios-item toggle-label">
-        <span>Notifications</span>
-        <input type="checkbox" id="notifyToggle">
-      </li>
-      <li class="ios-item toggle-label">
-        <span>Auto Refresh</span>
-        <input type="checkbox" id="autoRefreshToggle">
-      </li>
-      <li class="ios-item">
-        <button onclick="clearData()">🧹 Clear Local Data</button>
-      </li>
-      <li class="ios-item">
-        <button onclick="logout()">🚪 Logout</button>
-      </li>
-      <li class="ios-item">
-        <a href="report.html">🐞 Report Issue with App</a>
-      </li>
-    </ul>
-  </div>
+<header class="ios-header-image">
+  <img src="header.jpg" alt="Header" />
+</header>
+<div class="user-info">
+  <strong>Welcome!</strong> Adjust your app settings below.
+</div>
 
-  <script>
-    const darkToggle = document.getElementById('darkModeToggle');
-    const notifyToggle = document.getElementById('notifyToggle');
-    const autoRefreshToggle = document.getElementById('autoRefreshToggle');
+<div class="container">
+  <h2>App Preferences</h2>
+  <ul class="ios-list">
+    <li class="ios-item toggle-label">
+      Dark Mode
+      <input type="checkbox" id="darkToggle" />
+    </li>
+    <li class="ios-item">
+      <button onclick="localStorage.clear(); sessionStorage.clear(); alert('App data cleared!')">Clear All Data</button>
+    </li>
+  </ul>
+</div>
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    document.getElementById("userInfo").innerText = currentUser?.username
-      ? `Logged in as: ${currentUser.username} (${currentUser.role})`
-      : "Not logged in";
+<script>
+  const toggle = document.getElementById('darkToggle');
+  const html = document.documentElement;
 
-    if (localStorage.getItem('theme') === 'dark') {
-      document.documentElement.classList.add('dark-mode');
-      darkToggle.checked = true;
+  toggle.addEventListener('change', function() {
+    if (this.checked) {
+      html.classList.add('dark-mode');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      html.classList.remove('dark-mode');
+      localStorage.setItem('darkMode', 'false');
     }
+  });
 
-    darkToggle.addEventListener('change', () => {
-      document.documentElement.classList.toggle('dark-mode', darkToggle.checked);
-      localStorage.setItem('theme', darkToggle.checked ? 'dark' : 'light');
-    });
+  // Load saved preference
+  if (localStorage.getItem('darkMode') === 'true') {
+    toggle.checked = true;
+    html.classList.add('dark-mode');
+  }
 
-    notifyToggle.checked = localStorage.getItem('notifications') === 'on';
-    notifyToggle.addEventListener('change', () => {
-      localStorage.setItem('notifications', notifyToggle.checked ? 'on' : 'off');
-      alert('Notifications ' + (notifyToggle.checked ? 'enabled' : 'disabled') + ' (simulated)');
-    });
+  document.addEventListener('touchstart', function(event) {
+    if (event.touches.length > 1) event.preventDefault();
+  }, { passive: false });
 
-    autoRefreshToggle.checked = localStorage.getItem('autoRefresh') === 'true';
-    autoRefreshToggle.addEventListener('change', () => {
-      localStorage.setItem('autoRefresh', autoRefreshToggle.checked.toString());
-    });
-
-    function clearData() {
-      if (confirm('Clear all saved app data?')) {
-        localStorage.clear();
-        caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
-        alert('Local data cleared.');
-        location.reload();
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem('currentUser');
-      sessionStorage.removeItem('currentUser');
-      window.location.href = 'login.html';
-    }
-  </script>
+  window.history.pushState(null, null, window.location.href);
+  window.onpopstate = () => window.history.go(1);
+</script>
 </body>
 </html>

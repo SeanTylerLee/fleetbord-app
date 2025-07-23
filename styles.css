@@ -1,117 +1,252 @@
 :root {
-  --bg: #ffffff;
-  --text: #000000;
-  --accent: #007aff;
-  --card: #f2f2f7;
-  --border: #d1d1d6;
+  --bg: #f2f2f7;
+  --text: #000;
+  --card: #fff;
+  --button: #007aff;
 }
 
 .dark-mode {
-  --bg: #000000;
-  --text: #ffffff;
-  --accent: #0a84ff;
+  --bg: #000;
+  --text: #fff;
   --card: #1c1c1e;
-  --border: #3a3a3c;
+  --button: #0a84ff;
 }
 
 html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  height: 100%;
   overflow-x: hidden;
-  -webkit-tap-highlight-color: transparent;
 }
 
-a {
-  text-decoration: none;
-  color: inherit;
+/* Header */
+.ios-header-image {
+  width: 100vw;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var(--bg);
+  border-bottom: 1px solid #ccc;
 }
 
-/* iOS-style header image */
 .ios-header-image img {
   width: 100%;
-  height: auto;
+  max-height: 150px;
+  object-fit: cover;
   display: block;
 }
 
-/* iOS-style list container */
+/* iOS-style list */
 .ios-list {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1rem;
+  margin: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--card);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* Each tap-style row */
 .ios-item {
-  display: block;
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #ccc;
+  text-decoration: none;
+  background: var(--card);
   color: var(--text);
-  font-size: 1.05rem;
-  font-weight: 500;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  transition: background 0.2s ease;
 }
 
-.ios-item:hover {
-  background-color: var(--border);
+.ios-item:last-child {
+  border-bottom: none;
 }
 
-/* Basic form and button styling */
-input, select, textarea {
-  width: 100%;
-  padding: 0.75rem;
-  margin: 0.5rem 0;
-  border: 1px solid var(--border);
+/* Toggle switches */
+.toggle-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: 40px;
+  height: 20px;
+  appearance: none;
+  background-color: #ccc;
+  border-radius: 20px;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.toggle-label input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 1px;
+  top: 1px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle-label input[type="checkbox"]:checked {
+  background-color: var(--button);
+}
+
+.toggle-label input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+/* Loads */
+.load-entry {
+  background: var(--card);
+  padding: 10px;
   border-radius: 8px;
-  background-color: var(--card);
+  margin: 10px 0;
+  font-size: 14px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.load-entry button {
+  margin: 5px 5px 0 0;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: none;
+  background: var(--button);
   color: var(--text);
-  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Dispatch */
+.dispatch-entry {
+  background: var(--card);
+  padding: 15px;
+  margin: 15px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-size: 15px;
+}
+
+.dispatch-entry strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.dispatch-entry p {
+  margin: 5px 0;
+}
+
+.dispatch-entry button {
+  margin-top: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--button);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Forms */
+form {
+  max-width: 400px;
+  margin: 0 auto 20px auto;
+  padding: 0 10px;
   box-sizing: border-box;
 }
 
-button {
-  background-color: var(--accent);
-  color: white;
-  font-size: 1rem;
-  font-weight: bold;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 10px;
+form input,
+form select,
+form textarea,
+form button {
   width: 100%;
-  margin-top: 0.5rem;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  background: var(--card);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+form button {
+  background-color: var(--button);
+  color: var(--text);
+  font-weight: 600;
+  border: none;
   cursor: pointer;
-  transition: background 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 122, 255, 0.5);
+  transition: background-color 0.3s ease;
 }
 
-button:hover {
-  background-color: #005ecb;
+form button:hover {
+  background-color: #005bb5;
 }
 
-/* Signature pad and PDF upload spacing */
+/* Signature Pad */
 canvas {
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
   background: white;
   display: block;
   margin: 1rem auto;
 }
 
-/* For responsiveness */
+/* Activity table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+th {
+  background-color: var(--card);
+  text-align: left;
+}
+
+/* Responsive layout */
 @media (max-width: 500px) {
   .ios-list {
-    padding: 0.5rem;
+    margin: 12px;
   }
 
-  .ios-item {
-    font-size: 1rem;
-    padding: 0.9rem;
+  form input,
+  form button {
+    font-size: 15px;
   }
+
+  .load-entry,
+  .dispatch-entry {
+    font-size: 13px;
+  }
+}
+
+/* Two-column form row */
+.form-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.form-row input {
+  flex: 1;
+  min-width: 100px;
 }

@@ -75,12 +75,13 @@
       );
 
       if (!match) {
-        alert("Invalid login.");
+        alert("❌ Invalid login. Check username, password, or if account is locked.");
         return;
       }
 
       localStorage.setItem("currentUser", JSON.stringify(match));
 
+      // Log the login event
       const log = JSON.parse(localStorage.getItem("loginLog") || "[]");
       log.push({
         username: match.username,
@@ -94,9 +95,15 @@
     }
 
     function createDefaultAdmin() {
-      localStorage.setItem("users", JSON.stringify([
-        { username: "admin", password: "31345", role: "admin", active: true }
-      ]));
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+      if (users.find(u => u.username === "admin")) {
+        alert("⚠️ Admin already exists.");
+        return;
+      }
+
+      users.push({ username: "admin", password: "31345", role: "admin", active: true });
+      localStorage.setItem("users", JSON.stringify(users));
       alert("✅ Default admin created!");
     }
   </script>

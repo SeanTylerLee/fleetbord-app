@@ -129,7 +129,6 @@
 
       users.forEach((user, index) => {
         const li = document.createElement("li");
-
         li.innerHTML = `
           <span><strong>${user.username}</strong> (${user.role}) - ${user.active === false ? "🚫 Locked" : "✅ Active"}</span>
           <div class="user-actions">
@@ -179,6 +178,14 @@
       }
     }
 
+    // Prevent non-admin access
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser || currentUser.role !== "admin") {
+      alert("Access denied.");
+      window.location.href = "login.html";
+    }
+
+    // Load on page start
     window.onload = loadUserList;
   </script>
 </body>

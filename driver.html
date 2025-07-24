@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Driver Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="header"><img src="images/header.jpg" alt="Header" /></div>
+  <div class="container">
+    <button onclick="goBack()">← Back</button>
+    <h2>My Loads</h2>
+    <div id="loadList"></div>
+  </div>
+  <script>
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    const allDispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
+
+    function renderLoads() {
+      const loadList = document.getElementById("loadList");
+      loadList.innerHTML = "";
+      const myLoads = allDispatches.filter(d => d.drivers.includes(user.username));
+      if (!myLoads.length) {
+        loadList.innerHTML = "<p>No loads assigned.</p>";
+        return;
+      }
+      myLoads.forEach((load, idx) => {
+        const div = document.createElement("div");
+        div.className = "load";
+        div.innerHTML = `
+          <strong>Customer:</strong> ${load.customer}<br/>
+          <strong>Rate:</strong> ${load.rate}<br/>
+          <strong>Fuel:</strong> ${load.fuel}<br/>
+          <strong>Salesman:</strong> ${load.salesman}<br/>
+          <strong>Load At:</strong> ${load.loadTime} @ ${load.loadLoc}<br/>
+          <strong>Unload At:</strong> ${load.unloadTime} @ ${load.unloadLoc}<br/>
+          <strong>Notes:</strong> ${load.notes}<br/>
+          <strong>With:</strong> ${load.drivers.join(", ")}<br/>
+          <strong>Status:</strong><br/>
+          Accepted: ${load.status[user.username].accepted}<br/>
+          Loaded: ${load.status[user.username].loaded}<br/>
+          Unloaded: ${load.status[user.username].unloaded}<br/>
+          <button onclick="updateStatus(${idx}, 'accepted')">Accept</button>
+          <button onclick="updateStatus(${idx}, 'loaded')">Loaded</button>
+          <button onclick="updateStatus(${idx}, 'unloaded')">Unloaded</button>
+          <hr/>
+        `;
+        loadList.appendChild(div);
+      });
+    }
+
+    function updateStatus(index, statusType) {
+      const dispatches = JSON.parse(localStorage.getItem("dispatches"));
+      dispatches[index].status[user.username][statusType] = true;
+      localStorage.setItem("dispatches", JSON.stringify(dispatches));
+      renderLoads();
+    }
+
+    function goBack() {
+      window.location.href = "index.html";
+    }
+
+    renderLoads();
+  </script>
+</body>
+</html>

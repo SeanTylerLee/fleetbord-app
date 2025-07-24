@@ -3,60 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Fleetbord</title>
+  <title>Fleetbord PWA Login</title>
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- PWA Icon Support -->
   <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon.jpg" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <meta name="apple-mobile-web-app-title" content="Fleetbord" />
-
-  <script>
-    // Redirect to login page if not logged in
-    const user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null');
-    if (!user || !user.username) {
-      window.location.replace('login.html');
-    }
-  </script>
+  <link rel="apple-touch-icon" href="images/icon.jpg" />
 </head>
 <body>
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Fleetbord Header" />
-  </header>
-
-  <div class="ios-list">
-    <a class="ios-item" href="page1.html">Loads</a>
-    <a class="ios-item" href="page2.html">Reimbursements</a>
-    <a class="ios-item" href="page3.html">Forms</a>
-    <a class="ios-item" href="dispatch.html">Dispatch</a>
-    <a class="ios-item" href="page5.html">Tickets</a>
-    <a class="ios-item" href="page6.html">Repairs</a>
-    <a class="ios-item" href="page7.html">Messaging</a>
-    <a class="ios-item" href="settings.html">Settings</a>
-    <a class="ios-item" href="admin.html">User Manager (Admin)</a>
+  <div class="header"><img src="images/header.jpg" alt="Fleetbord Header" /></div>
+  <div class="container">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
   </div>
-
   <script>
-    // Dark mode toggle support
-    const userTheme = localStorage.getItem('theme');
-    if (userTheme === 'dark') {
-      document.documentElement.classList.add('dark-mode');
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    if (!users.some(u => u.username === "001")) {
+      users.push({ username: "001", password: "1", role: "dispatcher" });
+      localStorage.setItem("users", JSON.stringify(users));
     }
 
-    // Auto-refresh when new code is deployed
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js').then(reg => {
-        reg.onupdatefound = () => {
-          const newWorker = reg.installing;
-          newWorker.onstatechange = () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              window.location.reload();
-            }
-          };
-        };
-      });
+    function login() {
+      const uname = document.getElementById("username").value.trim();
+      const pass = document.getElementById("password").value.trim();
+      const user = users.find(u => u.username === uname && u.password === pass);
+      if (user) {
+        localStorage.setItem("loggedInUser", JSON.stringify(user));
+        window.location.href = `${user.role}.html`;
+      } else {
+        alert("Invalid login");
+      }
     }
   </script>
 </body>

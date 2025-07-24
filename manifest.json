@@ -1,19 +1,14 @@
 {
   "name": "Fleetbord",
   "short_name": "Fleetbord",
-  "start_url": "login.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon.jpg",
-      "sizes": "192x192",
-      "type": "image/jpeg"
-    },
-    {
-      "src": "icon.jpg",
+      "src": "images/icon.jpg",
       "sizes": "512x512",
       "type": "image/jpeg"
     }

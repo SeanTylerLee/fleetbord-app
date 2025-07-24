@@ -1,31 +1,252 @@
-body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  margin: 0;
-  background: #fff;
-  color: #000;
+:root {
+  --bg: #f2f2f7;
+  --text: #000;
+  --card: #fff;
+  --button: #007aff;
 }
-.header img {
+
+.dark-mode {
+  --bg: #000;
+  --text: #fff;
+  --card: #1c1c1e;
+  --button: #0a84ff;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* Header */
+.ios-header-image {
+  width: 100vw;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var(--bg);
+  border-bottom: 1px solid #ccc;
+}
+
+.ios-header-image img {
   width: 100%;
+  max-height: 150px;
+  object-fit: cover;
   display: block;
 }
-.container {
-  padding: 20px;
+
+/* iOS-style list */
+.ios-list {
+  margin: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--card);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
-input, select, textarea, button {
-  width: 100%;
-  margin: 8px 0;
+
+.ios-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #ccc;
+  text-decoration: none;
+  background: var(--card);
+  color: var(--text);
+}
+
+.ios-item:last-child {
+  border-bottom: none;
+}
+
+/* Toggle switches */
+.toggle-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: 40px;
+  height: 20px;
+  appearance: none;
+  background-color: #ccc;
+  border-radius: 20px;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.toggle-label input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 1px;
+  top: 1px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle-label input[type="checkbox"]:checked {
+  background-color: var(--button);
+}
+
+.toggle-label input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+/* Loads */
+.load-entry {
+  background: var(--card);
   padding: 10px;
-  font-size: 16px;
+  border-radius: 8px;
+  margin: 10px 0;
+  font-size: 14px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
-button {
-  background: #007AFF;
-  color: #fff;
+
+.load-entry button {
+  margin: 5px 5px 0 0;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 6px;
   border: none;
-  border-radius: 5px;
+  background: var(--button);
+  color: var(--text);
+  cursor: pointer;
 }
-button:hover {
-  opacity: 0.9;
+
+/* Dispatch */
+.dispatch-entry {
+  background: var(--card);
+  padding: 15px;
+  margin: 15px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-size: 15px;
 }
-h2, h3 {
-  margin-top: 0;
+
+.dispatch-entry strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.dispatch-entry p {
+  margin: 5px 0;
+}
+
+.dispatch-entry button {
+  margin-top: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--button);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Forms */
+form {
+  max-width: 400px;
+  margin: 0 auto 20px auto;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+form input,
+form select,
+form textarea,
+form button {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  background: var(--card);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+form button {
+  background-color: var(--button);
+  color: var(--text);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 122, 255, 0.5);
+  transition: background-color 0.3s ease;
+}
+
+form button:hover {
+  background-color: #005bb5;
+}
+
+/* Signature Pad */
+canvas {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  display: block;
+  margin: 1rem auto;
+}
+
+/* Activity table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+th {
+  background-color: var(--card);
+  text-align: left;
+}
+
+/* Responsive layout */
+@media (max-width: 500px) {
+  .ios-list {
+    margin: 12px;
+  }
+
+  form input,
+  form button {
+    font-size: 15px;
+  }
+
+  .load-entry,
+  .dispatch-entry {
+    font-size: 13px;
+  }
+}
+
+/* Two-column form row */
+.form-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.form-row input {
+  flex: 1;
+  min-width: 100px;
 }

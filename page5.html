@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Tickets</title>
+
+  <!-- App style -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- iOS meta -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+  <!-- Signature Pad & jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
+  </header>
+
+  <div class="container" style="padding:20px;">
+    <h2 style="text-align:center;">Ticket Entry</h2>
+
+    <form id="ticketForm">
+      <!-- top rows -->
+      <div class="form-row">
+        <input type="text" name="hauledBy"   placeholder="Hauled By" />
+        <input type="text" name="salesRep"   placeholder="Sales Rep" />
+      </div>
+      <div class="form-row">
+        <input type="text" name="truckNumber" placeholder="Truck #" />
+        <input type="text" name="txMiles"     placeholder="TX Miles" />
+      </div>
+
+      <input type="text" name="workOrder"    placeholder="Work Order" />
+      <input type="text" name="invoiceTo"    placeholder="Invoice To" />
+      <input type="text" name="receivedFrom" placeholder="Received From" />
+      <input type="text" name="destination"  placeholder="Destination" />
+      <input type="text" name="leaseName"    placeholder="Lease Name" />
+      <input type="text" name="afeNumber"    placeholder="AFE #" />
+      <input type="text" name="poNumber"     placeholder="PO #" />
+      <input type="text" name="county"       placeholder="County" />
+      <input type="date" name="date" />
+
+      <hr style="margin:20px 0;" />
+
+      <!-- line items -->
+      <h3>Line Items</h3>
+      <div id="lineItems">
+        <div class="form-row">
+          <input type="text" name="qty[]"        placeholder="QTY" />
+          <input type="text" name="description[]" placeholder="Description" />
+          <input type="text" name="miles[]"      placeholder="Miles" />
+          <input type="text" name="price[]"      placeholder="Price" />
+        </div>
+      </div>
+      <button type="button" onclick="addLineItem()">➕ Add Row</button>
+
+      <hr style="margin:20px 0;" />
+
+      <input type="text" name="shippedBy"  placeholder="Shipped By" />
+      <input type="text" name="receivedBy" placeholder="Received By" />
+
+      <!-- signature -->
+      <h3 style="margin-top:20px;">Signature</h3>
+      <canvas id="signature-pad" style="border:1px solid #ccc;width:100%;height:150px;"></canvas>
+      <button type="button" onclick="clearSignature()">Clear Signature</button>
+      <input type="hidden" id="signatureImage" name="signatureImage" />
+
+      <br><br>
+      <button type="submit">Generate Ticket PDF</button>
+    </form>
+
+    <a class="ios-item" href="index.html" style="margin-top:20px;">← Back to Home</a>
+  </div>
+
+  <script>
+    /* ---------- signature pad ---------- */
+    let signaturePad;
+    window.onload = () => {
+      signaturePad = new SignaturePad(document.getElementById('signature-pad'));
+
+      // dark‑mode toggle
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark-mode');
+      }
+
+      // form submit
+      document.getElementById('ticketForm').addEventListener('submit', handleSubmit);
+    };
+
+    function clearSignature() { signaturePad.clear(); }
+
+    /* ---------- add new line‑item row ---------- */
+    function addLineItem() {
+      const row = document.createElement('div');
+      row.className = 'form-row';
+      row.innerHTML = `
+        <input type="text" name="qty[]"        placeholder="QTY" />
+        <input type="text" name="description[]" placeholder="Description" />
+        <input type="text" name="miles[]"      placeholder="Miles" />
+        <input type="text" name="price[]"      placeholder="Price" />
+      `;
+      document.getElementById('lineItems').appendChild(row);
+    }
+
+    /* ---------- form submit handler ---------- */
+    function handleSubmit(e) {
+      e.preventDefault();
+
+      const form = new FormData(e.target);
+
+      // capture signature (if any)
+      form.set('signatureImage', signaturePad.isEmpty() ? '' : signaturePad.toDataURL());
+
+      // convert FormData ➜ plain object
+      const data = {};
+      for (const [key, value] of form.entries()) {
+        if (key.endsWith('[]')) {
+          const k = key.replace('[]', '');
+          (data[k] = data[k] || []).push(value);
+        } else {
+          data[key] = value;
+        }
+      }
+
+      // save ticket JSON (optional)
+      const ticketId = 'ticket_' + Date.now();
+      localStorage.setItem(ticketId, JSON.stringify(data));
+
+      // generate PDF
+      generatePDF(data);
+    }
+
+    /* ---------- jsPDF layout (matches paper ticket) ---------- */
+    function generatePDF(d) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+
+      /* header */
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Monster Services Ticket', 40, 40);
+
+      doc.setFont('helvetica', 'normal');
+      let y = 65;
+
+      /* info block */
+      const line = (label, val, x = 40) => {
+        doc.text(`${label} ${val || ''}`, x, y);
+        y += 16;
+      };
+
+      line('Hauled By:',   d.hauledBy);
+      line('Sales Rep:',   d.salesRep);
+      line('Truck #:',     d.truckNumber);
+      line('TX Miles:',    d.txMiles);
+      line('Work Order:',  d.workOrder);
+      line('Invoice To:',  d.invoiceTo);
+      line('Received From:', d.receivedFrom);
+      line('Destination:', d.destination);
+      line('Lease Name:',  d.leaseName);
+      line('AFE #:',       d.afeNumber);
+      line('PO #:',        d.poNumber);
+      line('County:',      d.county);
+      line('Date:',        d.date);
+
+      /* table header */
+      y += 10;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Qty', 40, y);
+      doc.text('Description', 90, y);
+      doc.text('Miles', 300, y);
+      doc.text('Price', 380, y);
+      y += 12;
+      doc.setFont('helvetica', 'normal');
+
+      /* line items */
+      const len = (d.qty || []).length;
+      for (let i = 0; i < len; i++) {
+        doc.text(String(d.qty[i] || ''), 40, y);
+        doc.text(String(d.description[i] || ''), 90, y);
+        doc.text(String(d.miles[i] || ''), 300, y);
+        doc.text(String(d.price[i] || ''), 380, y);
+        y += 14;
+      }
+
+      /* shipped / received */
+      y += 20;
+      line('Shipped By:',  d.shippedBy);
+      line('Received By:', d.receivedBy);
+
+      /* signature */
+      if (d.signatureImage) {
+        doc.text('Signature:', 40, y + 10);
+        doc.addImage(d.signatureImage, 'PNG', 110, y, 180, 60);
+      }
+
+      doc.save('ticket.pdf');
+    }
+  </script>
+</body>
+</html>

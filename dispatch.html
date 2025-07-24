@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Dispatch</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      background: var(--bg, #fff);
+      color: var(--text, #000);
+    }
+
+    header img {
+      width: 100%;
+      display: block;
+    }
+
+    .container {
+      padding: 1rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.6rem;
+      margin: 0.5rem 0 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #007aff;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+
+    .dispatch-card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: var(--card);
+    }
+
+    .status-btns button {
+      background: #ccc;
+      color: #000;
+      margin-right: 0.5rem;
+    }
+
+    .dark-mode .dispatch-card {
+      background: #1c1c1e;
+      color: #fff;
+    }
+
+    .file-preview {
+      font-size: 0.9rem;
+      color: gray;
+      margin-bottom: 0.5rem;
+    }
+
+    .admin-tools {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 2px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <header><img src="header.jpg" alt="Header" /></header>
+
+  <div class="container">
+    <h2 style="text-align:center;">Dispatch Panel</h2>
+
+    <div id="adminPanel" style="display:none;">
+      <h3>Create New Dispatch</h3>
+      <input id="customer" placeholder="Customer" />
+      <input id="rate" placeholder="Rate ($)" type="number" />
+      <input id="surcharge" placeholder="Fuel Surcharge ($)" type="number" />
+      <input id="loadLoc" placeholder="Loading Location" />
+      <input id="unloadLoc" placeholder="Unloading Location" />
+      <input id="salesman" placeholder="Salesman" />
+      <input id="dispatchDate" type="datetime-local" />
+      <input id="dueDate" type="datetime-local" />
+      <textarea id="notes" placeholder="Dispatch Notes"></textarea>
+      <input id="mapPin" placeholder="Map Pin (Google Maps Link)" />
+      <input id="photo" type="file" />
+      <label>Select Drivers:</label>
+      <div id="driverSelect"></div>
+      <button onclick="createDispatch()">🚚 Dispatch Load</button>
+    </div>
+
+    <h3>My Dispatches</h3>
+    <div id="dispatchList"></div>
+  </div>
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const allUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    const dispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
+    const dispatchList = document.getElementById("dispatchList");
+
+    if (currentUser.role === "admin") {
+      document.getElementById("adminPanel").style.display = "block";
+      renderDriverSelect();
+    }
+
+    function renderDriverSelect() {
+      const driverDiv = document.getElementById("driverSelect");
+      const drivers = allUsers.filter(u => u.role === "driver");
+      drivers.forEach(d => {
+        const label = document.createElement("label");
+        label.innerHTML = `<input type="checkbox" value="${d.username}"> ${d.username}`;
+        driverDiv.appendChild(label);
+        driverDiv.appendChild(document.createElement("br"));
+      });
+    }
+
+    function createDispatch() {
+      const selectedDrivers = Array.from(document.querySelectorAll("#driverSelect input:checked")).map(cb => cb.value);
+      if (!selectedDrivers.length) return alert("Select at least one driver.");
+
+      const photoInput = document.getElementById("photo");
+      const reader = new FileReader();
+      reader.onload = function () {
+        const base64Photo = reader.result;
+
+        const newDispatch = {
+          id: Date.now(),
+          customer: customer.value,
+          rate: rate.value,
+          surcharge: surcharge.value,
+          loadLoc: loadLoc.value,
+          unloadLoc: unloadLoc.value,
+          salesman: salesman.value,
+          dispatchDate: dispatchDate.value,
+          dueDate: dueDate.value,
+          notes: notes.value,
+          mapPin: mapPin.value,
+          photo: base64Photo,
+          recipients: selectedDrivers,
+          statuses: {}  // username: { accepted: true/false, arrived: false, loaded: false, unloaded: false }
+        };
+
+        selectedDrivers.forEach(driver => {
+          newDispatch.statuses[driver] = { accepted: false, arrived: false, loaded: false, unloaded: false };
+        });
+
+        dispatches.push(newDispatch);
+        localStorage.setItem("dispatches", JSON.stringify(dispatches));
+        location.reload();
+      };
+
+      if (photoInput.files.length > 0) {
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        reader.onload(); // proceed without image
+      }
+    }
+
+    function renderDispatches() {
+      dispatchList.innerHTML = "";
+
+      dispatches.forEach(d => {
+        const isRecipient = d.recipients.includes(currentUser.username);
+        const isAdmin = currentUser.role === "admin";
+
+        if (!isRecipient && !isAdmin) return;
+
+        const card = document.createElement("div");
+        card.className = "dispatch-card";
+
+        let html = `
+          <strong>Customer:</strong> ${d.customer}<br/>
+          <strong>Rate:</strong> $${d.rate} + $${d.surcharge} FSC<br/>
+          <strong>Load:</strong> ${d.loadLoc}<br/>
+          <strong>Unload:</strong> ${d.unloadLoc}<br/>
+          <strong>Salesman:</strong> ${d.salesman}<br/>
+          <strong>Dispatch Date:</strong> ${d.dispatchDate}<br/>
+          <strong>Due:</strong> ${d.dueDate}<br/>
+          <strong>Notes:</strong> ${d.notes}<br/>
+          ${d.mapPin ? `<a href="${d.mapPin}" target="_blank">📍 View Map</a><br/>` : ""}
+          ${d.photo ? `<div class="file-preview">📷 Photo attached</div>` : ""}
+        `;
+
+        if (isRecipient) {
+          const status = d.statuses[currentUser.username];
+          html += `
+            <div class="status-btns">
+              <button onclick="acceptLoad(${d.id})" ${status.accepted ? "disabled" : ""}>Accept</button>
+              <button onclick="updateStatus(${d.id}, 'arrived')">Arrived</button>
+              <button onclick="updateStatus(${d.id}, 'loaded')">Loaded</button>
+              <button onclick="updateStatus(${d.id}, 'unloaded')">Unloaded</button>
+            </div>
+          `;
+        }
+
+        if (isAdmin) {
+          html += `<div class="admin-tools"><strong>Driver Status:</strong><br/>`;
+          Object.entries(d.statuses).forEach(([driver, stat]) => {
+            html += `${driver}: Accepted: ${stat.accepted ? "✅" : "❌"}, 
+              Arrived: ${stat.arrived ? "✅" : "❌"}, 
+              Loaded: ${stat.loaded ? "✅" : "❌"}, 
+              Unloaded: ${stat.unloaded ? "✅" : "❌"}<br/>`;
+          });
+          html += `</div>`;
+        }
+
+        card.innerHTML = html;
+        dispatchList.appendChild(card);
+      });
+    }
+
+    function acceptLoad(id) {
+      const index = dispatches.findIndex(d => d.id === id);
+      if (index > -1) {
+        dispatches[index].statuses[currentUser.username].accepted = true;
+        localStorage.setItem("dispatches", JSON.stringify(dispatches));
+        renderDispatches();
+      }
+    }
+
+    function updateStatus(id, key) {
+      const index = dispatches.findIndex(d => d.id === id);
+      if (index > -1) {
+        dispatches[index].statuses[currentUser.username][key] = true;
+        localStorage.setItem("dispatches", JSON.stringify(dispatches));
+        renderDispatches();
+      }
+    }
+
+    renderDispatches();
+  </script>
+</body>
+</html>

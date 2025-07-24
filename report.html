@@ -1,125 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
+    if (!user) {
+      window.location.href = "login.html";
+    }
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
+  </script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Report an Issue</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       margin: 0;
-      background: #f2f2f7;
-      color: #000;
+      background: var(--bg, #fff);
+      color: var(--text, #000);
     }
-
-    .dark-mode {
-      background: #000;
-      color: #fff;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    select, textarea, button {
+    header img {
       width: 100%;
-      font-size: 1em;
-      padding: 12px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      box-sizing: border-box;
+      height: auto;
+      display: block;
     }
-
-    button {
-      background-color: #007aff;
+    .back-button {
+      text-align: center;
+      padding: 1em;
+    }
+    .back-button button {
+      background: #007aff;
       color: white;
+      padding: 12px 18px;
+      font-size: 16px;
       font-weight: bold;
+      border-radius: 12px;
       border: none;
       cursor: pointer;
     }
-
-    .dark-mode select,
-    .dark-mode textarea,
-    .dark-mode button {
-      background-color: #1c1c1e;
-      color: white;
-      border-color: #444;
+    .container {
+      padding: 1rem;
     }
-
-    .confirmation {
-      text-align: center;
-      font-weight: bold;
-      color: green;
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 1rem;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      padding: 12px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <header><img src="header.jpg" alt="Header" /></header>
+  <div class="back-button"><button onclick="history.back()">Back</button></div>
+
   <div class="container">
-    <h2>🐞 Report an App Issue</h2>
-
-    <label for="page">Page with issue:</label>
-    <select id="page">
-      <option value="">-- Select a page --</option>
-      <option value="index.html">🏠 Home (index)</option>
-      <option value="page1.html">🚛 Loads</option>
-      <option value="page2.html">💰 Reimbursements</option>
-      <option value="page3.html">📄 Forms</option>
-      <option value="page4.html">📦 Dispatch</option>
-      <option value="page5.html">🎫 Tickets</option>
-      <option value="page6.html">🛠 Repairs</option>
-      <option value="page7.html">💬 Messaging</option>
-      <option value="settings.html">⚙️ Settings</option>
-    </select>
-
-    <label for="description">Describe the problem:</label>
-    <textarea id="description" rows="6" placeholder="Explain what went wrong..."></textarea>
-
-    <button onclick="submitReport()">Submit Issue</button>
-
-    <div class="confirmation" id="confirmation" style="display:none;">
-      ✅ Issue submitted!
-    </div>
+    <h2>Report a Problem</h2>
+    <textarea id="issueText" placeholder="Describe the issue you're experiencing..."></textarea>
+    <button onclick="submitIssue()">Submit</button>
   </div>
 
   <script>
-    const isDark = localStorage.getItem('theme') === 'dark';
-    if (isDark) document.body.classList.add('dark-mode');
-
-    function submitReport() {
-      const page = document.getElementById('page').value;
-      const description = document.getElementById('description').value.trim();
-
-      if (!page || !description) {
-        alert("Please fill out all fields.");
+    function submitIssue() {
+      const issue = document.getElementById("issueText").value.trim();
+      if (!issue) {
+        alert("Please describe the issue.");
         return;
       }
 
-      const reports = JSON.parse(localStorage.getItem('issueReports') || '[]');
-      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const existingReports = JSON.parse(localStorage.getItem("appIssues") || "[]");
+      const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
+      const report = {
+        user: user.username,
+        date: new Date().toLocaleString(),
+        message: issue
+      };
 
-      reports.push({
-        username: user.username || 'unknown',
-        role: user.role || 'unknown',
-        page,
-        description,
-        timestamp: new Date().toISOString()
-      });
-
-      localStorage.setItem('issueReports', JSON.stringify(reports));
-
-      document.getElementById('confirmation').style.display = 'block';
-      document.getElementById('page').value = '';
-      document.getElementById('description').value = '';
+      existingReports.push(report);
+      localStorage.setItem("appIssues", JSON.stringify(existingReports));
+      alert("Thank you. Your report has been submitted.");
+      document.getElementById("issueText").value = "";
     }
+
+    document.addEventListener('touchstart', e => {
+      if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => window.history.go(1);
   </script>
 </body>
 </html>

@@ -1,162 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<script>
-  const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-  if (!user) {
-    window.location.href = "login.html";
-  }
-</script>
+  <script>
+    const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
+    if (!user) {
+      window.location.href = "login.html";
+    }
 
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
+  </script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Settings</title>
   <link rel="stylesheet" href="styles.css" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       margin: 0;
-      background: #f2f2f7;
+      background: var(--bg, #fff);
+      color: var(--text, #000);
     }
-    .dark-mode {
-      background-color: #000;
-      color: #fff;
-    }
-    .ios-header-image img {
+    header img {
       width: 100%;
       height: auto;
+      display: block;
     }
-    .user-info {
+    .back-button {
       text-align: center;
-      font-size: 1em;
-      color: #555;
-      padding: 5px 0;
+      padding: 1em;
+    }
+    .back-button button {
+      background: #007aff;
+      color: white;
+      padding: 12px 18px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
     }
     .container {
-      padding: 10px 0;
+      padding: 1rem;
     }
-    h2 {
-      font-size: 1.4em;
-      margin: 16px;
-      color: #888;
-    }
-    .ios-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .ios-item {
-      background: #fff;
-      padding: 15px 16px;
-      border-top: 1px solid #ccc;
-      font-size: 1em;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: #000;
-      text-decoration: none;
-    }
-    .ios-item:first-child {
-      border-top: none;
-    }
-    .ios-item:active {
-      background: #e5e5ea;
-    }
-    .dark-mode .ios-item {
-      background: #1c1c1e;
-      color: #fff;
-      border-color: #3a3a3c;
-    }
-    .toggle-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    label {
+      display: block;
+      margin: 1rem 0 0.5rem;
+      font-size: 16px;
     }
     input[type="checkbox"] {
-      width: 45px;
-      height: 26px;
-      appearance: none;
-      background: #ccc;
-      border-radius: 13px;
-      position: relative;
-      outline: none;
+      transform: scale(1.4);
+      margin-right: 10px;
+    }
+    button {
+      background-color: #007aff;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      font-size: 16px;
+      border-radius: 10px;
+      margin-top: 10px;
       cursor: pointer;
-      transition: background 0.3s;
-    }
-    input[type="checkbox"]:checked {
-      background: #34c759;
-    }
-    input[type="checkbox"]::before {
-      content: "";
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #fff;
-      top: 3px;
-      left: 3px;
-      transition: 0.3s;
-    }
-    input[type="checkbox"]:checked::before {
-      transform: translateX(19px);
     }
   </style>
 </head>
 <body>
-<div style="padding: 1em;">
-  <button onclick="history.back()" style="padding: 10px 16px; font-size: 16px; border-radius: 12px; background: #007AFF; color: white; border: none;">
-    ⬅ Back
-  </button>
-</div>
+  <header><img src="header.jpg" alt="Header" /></header>
+  <div class="back-button"><button onclick="history.back()">Back</button></div>
 
-<header class="ios-header-image">
-  <img src="header.jpg" alt="Header" />
-</header>
-<div class="user-info">
-  <strong>Welcome!</strong> Adjust your app settings below.
-</div>
+  <div class="container">
+    <h2>App Settings</h2>
 
-<div class="container">
-  <h2>App Preferences</h2>
-  <ul class="ios-list">
-    <li class="ios-item toggle-label">
-      Dark Mode
-      <input type="checkbox" id="darkToggle" />
-    </li>
-    <li class="ios-item">
-      <button onclick="localStorage.clear(); sessionStorage.clear(); alert('App data cleared!')">Clear All Data</button>
-    </li>
-  </ul>
-</div>
+    <label><input type="checkbox" id="darkModeToggle" /> Enable Dark Mode</label>
+    <button onclick="clearData()">Clear All Data</button>
+    <button onclick="checkForUpdates()">Check for Updates</button>
+    <button onclick="window.location.href='report.html'">Report a Problem</button>
+  </div>
 
-<script>
-  const toggle = document.getElementById('darkToggle');
-  const html = document.documentElement;
+  <script>
+    const darkToggle = document.getElementById("darkModeToggle");
 
-  toggle.addEventListener('change', function() {
-    if (this.checked) {
-      html.classList.add('dark-mode');
-      localStorage.setItem('darkMode', 'true');
-    } else {
-      html.classList.remove('dark-mode');
-      localStorage.setItem('darkMode', 'false');
+    darkToggle.checked = localStorage.getItem("darkMode") === "true";
+
+    darkToggle.addEventListener("change", function () {
+      const enabled = darkToggle.checked;
+      localStorage.setItem("darkMode", enabled);
+      document.documentElement.classList.toggle("dark-mode", enabled);
+    });
+
+    function clearData() {
+      if (confirm("Are you sure you want to clear all saved data?")) {
+        localStorage.clear();
+        sessionStorage.clear();
+        alert("All data cleared.");
+        window.location.href = "login.html";
+      }
     }
-  });
 
-  // Load saved preference
-  if (localStorage.getItem('darkMode') === 'true') {
-    toggle.checked = true;
-    html.classList.add('dark-mode');
-  }
+    function checkForUpdates() {
+      alert("You're using the latest version.");
+    }
 
-  document.addEventListener('touchstart', function(event) {
-    if (event.touches.length > 1) event.preventDefault();
-  }, { passive: false });
-
-  window.history.pushState(null, null, window.location.href);
-  window.onpopstate = () => window.history.go(1);
-</script>
+    document.addEventListener('touchstart', e => {
+      if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => window.history.go(1);
+  </script>
 </body>
 </html>

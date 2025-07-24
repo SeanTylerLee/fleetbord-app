@@ -1,46 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <script>
+    const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
+    if (!user) {
+      window.location.href = "login.html";
+    }
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
+  </script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Forms</title>
   <link rel="stylesheet" href="styles.css" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      background: var(--bg, #fff);
+      color: var(--text, #000);
+    }
+    header img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .back-button {
+      text-align: center;
+      padding: 1em;
+    }
+    .back-button button {
+      background: #007aff;
+      color: white;
+      padding: 12px 18px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+    }
+    .container {
+      padding: 1rem;
+    }
+    .placeholder {
+      padding: 20px;
+      text-align: center;
+      background: #f0f0f0;
+      border-radius: 10px;
+    }
+    .dark-mode .placeholder {
+      background: #1c1c1e;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Header" />
-  </header>
+  <header><img src="header.jpg" alt="Header" /></header>
+  <div class="back-button"><button onclick="history.back()">Back</button></div>
 
   <div class="container">
-    <h2>Company Forms</h2>
-    <ul class="ios-list">
-      <li class="ios-item">
-        <strong>Form A</strong><br>
-        <span>📄 Form coming soon</span>
-      </li>
-      <li class="ios-item">
-        <strong>Form B</strong><br>
-        <span>📄 Form coming soon</span>
-      </li>
-      <li class="ios-item">
-        <strong>Form C</strong><br>
-        <span>📄 Form coming soon</span>
-      </li>
-      <li class="ios-item">
-        <strong>Form D</strong><br>
-        <span>📄 Form coming soon</span>
-      </li>
-    </ul>
-    <a class="ios-item" href="index.html">← Back to Home</a>
+    <h2>Forms</h2>
+    <div class="placeholder">
+      Admin-uploaded forms will appear here in the future. This is a placeholder.
+    </div>
   </div>
 
   <script>
-    const userTheme = localStorage.getItem('theme');
-    if (userTheme === 'dark') {
-      document.documentElement.classList.add('dark-mode');
-    }
+    document.addEventListener('touchstart', e => {
+      if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => window.history.go(1);
   </script>
 </body>
 </html>

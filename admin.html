@@ -1,17 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-    const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-    if (!user) {
-      window.location.href = "login.html";
-    }
-    if (localStorage.getItem('darkMode') === 'true') {
-      document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
-    }
-  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel</title>
@@ -23,33 +12,26 @@
       background: var(--bg, #fff);
       color: var(--text, #000);
     }
+
     header img {
       width: 100%;
       height: auto;
       display: block;
     }
-    .back-button {
-      text-align: center;
-      padding: 10px;
-    }
-    .back-button button {
-      background: #007aff;
-      color: white;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-    }
+
     .container {
       padding: 1rem;
     }
+
     h2 {
       text-align: center;
+      margin-bottom: 1rem;
     }
+
     .form-group {
       margin-bottom: 1rem;
     }
+
     input, select, button {
       width: 100%;
       padding: 0.6rem;
@@ -58,6 +40,7 @@
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
+
     button {
       background: #007aff;
       color: white;
@@ -65,40 +48,61 @@
       border: none;
       cursor: pointer;
     }
+
     ul {
       list-style: none;
       padding: 0;
     }
+
     li {
       background: #f0f0f0;
       padding: 0.8rem;
       border-radius: 8px;
       margin-bottom: 0.5rem;
     }
+
+    li span {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
     .user-actions button {
       margin-right: 0.5rem;
+      font-size: 0.9rem;
     }
+
     .dark-mode li {
       background: #1c1c1e;
       color: white;
     }
+
     .log-button {
       margin-top: 2rem;
       width: 100%;
       padding: 0.7rem;
       font-size: 1rem;
+      border-radius: 8px;
       background: #28a745;
+      color: #fff;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <header><img src="header.jpg" alt="Header" /></header>
-  <div class="back-button"><button onclick="window.location.href='index.html'">← Back</button></div>
+  <header>
+    <img src="header.jpg" alt="Header" />
+  </header>
 
   <div class="container">
     <h2>Admin Panel - Manage Users</h2>
-    <div class="form-group"><input type="text" id="newUsername" placeholder="Username" /></div>
-    <div class="form-group"><input type="password" id="newPassword" placeholder="Password" /></div>
+
+    <div class="form-group">
+      <input type="text" id="newUsername" placeholder="Username" />
+    </div>
+    <div class="form-group">
+      <input type="password" id="newPassword" placeholder="Password" />
+    </div>
     <div class="form-group">
       <select id="newRole">
         <option value="driver">Driver</option>
@@ -114,7 +118,7 @@
       <ul id="userList"></ul>
     </div>
 
-    <button class="log-button" onclick="location.href='logs.html'">View Login Logs</button>
+    <button class="log-button" onclick="location.href='logs.html'">📋 View Login Logs</button>
   </div>
 
   <script>
@@ -122,34 +126,50 @@
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       const list = document.getElementById("userList");
       list.innerHTML = "";
+
       users.forEach((user, index) => {
         const li = document.createElement("li");
+
         li.innerHTML = `
-          <span><strong>${user.username}</strong> (${user.role}) - ${user.active === false ? "Locked" : "Active"}</span>
+          <span><strong>${user.username}</strong> (${user.role}) - ${user.active === false ? "🚫 Locked" : "✅ Active"}</span>
           <div class="user-actions">
             <button onclick="toggleLock(${index})">${user.active === false ? "Unlock" : "Lock"}</button>
             <button onclick="deleteUser(${index})">Delete</button>
-          </div>`;
+          </div>
+        `;
         list.appendChild(li);
       });
     }
+
     function createUser() {
       const username = document.getElementById("newUsername").value.trim();
       const password = document.getElementById("newPassword").value.trim();
       const role = document.getElementById("newRole").value;
-      if (!username || !password) return alert("Enter username and password");
+
+      if (!username || !password) {
+        alert("Enter username and password");
+        return;
+      }
+
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      if (users.find(u => u.username === username)) return alert("User already exists!");
+      if (users.find(u => u.username === username)) {
+        alert("User already exists!");
+        return;
+      }
+
       users.push({ username, password, role, active: true });
       localStorage.setItem("users", JSON.stringify(users));
       loadUserList();
+      alert("✅ User created.");
     }
+
     function toggleLock(index) {
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       users[index].active = !users[index].active;
       localStorage.setItem("users", JSON.stringify(users));
       loadUserList();
     }
+
     function deleteUser(index) {
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       if (confirm(`Delete user "${users[index].username}"?`)) {
@@ -158,13 +178,8 @@
         loadUserList();
       }
     }
-    window.onload = loadUserList;
-  </script>
 
-  <script>
-    document.addEventListener('touchstart', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
-    window.history.pushState(null, null, window.location.href);
-    window.onpopstate = () => window.history.go(1);
+    window.onload = loadUserList;
   </script>
 </body>
 </html>

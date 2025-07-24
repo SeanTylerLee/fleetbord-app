@@ -1,99 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <script>
-    const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-    if (!user) {
-      window.location.href = "login.html";
-    }
-    if (localStorage.getItem('darkMode') === 'true') {
-      document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
-    }
-  </script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Dispatch</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      background: var(--bg, #fff);
-      color: var(--text, #000);
-    }
-    header img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-    .back-button {
-      text-align: center;
-      padding: 1em;
-    }
-    .back-button button {
-      background: #007aff;
-      color: white;
-      padding: 12px 18px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-    }
-    .container {
-      padding: 1rem;
-    }
-    .dispatch-item {
-      background: #f0f0f0;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 10px;
-    }
-    .dark-mode .dispatch-item {
-      background: #1c1c1e;
-      color: white;
-    }
-  </style>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 </head>
 <body>
-  <header><img src="header.jpg" alt="Header" /></header>
-  <div class="back-button"><button onclick="history.back()">Back</button></div>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
+  </header>
 
   <div class="container">
-    <h2>Dispatches</h2>
+    <h2 style="text-align:center; padding: 15px;">Dispatched Loads</h2>
     <div id="dispatchList"></div>
+    <a class="ios-item" href="index.html">← Back to Home</a>
   </div>
 
   <script>
-    function loadDispatches() {
-      const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-      const dispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
-      const list = document.getElementById("dispatchList");
-      list.innerHTML = "";
-      dispatches.forEach(d => {
-        if (d.recipients.includes(user.username)) {
-          const item = document.createElement("div");
-          item.className = "dispatch-item";
-          item.innerHTML = `
-            <strong>From:</strong> ${d.from}<br />
-            <strong>Message:</strong> ${d.message}<br />
-            ${d.mapLink ? `<a href="${d.mapLink}" target="_blank">Map</a><br />` : ""}
-            ${d.image ? `<img src="${d.image}" alt="photo" style="max-width:100%;margin-top:10px;" />` : ""}
-          `;
-          list.appendChild(item);
-        }
+    const sampleDispatches = [
+      {
+        id: 1,
+        pickupLocation: "Yard A",
+        pickupTime: "2025-07-22 08:00 AM",
+        deliveryLocation: "Site B",
+        deliveryTime: "2025-07-22 01:00 PM",
+        rate: "$850",
+        customer: "ABC Energy Co.",
+        fuelSurcharge: "$75",
+        ticketType: "Individual Tickets",
+        notes: "Watch out for site road construction.",
+        assignedTo: ["driver1", "driver2"],
+        accepted: false
+      }
+    ];
+
+    const currentUser = "driver1"; // Placeholder (to be replaced with actual login system)
+    const dispatchList = document.getElementById("dispatchList");
+    dispatchList.innerHTML = "";
+
+    const relevantLoads = sampleDispatches.filter(load => load.assignedTo.includes(currentUser));
+
+    if (relevantLoads.length === 0) {
+      dispatchList.innerHTML = `
+        <div class="ios-list">
+          <div class="ios-item">
+            <strong>No loads currently dispatched.</strong>
+            <p>Once a load is dispatched to you, it will appear here.</p>
+          </div>
+        </div>`;
+    } else {
+      relevantLoads.forEach(load => {
+        const div = document.createElement("div");
+        div.className = "dispatch-entry";
+        div.innerHTML = `
+          <strong>Pickup:</strong> ${load.pickupLocation}<br>
+          <strong>Pickup Time:</strong> ${load.pickupTime}<br>
+          <strong>Delivery:</strong> ${load.deliveryLocation}<br>
+          <strong>Delivery Time:</strong> ${load.deliveryTime}<br>
+          <strong>Rate:</strong> ${load.rate}<br>
+          <strong>Customer:</strong> ${load.customer}<br>
+          <strong>Fuel Surcharge:</strong> ${load.fuelSurcharge}<br>
+          <strong>Ticket Type:</strong> ${load.ticketType}<br>
+          <strong>Notes:</strong> ${load.notes}<br><br>
+          <button onclick="acceptLoad(${load.id})">✅ Accept Load</button>
+        `;
+        dispatchList.appendChild(div);
       });
     }
 
-    loadDispatches();
+    function acceptLoad(id) {
+      alert("Load #" + id + " accepted.");
+      // TODO: Save to backend or localStorage
+    }
 
-    document.addEventListener('touchstart', e => {
-      if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
-    window.history.pushState(null, null, window.location.href);
-    window.onpopstate = () => window.history.go(1);
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark-mode');
+    }
   </script>
 </body>
 </html>

@@ -1,90 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Fleetbord</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- PWA Icon Support -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.jpg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Fleetbord" />
+
   <script>
-    const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-    if (!user) window.location.href = "login.html";
-    if (localStorage.getItem('darkMode') === 'true') {
-      document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
+    // Redirect to login page if not logged in
+    const user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null');
+    if (!user || !user.username) {
+      window.location.replace('login.html');
     }
   </script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Fleetbord Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg, #fff);
-      color: var(--text, #000);
-      text-align: center;
-    }
-    header img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-    h2 {
-      margin: 1rem 0 0.5rem;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      padding: 1.5rem;
-    }
-    .grid a {
-      display: block;
-      padding: 1rem;
-      background: #f2f2f2;
-      border-radius: 12px;
-      font-size: 18px;
-      text-decoration: none;
-      color: #000;
-      font-weight: bold;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .dark-mode .grid a {
-      background: #1c1c1e;
-      color: #fff;
-    }
-    .admin-link {
-      display: none;
-    }
-  </style>
 </head>
 <body>
-  <header><img src="header.jpg" alt="Header" /></header>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Fleetbord Header" />
+  </header>
 
-  <h2 id="greeting">Welcome</h2>
-
-  <div class="grid">
-    <a href="page1.html">Loads</a>
-    <a href="page2.html">Reimbursements</a>
-    <a href="page3.html">Forms</a>
-    <a href="page4.html">Dispatch</a>
-    <a href="page5.html">Tickets</a>
-    <a href="page6.html">Mechanical</a>
-    <a href="page7.html">Messages</a>
-    <a href="settings.html">Settings</a>
-    <a href="admin.html" class="admin-link" id="adminLink">Admin</a>
+  <div class="ios-list">
+    <a class="ios-item" href="page1.html">🚛 Loads</a>
+    <a class="ios-item" href="page2.html">💰 Reimbursements</a>
+    <a class="ios-item" href="page3.html">📄 Forms</a>
+    <a class="ios-item" href="page4.html">📦 Dispatch</a>
+    <a class="ios-item" href="page5.html">🎫 Tickets</a>
+    <a class="ios-item" href="page6.html">🛠 Repairs</a>
+    <a class="ios-item" href="page7.html">💬 Messaging</a>
+    <a class="ios-item" href="settings.html">⚙️ Settings</a>
+    <a class="ios-item" href="admin.html">👤 User Manager (Admin)</a>
   </div>
 
   <script>
-    const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-    document.getElementById("greeting").textContent = `Welcome, ${user.username}`;
-    if (user.role === "admin") {
-      document.getElementById("adminLink").style.display = "block";
+    // Dark mode toggle support
+    const userTheme = localStorage.getItem('theme');
+    if (userTheme === 'dark') {
+      document.documentElement.classList.add('dark-mode');
     }
 
-    document.addEventListener('touchstart', e => {
-      if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
-    window.history.pushState(null, null, window.location.href);
-    window.onpopstate = () => window.history.go(1);
+    // Auto-refresh when new code is deployed
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js').then(reg => {
+        reg.onupdatefound = () => {
+          const newWorker = reg.installing;
+          newWorker.onstatechange = () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          };
+        };
+      });
+    }
   </script>
 </body>
 </html>

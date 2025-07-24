@@ -1,99 +1,80 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <script>
-    const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-    if (!user) {
-      window.location.href = "login.html";
-    }
-    if (localStorage.getItem('darkMode') === 'true') {
-      document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
-    }
-  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Mechanical Issues</title>
+  <title>Repair Report</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      background: var(--bg, #fff);
-      color: var(--text, #000);
-    }
-    header img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-    .back-button {
-      text-align: center;
-      padding: 1em;
-    }
-    .back-button button {
-      background: #007aff;
-      color: white;
-      padding: 12px 18px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-    }
-    .container {
-      padding: 1rem;
-    }
-    input, textarea, button {
-      width: 100%;
-      margin-bottom: 1rem;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background: #007aff;
-      color: white;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-    }
-  </style>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
 </head>
 <body>
-  <header><img src="header.jpg" alt="Header" /></header>
-  <div class="back-button"><button onclick="history.back()">Back</button></div>
+<button id="logoutButton" style="position:fixed;top:10px;right:10px;z-index:1000;">Logout</button>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
+  </header>
 
-  <div class="container">
-    <h2>Report Mechanical Issue</h2>
-    <input type="date" id="issueDate" />
-    <input type="text" id="unitNumber" placeholder="Unit Number" />
-    <textarea id="description" rows="4" placeholder="Describe the issue..."></textarea>
-    <button onclick="submitIssue()">Submit Issue</button>
+  <div class="container" style="padding:20px;">
+    <h2 style="text-align:center;">Report a Mechanical Issue</h2>
+
+    <form id="repairForm">
+      <input type="date" name="date" required />
+      <input type="text" name="unit" placeholder="Unit Number" required />
+      <textarea name="description" placeholder="Describe the issue..." rows="5" required></textarea>
+
+      <h3>Driver Signature</h3>
+      <canvas id="signature-pad" style="border:1px solid #ccc;width:100%;height:150px;"></canvas>
+      <button type="button" onclick="clearSignature()">Clear Signature</button>
+
+      <br><br>
+      <button type="submit">Submit Repair Report</button>
+    </form>
+
+    <div id="confirmation" style="display:none; margin-top:20px;">
+      ✅ Repair report submitted successfully.
+    </div>
+
+    <a class="ios-item" href="index.html" style="margin-top:20px;">← Back to Home</a>
   </div>
 
   <script>
-    function submitIssue() {
-      const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-      const issues = JSON.parse(localStorage.getItem("mechanicalIssues") || "[]");
-      const entry = {
-        user: user.username,
-        date: document.getElementById("issueDate").value,
-        unit: document.getElementById("unitNumber").value,
-        description: document.getElementById("description").value
-      };
-      issues.push(entry);
-      localStorage.setItem("mechanicalIssues", JSON.stringify(issues));
-      alert("Issue submitted.");
+    let signaturePad;
+
+    window.onload = () => {
+      signaturePad = new SignaturePad(document.getElementById('signature-pad'));
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark-mode');
+      }
+
+      document.getElementById('repairForm').addEventListener('submit', handleSubmit);
+    };
+
+    function clearSignature() {
+      signaturePad.clear();
     }
 
-    document.addEventListener('touchstart', e => {
-      if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
-    window.history.pushState(null, null, window.location.href);
-    window.onpopstate = () => window.history.go(1);
+    function handleSubmit(e) {
+      e.preventDefault();
+      const form = new FormData(e.target);
+
+      const report = {
+        date: form.get('date'),
+        unit: form.get('unit'),
+        description: form.get('description'),
+        signature: signaturePad.isEmpty() ? null : signaturePad.toDataURL(),
+        status: "Submitted"
+      };
+
+      const reports = JSON.parse(localStorage.getItem('repairReports') || '[]');
+      reports.push(report);
+      localStorage.setItem('repairReports', JSON.stringify(reports));
+
+      document.getElementById('repairForm').reset();
+      signaturePad.clear();
+      document.getElementById('confirmation').style.display = 'block';
+    }
   </script>
 </body>
 </html>

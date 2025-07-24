@@ -1,164 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-    const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-    if (!user) {
-      window.location.href = "login.html";
-    }
-    if (localStorage.getItem('darkMode') === 'true') {
-      document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
-    }
-  </script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Loads</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      background: var(--bg, #fff);
-      color: var(--text, #000);
+    /* Override form styles for bubble inputs */
+    form {
+      max-width: 400px;
+      margin: 0 auto 20px auto;
+      padding: 0 10px;
+      box-sizing: border-box;
     }
-    header img {
+
+    form input,
+    form button {
       width: 100%;
-      height: auto;
-      display: block;
-    }
-    .back-button {
-      text-align: center;
-      padding: 1em;
-    }
-    .back-button button {
-      background: #007aff;
-      color: white;
-      padding: 12px 18px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
       font-size: 16px;
-      font-weight: bold;
       border-radius: 12px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      background: var(--card);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    form button {
+      background-color: var(--button);
+      color: var(--text);
+      font-weight: 600;
       border: none;
       cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 122, 255, 0.5);
+      transition: background-color 0.3s ease;
     }
-    .container {
-      padding: 1rem;
-    }
-    .load-form input,
-    .load-form select,
-    .load-form button {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      font-size: 16px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-    .load-form button {
-      background: #007aff;
-      color: white;
-      font-weight: bold;
-      border: none;
-    }
-    .load-list {
-      margin-top: 2rem;
-    }
-    .load-item {
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 12px;
-      background: #f0f0f0;
-    }
-    .dark-mode .load-item {
-      background: #1c1c1e;
-      color: white;
+
+    form button:hover {
+      background-color: #005bb5;
     }
   </style>
 </head>
 <body>
-  <header><img src="header.jpg" alt="Header" /></header>
-  <div class="back-button"><button onclick="history.back()">Back</button></div>
-
-  <div class="container">
-    <h2>Enter Load Information</h2>
-    <div class="load-form">
-      <input type="date" id="loadDate" />
-      <input type="text" id="ticketNumber" placeholder="Ticket Number" />
-      <input type="text" id="customer" placeholder="Customer Name" />
-      <input type="text" id="lease" placeholder="Lease Name" />
-      <input type="text" id="rig" placeholder="Rig Number" />
-      <input type="number" id="rate" placeholder="Rate ($)" />
-      <input type="number" id="overnights" placeholder="Number of Overnights" />
-      <button onclick="addLoad()">Add Load</button>
+  <div class="app-wrapper">
+    <div class="ios-header-image">
+      <img src="header.jpg" alt="Header" />
     </div>
 
-    <div class="load-list">
-      <h3>Your Loads:</h3>
-      <div id="loadsContainer"></div>
+    <div class="container">
+      <h2>   Enter Load</h2>
+      <form id="loadForm" autocomplete="off">
+        <input type="date" id="date" required />
+        <input type="text" id="ticket" placeholder="Ticket Number" required />
+        <input type="text" id="customer" placeholder="Customer" required />
+        <input type="text" id="rig" placeholder="Rig" required />
+        <input type="text" id="lease" placeholder="Lease" required />
+        <input type="number" id="price" placeholder="Price" required />
+        <input type="number" id="overnights" placeholder="Overnights" required />
+        <button type="submit">Save Load</button>
+        <input type="hidden" id="editIndex" />
+      </form>
+
+      <h2>Saved Loads</h2>
+      <div id="loadList"></div>
+
+      <button class="export-btn" onclick="generatePaySheet()">Generate Pay Sheet PDF</button>
     </div>
   </div>
 
-  <script>
-    function getUserLoads() {
-      const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-      const allLoads = JSON.parse(localStorage.getItem("loads") || "[]");
-      return allLoads.filter(load => load.user === user.username);
-    }
-
-    function addLoad() {
-      const user = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser"));
-      const allLoads = JSON.parse(localStorage.getItem("loads") || "[]");
-
-      const newLoad = {
-        user: user.username,
-        date: document.getElementById("loadDate").value,
-        ticketNumber: document.getElementById("ticketNumber").value,
-        customer: document.getElementById("customer").value,
-        lease: document.getElementById("lease").value,
-        rig: document.getElementById("rig").value,
-        rate: document.getElementById("rate").value,
-        overnights: document.getElementById("overnights").value
-      };
-
-      allLoads.push(newLoad);
-      localStorage.setItem("loads", JSON.stringify(allLoads));
-      displayLoads();
-    }
-
-    function displayLoads() {
-      const loads = getUserLoads();
-      const container = document.getElementById("loadsContainer");
-      container.innerHTML = "";
-      if (loads.length === 0) {
-        container.innerHTML = "<p>No loads entered yet.</p>";
-        return;
-      }
-
-      loads.forEach(load => {
-        const div = document.createElement("div");
-        div.className = "load-item";
-        div.innerHTML = `
-          <strong>Date:</strong> ${load.date}<br />
-          <strong>Ticket #:</strong> ${load.ticketNumber}<br />
-          <strong>Customer:</strong> ${load.customer}<br />
-          <strong>Lease:</strong> ${load.lease}<br />
-          <strong>Rig:</strong> ${load.rig}<br />
-          <strong>Rate:</strong> ${load.rate}<br />
-          <strong>Overnights:</strong> ${load.overnights}
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    displayLoads();
-
-    document.addEventListener('touchstart', e => {
-      if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
-
-    window.history.pushState(null, null, window.location.href);
-    window.onpopstate = () => window.history.go(1);
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

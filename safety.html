@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Safety</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      background: var(--bg, #fff);
+      color: var(--text, #000);
+    }
+
+    .ios-header-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .container {
+      padding: 1rem;
+    }
+
+    .message-box, .ack-box {
+      background: var(--card, #f9f9f9);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #007aff;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .ack-button {
+      background: #28a745;
+    }
+
+    .acknowledged {
+      color: green;
+      font-weight: bold;
+    }
+
+    .admin-section {
+      background: #eef;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
+  </div>
+
+  <div class="container">
+    <h2>Safety Messages</h2>
+
+    <div id="adminTools" class="admin-section" style="display:none;">
+      <h3>Post New Safety Message</h3>
+      <textarea id="safetyInput" placeholder="Enter safety topic or meeting note here..."></textarea>
+      <button onclick="postSafetyMessage()">Post Message</button>
+    </div>
+
+    <div id="messageList"></div>
+  </div>
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const isAdmin = currentUser.role === "admin";
+
+    const safetyKey = "safetyMessages";
+    const messageList = document.getElementById("messageList");
+    const adminTools = document.getElementById("adminTools");
+
+    if (isAdmin) {
+      adminTools.style.display = "block";
+    }
+
+    function postSafetyMessage() {
+      const text = document.getElementById("safetyInput").value.trim();
+      if (!text) return alert("Enter a message first.");
+      const messages = JSON.parse(localStorage.getItem(safetyKey) || "[]");
+      messages.push({ id: Date.now(), text, acks: [] });
+      localStorage.setItem(safetyKey, JSON.stringify(messages));
+      document.getElementById("safetyInput").value = "";
+      renderMessages();
+    }
+
+    function acknowledgeMessage(id) {
+      const messages = JSON.parse(localStorage.getItem(safetyKey) || "[]");
+      const msg = messages.find(m => m.id === id);
+      if (!msg.acks.includes(currentUser.username)) {
+        msg.acks.push(currentUser.username);
+        localStorage.setItem(safetyKey, JSON.stringify(messages));
+        renderMessages();
+      }
+    }
+
+    function renderMessages() {
+      const messages = JSON.parse(localStorage.getItem(safetyKey) || "[]");
+      messageList.innerHTML = "";
+
+      messages.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = "message-box";
+        div.innerHTML = `<p>${msg.text}</p>`;
+
+        const alreadyAcked = msg.acks.includes(currentUser.username);
+
+        if (isAdmin) {
+          div.innerHTML += `<div class="ack-box"><strong>Acknowledged by:</strong><br>${msg.acks.join(", ") || "No one yet"}</div>`;
+        } else {
+          if (alreadyAcked) {
+            div.innerHTML += `<p class="acknowledged">✅ You acknowledged this message.</p>`;
+          } else {
+            div.innerHTML += `<button class="ack-button" onclick="acknowledgeMessage(${msg.id})">Acknowledge</button>`;
+          }
+        }
+
+        messageList.appendChild(div);
+      });
+    }
+
+    renderMessages();
+  </script>
+</body>
+</html>

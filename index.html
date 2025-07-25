@@ -70,6 +70,7 @@
   menu.innerHTML += `<a class="ios-item" href="page6.html">Mechanical</a>`;
   menu.innerHTML += `<a class="ios-item" href="schedule.html">Schedule</a>`;
   menu.innerHTML += `<a class="ios-item" href="page3.html">Forms</a>`;
+  menu.innerHTML += `<a class="ios-item" href="forum.html">Forum</a>`;
   menu.innerHTML += `<a class="ios-item" href="safety.html">Safety ${badge(newMessages)}</a>`;
   menu.innerHTML += `<a class="ios-item" href="settings.html">Settings</a>`;
   
@@ -86,9 +87,9 @@
 
   // Admin-only menu
   if (role === "admin") {
-    menu.innerHTML += `<a class="ios-item" href="admin.html">🛠 Admin Panel</a>`;
-    menu.innerHTML += `<a class="ios-item" href="users.html">👤 User Profiles</a>`;
-    menu.innerHTML += `<a class="ios-item" href="logs.html">📋 Login Logs</a>`;
+    menu.innerHTML += `<a class="ios-item" href="admin.html">Admin Panel</a>`;
+    menu.innerHTML += `<a class="ios-item" href="users.html">User Profiles</a>`;
+    menu.innerHTML += `<a class="ios-item" href="logs.html">Login Logs</a>`;
   }
 
   // PWA install redirect

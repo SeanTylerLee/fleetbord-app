@@ -12,95 +12,78 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="Fleetbord" />
-
-  <script>
-    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    if (!isInStandaloneMode) {
-      window.location.replace("install.html");
-    }
-
-    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
-    if (!user || !user.username) {
-      window.location.replace('login.html');
-    }
-  </script>
 </head>
 <body>
-  <noscript>
-    <div style="text-align:center; color:red; padding:20px;">
-      ⚠️ JavaScript is required to use this app.
-    </div>
-  </noscript>
-
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Monster" />
-  </header>
-
-  <div class="user-info" id="currentUserInfo">Logged in as: ...</div>
-
-  <div class="ios-list">
-    <a class="ios-item" href="rec.html">Driver Resources</a>
-    <a class="ios-item" href="page7.html">Messaging</a>
-    <a class="ios-item" href="settings.html">Settings</a>
-    <a class="ios-item" href="admin.html">User Manager (Admin)</a>
-    <div class="ios-item toggle-label">
-      <span>Dark Mode</span>
-      <input type="checkbox" id="darkToggle" />
-    </div>
-    <a class="ios-item" href="#" onclick="logout()">Logout</a>
+<noscript>
+  <div style="text-align:center; color:red; padding:20px;">
+    ⚠️ JavaScript is required to use this app.
   </div>
+</noscript>
 
-  <script>
-    // Show current user info
-    const currentUserDisplay = document.getElementById("currentUserInfo");
-    if (user?.username) {
-      currentUserDisplay.textContent = `Logged in as: ${user.username} (${user.role})`;
-    }
+<header class="ios-header-image">
+  <img src="header.jpg" alt="Monster" />
+</header>
 
-    // Dark Mode
-    const toggle = document.getElementById('darkToggle');
-    toggle.checked = localStorage.getItem('theme') === 'dark';
+<div class="user-info" id="currentUserInfo">Logged in as: ...</div>
+
+<div class="ios-list">
+  <a class="ios-item" href="rec.html">Driver Resources</a>
+  <a class="ios-item" href="page7.html">Messaging</a>
+  <a class="ios-item" href="settings.html">Settings</a>
+  <a class="ios-item" href="admin.html">User Manager (Admin)</a>
+  <div class="ios-item toggle-label">
+    <span>Dark Mode</span>
+    <input type="checkbox" id="darkToggle" />
+  </div>
+  <a class="ios-item" href="#" onclick="logout()">Logout</a>
+</div>
+
+<script>
+  // Dark Mode Toggle
+  const toggle = document.getElementById('darkToggle');
+  toggle.checked = localStorage.getItem('theme') === 'dark';
+  document.documentElement.classList.toggle('dark-mode', toggle.checked);
+  toggle.addEventListener('change', () => {
     document.documentElement.classList.toggle('dark-mode', toggle.checked);
-    toggle.addEventListener('change', () => {
-      document.documentElement.classList.toggle('dark-mode', toggle.checked);
-      localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
-    });
+    localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
+  });
 
-    // Logout
-    function logout() {
-      localStorage.removeItem("currentUser");
-      window.location.href = "login.html";
-    }
+  // Logout Function
+  function logout() {
+    localStorage.removeItem("currentUser");
+    window.location.href = "login.html";
+  }
 
-    // Auto-refresh when new version is deployed
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js').then(reg => {
-        reg.onupdatefound = () => {
-          const newWorker = reg.installing;
-          newWorker.onstatechange = () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              window.location.reload();
-            }
-          };
-        };
-      });
-    }
-  </script>
-  
-  <script>
+  // Display current user info
+  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  const currentUserDisplay = document.getElementById("currentUserInfo");
+  if (user?.username) {
+    currentUserDisplay.textContent = `Logged in as: ${user.username} (${user.role})`;
+  }
+
+  // PWA Install Check + Login Check
   document.addEventListener('DOMContentLoaded', () => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-
-    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
-
-    // If not in standalone mode and not already on install.html, show install help
     if (!isStandalone && !location.href.includes("install.html")) {
       window.location.replace("install.html");
     } else if (!user || !user.username) {
       window.location.replace('login.html');
     }
   });
-</script>
 
+  // Service worker auto-refresh
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js').then(reg => {
+      reg.onupdatefound = () => {
+        const newWorker = reg.installing;
+        newWorker.onstatechange = () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            window.location.reload();
+          }
+        };
+      };
+    });
+  }
+</script>
 </body>
 </html>

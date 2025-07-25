@@ -86,5 +86,21 @@
       });
     }
   </script>
+  
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+    // If not in standalone mode and not already on install.html, show install help
+    if (!isStandalone && !location.href.includes("install.html")) {
+      window.location.replace("install.html");
+    } else if (!user || !user.username) {
+      window.location.replace('login.html');
+    }
+  });
+</script>
+
 </body>
 </html>

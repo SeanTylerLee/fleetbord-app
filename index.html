@@ -56,34 +56,42 @@
   const menu = document.getElementById("menuList");
   const role = user.role;
 
-  // Example badge values from localStorage (simulate updates)
   const newMessages = JSON.parse(localStorage.getItem("newMessages") || "0");
   const newDispatches = JSON.parse(localStorage.getItem("newDispatches") || "0");
-
   const badge = count => count > 0 ? `<span class="badge">${count}</span>` : "";
 
-  // Shared menu
-  menu.innerHTML += `<a class="ios-item" href="page4.html">Dispatch ${badge(newDispatches)}</a>`;
-  menu.innerHTML += `<a class="ios-item" href="page1.html">Loads</a>`;
-  menu.innerHTML += `<a class="ios-item" href="page2.html">Reimbursements</a>`;
-  menu.innerHTML += `<a class="ios-item" href="page5.html">Tickets</a>`;
-  menu.innerHTML += `<a class="ios-item" href="page6.html">Mechanical</a>`;
-  menu.innerHTML += `<a class="ios-item" href="schedule.html">Schedule</a>`;
-  menu.innerHTML += `<a class="ios-item" href="page3.html">Forms</a>`;
-  menu.innerHTML += `<a class="ios-item" href="forum.html">Forum</a>`;
-  menu.innerHTML += `<a class="ios-item" href="safety.html">Safety ${badge(newMessages)}</a>`;
-  menu.innerHTML += `<a class="ios-item" href="settings.html">Settings</a>`;
-  
-    // admin and office only can see this button to link to office
-    
+  if (role === "mechanic") {
+    menu.innerHTML += `<a class="ios-item" href="page2.html">Reimbursements</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page6.html">Mechanical</a>`;
+    menu.innerHTML += `<a class="ios-item" href="mechanic.html">Mechanic Panel</a>`;
+    menu.innerHTML += `<a class="ios-item" href="schedule.html">Schedule</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page3.html">Forms</a>`;
+    menu.innerHTML += `<a class="ios-item" href="forum.html">Forum</a>`;
+    menu.innerHTML += `<a class="ios-item" href="safety.html">Safety ${badge(newMessages)}</a>`;
+    menu.innerHTML += `<a class="ios-item" href="settings.html">Settings</a>`;
+  } else {
+    // Regular shared menu for all other roles
+    menu.innerHTML += `<a class="ios-item" href="page4.html">Dispatch ${badge(newDispatches)}</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page1.html">Loads</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page2.html">Reimbursements</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page5.html">Tickets</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page6.html">Mechanical</a>`;
+    menu.innerHTML += `<a class="ios-item" href="schedule.html">Schedule</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page3.html">Forms</a>`;
+    menu.innerHTML += `<a class="ios-item" href="forum.html">Forum</a>`;
+    menu.innerHTML += `<a class="ios-item" href="safety.html">Safety ${badge(newMessages)}</a>`;
+    menu.innerHTML += `<a class="ios-item" href="settings.html">Settings</a>`;
+  }
+
+  // Office and admin button to office.html
   if (role === "admin" || role === "office") {
-  const officeBtn = document.createElement("button");
-  officeBtn.textContent = "📁 Go to Office View";
-  officeBtn.className = "btn";
-  officeBtn.style.margin = "10px 15px";
-  officeBtn.onclick = () => location.href = "office.html";
-  document.body.appendChild(officeBtn);
-}
+    const officeBtn = document.createElement("button");
+    officeBtn.textContent = "📁 Go to Office View";
+    officeBtn.className = "btn";
+    officeBtn.style.margin = "10px 15px";
+    officeBtn.onclick = () => location.href = "office.html";
+    document.body.appendChild(officeBtn);
+  }
 
   // Admin-only menu
   if (role === "admin") {

@@ -72,6 +72,9 @@
   menu.innerHTML += `<a class="ios-item" href="page3.html">Forms</a>`;
   menu.innerHTML += `<a class="ios-item" href="safety.html">Safety ${badge(newMessages)}</a>`;
   menu.innerHTML += `<a class="ios-item" href="settings.html">Settings</a>`;
+  
+    // admin and office only can see this button to link to office
+    
   if (role === "admin" || role === "office") {
   const officeBtn = document.createElement("button");
   officeBtn.textContent = "📁 Go to Office View";

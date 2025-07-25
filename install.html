@@ -5,17 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Add to Home Screen</title>
   <link rel="stylesheet" href="styles.css" />
+  <meta name="robots" content="noindex" />
 </head>
 <body>
   <header class="ios-header-image">
-    <img src="header.jpg" alt="Fleetbord" />
+    <img src="header.jpg" alt="Fleetbord Header" />
   </header>
 
-  <div class="container" style="text-align:center; padding:20px;">
+  <main class="container" style="text-align:center; padding:20px;">
     <h2>Install This App</h2>
-    <p>To use this app like a native app, tap the <strong>Share</strong> icon (<img src="share.jpg" style="width:18px;">) and choose <strong>Add to Home Screen</strong>.</p>
-    <p>Once installed, this screen will not appear again.</p>
-    <img src="install-guide.png" alt="How to install" style="max-width:90%; border-radius:12px; margin-top:20px;">
-  </div>
+    <p>
+      To use this app like a native iPhone app, tap the
+      <strong>Share</strong> icon
+      <img src="share.jpg" style="width:18px; vertical-align:middle;" alt="Share Icon" />
+      and choose <strong>Add to Home Screen</strong>.
+    </p>
+    <p>This message won't appear once the app is installed to your home screen.</p>
+    <img src="install-guide.png" alt="Installation Guide" style="max-width:90%; border-radius:12px; margin-top:20px;" />
+  </main>
+
+  <script>
+    // Optional: if already in standalone, redirect automatically
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isStandalone) {
+      window.location.replace('login.html');
+    }
+  </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 {
-  "name": "Fleetbord",
-  "short_name": "Fleetbord",
+  "name": "Monster",
+  "short_name": "Monster",
   "start_url": "login.html",
   "display": "standalone",
   "background_color": "#ffffff",

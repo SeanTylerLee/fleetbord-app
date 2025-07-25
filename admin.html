@@ -27,12 +27,13 @@
       margin-bottom: 1rem;
     }
 
-    textarea, button {
+    input, select, textarea, button {
       width: 100%;
       padding: 0.6rem;
       font-size: 1rem;
       border-radius: 8px;
       box-sizing: border-box;
+      margin-bottom: 0.8rem;
     }
 
     textarea {
@@ -46,25 +47,7 @@
       color: white;
       font-weight: bold;
       border: none;
-      margin-top: 0.5rem;
       cursor: pointer;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    li {
-      background: #f0f0f0;
-      padding: 0.8rem;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-    }
-
-    .user-actions button {
-      margin-right: 0.5rem;
-      font-size: 0.9rem;
     }
 
     .button-group {
@@ -88,17 +71,25 @@
   <div class="container">
     <h2>Admin Panel</h2>
 
+    <!-- ✅ Create New User -->
+    <div class="section">
+      <h3>👤 Add New User</h3>
+      <input type="text" id="newUsername" placeholder="Username" />
+      <input type="password" id="newPassword" placeholder="Password" />
+      <select id="newRole">
+        <option value="driver">Driver</option>
+        <option value="office">Office</option>
+        <option value="mechanic">Mechanic</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button onclick="createUser()">Create User</button>
+    </div>
+
     <!-- ✅ Welcome Message Editor -->
     <div class="section">
       <h3>📢 Edit Welcome Center Message</h3>
       <textarea id="welcomeMsgBox" placeholder="Enter a message users will see on their home screen..."></textarea>
       <button onclick="updateWelcomeMessage()">Update Message</button>
-    </div>
-
-    <!-- ✅ User List -->
-    <div class="section">
-      <h3>👥 Current Users:</h3>
-      <ul id="userList"></ul>
     </div>
 
     <!-- ✅ Navigation -->
@@ -109,45 +100,33 @@
   </div>
 
   <script>
-    // Ensure admin-only access
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     if (!currentUser || currentUser.role !== "admin") {
       alert("Access denied.");
       location.href = "login.html";
     }
 
-    function deleteUser(index) {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      if (confirm(`Delete user "${users[index].username}"?`)) {
-        users.splice(index, 1);
-        localStorage.setItem("users", JSON.stringify(users));
-        loadUserList();
+    function createUser() {
+      const username = document.getElementById("newUsername").value.trim();
+      const password = document.getElementById("newPassword").value.trim();
+      const role = document.getElementById("newRole").value;
+
+      if (!username || !password) {
+        alert("Enter all fields.");
+        return;
       }
-    }
 
-    function toggleLock(index) {
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      users[index].active = !users[index].active;
+      if (users.find(u => u.username === username)) {
+        alert("User already exists!");
+        return;
+      }
+
+      users.push({ username, password, role, active: true });
       localStorage.setItem("users", JSON.stringify(users));
-      loadUserList();
-    }
-
-    function loadUserList() {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const list = document.getElementById("userList");
-      list.innerHTML = "";
-
-      users.forEach((user, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <strong>${user.username}</strong> (${user.role}) - ${user.active === false ? "🚫 Locked" : "✅ Active"}
-          <div class="user-actions">
-            <button onclick="toggleLock(${index})">${user.active === false ? "Unlock" : "Lock"}</button>
-            <button onclick="deleteUser(${index})">Delete</button>
-          </div>
-        `;
-        list.appendChild(li);
-      });
+      alert("✅ User created.");
+      document.getElementById("newUsername").value = '';
+      document.getElementById("newPassword").value = '';
     }
 
     function updateWelcomeMessage() {
@@ -157,7 +136,6 @@
     }
 
     window.onload = () => {
-      loadUserList();
       document.getElementById("welcomeMsgBox").value = localStorage.getItem("welcomeMessage") || "";
     };
   </script>

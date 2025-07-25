@@ -26,22 +26,41 @@
 
 <div class="user-info" id="currentUserInfo">Logged in as: ...</div>
 
+<!-- ✅ WELCOME CENTER MESSAGE -->
+<div id="welcomeMessage" style="margin: 15px; padding: 12px; border-left: 4px solid #007aff; background: #f1f1f1; font-size: 16px; border-radius: 8px;">
+  Loading welcome message...
+</div>
+
+<!-- Menu List -->
 <div class="ios-list">
   <a class="ios-item" href="rec.html">Driver Resources</a>
   <a class="ios-item" href="page7.html">Messaging</a>
   <a class="ios-item" href="settings.html">Settings</a>
   <a class="ios-item" href="admin.html">User Manager (Admin)</a>
-  
-  </div>
-  <a class="ios-item" href="#" onclick="logout()">Logout</a>
 </div>
+<a class="ios-item" href="#" onclick="logout()">Logout</a>
 
 <script>
+  // Load current user
+  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  const currentUserDisplay = document.getElementById("currentUserInfo");
+  if (user?.username) {
+    currentUserDisplay.textContent = `Logged in as: ${user.username} (${user.role})`;
+  }
 
-  document.documentElement.classList.toggle('dark-mode', toggle.checked);
-  toggle.addEventListener('change', () => {
-    document.documentElement.classList.toggle('dark-mode', toggle.checked);
-    localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
+  // Display welcome message
+  const welcomeDiv = document.getElementById("welcomeMessage");
+  const welcomeMessage = localStorage.getItem("welcomeMessage") || "👋 Welcome to Monster Fleet App!";
+  welcomeDiv.textContent = welcomeMessage;
+
+  // PWA Install + Login Check
+  document.addEventListener('DOMContentLoaded', () => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    if (!isStandalone && !location.href.includes("install.html")) {
+      window.location.replace("install.html");
+    } else if (!user || !user.username) {
+      window.location.replace("login.html");
+    }
   });
 
   // Logout Function
@@ -50,24 +69,7 @@
     window.location.href = "login.html";
   }
 
-  // Display current user info
-  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
-  const currentUserDisplay = document.getElementById("currentUserInfo");
-  if (user?.username) {
-    currentUserDisplay.textContent = `Logged in as: ${user.username} (${user.role})`;
-  }
-
-  // PWA Install Check + Login Check
-  document.addEventListener('DOMContentLoaded', () => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    if (!isStandalone && !location.href.includes("install.html")) {
-      window.location.replace("install.html");
-    } else if (!user || !user.username) {
-      window.location.replace('login.html');
-    }
-  });
-
-  // Service worker auto-refresh
+  // Service worker update handling
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js').then(reg => {
       reg.onupdatefound = () => {

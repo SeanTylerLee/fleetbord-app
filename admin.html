@@ -15,7 +15,6 @@
 
     header img {
       width: 100%;
-      height: auto;
       display: block;
     }
 
@@ -32,7 +31,7 @@
       margin-bottom: 1rem;
     }
 
-    input, select, button {
+    input, select, textarea, button {
       width: 100%;
       padding: 0.6rem;
       font-size: 1rem;
@@ -41,12 +40,18 @@
       box-sizing: border-box;
     }
 
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
     button {
       background: #007aff;
       color: white;
       font-weight: bold;
       border: none;
       cursor: pointer;
+      margin-top: 0.5rem;
     }
 
     ul {
@@ -61,19 +66,9 @@
       margin-bottom: 0.5rem;
     }
 
-    li span {
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-
     .user-actions button {
       margin-right: 0.5rem;
       font-size: 0.9rem;
-    }
-
-    .dark-mode li {
-      background: #1c1c1e;
-      color: white;
     }
 
     .log-button {
@@ -87,6 +82,10 @@
       border: none;
       cursor: pointer;
     }
+
+    .section {
+      margin-top: 2rem;
+    }
   </style>
 </head>
 <body>
@@ -95,8 +94,9 @@
   </header>
 
   <div class="container">
-    <h2>Admin Panel - Manage Users</h2>
+    <h2>Admin Panel</h2>
 
+    <!-- ✅ User Creation -->
     <div class="form-group">
       <input type="text" id="newUsername" placeholder="Username" />
     </div>
@@ -113,8 +113,16 @@
     </div>
     <button onclick="createUser()">Create User</button>
 
-    <div class="user-list">
-      <h3 style="margin-top: 2rem;">Current Users:</h3>
+    <!-- ✅ Welcome Message Editor -->
+    <div class="section">
+      <h3>📢 Edit Welcome Center Message</h3>
+      <textarea id="welcomeMsgBox" placeholder="Enter a message users will see on their home screen..."></textarea>
+      <button onclick="updateWelcomeMessage()">Update Message</button>
+    </div>
+
+    <!-- ✅ User List -->
+    <div class="section">
+      <h3>👥 Current Users:</h3>
       <ul id="userList"></ul>
     </div>
 
@@ -122,22 +130,11 @@
   </div>
 
   <script>
-    function loadUserList() {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const list = document.getElementById("userList");
-      list.innerHTML = "";
-
-      users.forEach((user, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <span><strong>${user.username}</strong> (${user.role}) - ${user.active === false ? "🚫 Locked" : "✅ Active"}</span>
-          <div class="user-actions">
-            <button onclick="toggleLock(${index})">${user.active === false ? "Unlock" : "Lock"}</button>
-            <button onclick="deleteUser(${index})">Delete</button>
-          </div>
-        `;
-        list.appendChild(li);
-      });
+    // Ensure admin-only access
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser || currentUser.role !== "admin") {
+      alert("Access denied.");
+      location.href = "login.html";
     }
 
     function createUser() {
@@ -145,10 +142,7 @@
       const password = document.getElementById("newPassword").value.trim();
       const role = document.getElementById("newRole").value;
 
-      if (!username || !password) {
-        alert("Enter username and password");
-        return;
-      }
+      if (!username || !password) return alert("Enter all fields");
 
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       if (users.find(u => u.username === username)) {
@@ -162,13 +156,6 @@
       alert("✅ User created.");
     }
 
-    function toggleLock(index) {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      users[index].active = !users[index].active;
-      localStorage.setItem("users", JSON.stringify(users));
-      loadUserList();
-    }
-
     function deleteUser(index) {
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       if (confirm(`Delete user "${users[index].username}"?`)) {
@@ -178,15 +165,42 @@
       }
     }
 
-    // Prevent non-admin access
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    if (!currentUser || currentUser.role !== "admin") {
-      alert("Access denied.");
-      window.location.href = "login.html";
+    function toggleLock(index) {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      users[index].active = !users[index].active;
+      localStorage.setItem("users", JSON.stringify(users));
+      loadUserList();
+    }
+
+    function loadUserList() {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const list = document.getElementById("userList");
+      list.innerHTML = "";
+
+      users.forEach((user, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${user.username}</strong> (${user.role}) - ${user.active === false ? "🚫 Locked" : "✅ Active"}
+          <div class="user-actions">
+            <button onclick="toggleLock(${index})">${user.active === false ? "Unlock" : "Lock"}</button>
+            <button onclick="deleteUser(${index})">Delete</button>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function updateWelcomeMessage() {
+      const msg = document.getElementById("welcomeMsgBox").value.trim();
+      localStorage.setItem("welcomeMessage", msg || "👋 Welcome to Monster Fleet App!");
+      alert("✅ Message updated.");
     }
 
     // Load on page start
-    window.onload = loadUserList;
+    window.onload = () => {
+      loadUserList();
+      document.getElementById("welcomeMsgBox").value = localStorage.getItem("welcomeMessage") || "";
+    };
   </script>
 </body>
 </html>

@@ -14,6 +14,11 @@
   <meta name="apple-mobile-web-app-title" content="Fleetbord" />
 
   <script>
+  // Redirect to install help page if not in standalone mode
+if (!window.matchMedia('(display-mode: standalone)').matches && !navigator.standalone) {
+  window.location.replace("install.html");
+}
+  
     const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
     if (!user || !user.username) {
       window.location.replace('login.html');

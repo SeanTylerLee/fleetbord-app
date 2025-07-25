@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,35 +10,43 @@
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
 </head>
 <body>
-<button id="logoutButton" style="position:fixed;top:10px;right:10px;z-index:1000;">Logout</button>
   <header class="ios-header-image">
     <img src="header.jpg" alt="Header" />
   </header>
 
   <div class="container" style="padding:20px;">
-    <h2 style="text-align:center;">Report a Mechanical Issue</h2>
+    <h2 style="text-align:center;">Repair Reports</h2>
 
-    <form id="repairForm">
-      <input type="date" name="date" required />
-      <input type="text" name="unit" placeholder="Unit Number" required />
-      <textarea name="description" placeholder="Describe the issue..." rows="5" required></textarea>
+    <div id="repairFormContainer" style="display:none;">
+      <form id="repairForm">
+        <input type="date" name="date" required />
+        <input type="text" name="unit" placeholder="Unit Number" required />
+        <textarea name="description" placeholder="Describe the issue..." rows="5" required></textarea>
 
-      <h3>Driver Signature</h3>
-      <canvas id="signature-pad" style="border:1px solid #ccc;width:100%;height:150px;"></canvas>
-      <button type="button" onclick="clearSignature()">Clear Signature</button>
+        <h3>Driver Signature</h3>
+        <canvas id="signature-pad" style="border:1px solid #ccc;width:100%;height:150px;"></canvas>
+        <button type="button" onclick="clearSignature()">Clear Signature</button>
 
-      <br><br>
-      <button type="submit">Submit Repair Report</button>
-    </form>
+        <br><br>
+        <button type="submit">Submit Repair Report</button>
+      </form>
 
-    <div id="confirmation" style="display:none; margin-top:20px;">
-      ✅ Repair report submitted successfully.
+      <div id="confirmation" style="display:none; margin-top:20px;">
+        ✅ Repair report submitted successfully.
+      </div>
+    </div>
+
+    <div id="repairListContainer" style="display:none;">
+      <h3>All Repair Reports</h3>
+      <div id="repairList"></div>
     </div>
 
     <a class="ios-item" href="index.html" style="margin-top:20px;">← Back to Home</a>
   </div>
 
   <script>
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const role = currentUser.role;
     let signaturePad;
 
     window.onload = () => {
@@ -48,7 +55,13 @@
         document.documentElement.classList.add('dark-mode');
       }
 
-      document.getElementById('repairForm').addEventListener('submit', handleSubmit);
+      if (role === 'mechanic') {
+        document.getElementById("repairListContainer").style.display = "block";
+        renderRepairList();
+      } else {
+        document.getElementById("repairFormContainer").style.display = "block";
+        document.getElementById('repairForm').addEventListener('submit', handleSubmit);
+      }
     };
 
     function clearSignature() {
@@ -60,20 +73,70 @@
       const form = new FormData(e.target);
 
       const report = {
+        id: Date.now(),
         date: form.get('date'),
         unit: form.get('unit'),
         description: form.get('description'),
         signature: signaturePad.isEmpty() ? null : signaturePad.toDataURL(),
-        status: "Submitted"
+        submittedBy: currentUser.username,
+        status: "Submitted",
+        fixedBy: null,
+        fixedAt: null
       };
 
       const reports = JSON.parse(localStorage.getItem('repairReports') || '[]');
       reports.push(report);
       localStorage.setItem('repairReports', JSON.stringify(reports));
 
-      document.getElementById('repairForm').reset();
+      e.target.reset();
       signaturePad.clear();
       document.getElementById('confirmation').style.display = 'block';
+    }
+
+    function renderRepairList() {
+      const container = document.getElementById("repairList");
+      const reports = JSON.parse(localStorage.getItem("repairReports") || "[]");
+      container.innerHTML = "";
+
+      if (!reports.length) {
+        container.innerHTML = "<p>No repair reports submitted yet.</p>";
+        return;
+      }
+
+      reports.forEach((r, index) => {
+        const div = document.createElement("div");
+        div.style = "border:1px solid #ccc;padding:10px;border-radius:8px;margin-bottom:15px;background:#f9f9f9";
+
+        div.innerHTML = `
+          <strong>Date:</strong> ${r.date}<br>
+          <strong>Unit:</strong> ${r.unit}<br>
+          <strong>Description:</strong> ${r.description}<br>
+          <strong>Submitted By:</strong> ${r.submittedBy}<br>
+          <strong>Status:</strong> ${r.status}<br>
+          ${r.status === 'Fixed' ? `<strong>Fixed By:</strong> ${r.fixedBy}<br><strong>Fixed At:</strong> ${r.fixedAt}<br>` : ''}
+          ${r.signature ? `<br><strong>Signature:</strong><br><img src="${r.signature}" style="max-width:100%;border:1px solid #ccc;border-radius:6px;" />` : ''}
+        `;
+
+        if (r.status !== 'Fixed') {
+          const btn = document.createElement("button");
+          btn.textContent = "Mark as Fixed";
+          btn.onclick = () => markFixed(index);
+          btn.style.marginTop = "10px";
+          div.appendChild(btn);
+        }
+
+        container.appendChild(div);
+      });
+    }
+
+    function markFixed(index) {
+      const reports = JSON.parse(localStorage.getItem("repairReports") || "[]");
+      const report = reports[index];
+      report.status = "Fixed";
+      report.fixedBy = currentUser.username;
+      report.fixedAt = new Date().toLocaleString();
+      localStorage.setItem("repairReports", JSON.stringify(reports));
+      renderRepairList();
     }
   </script>
 </body>

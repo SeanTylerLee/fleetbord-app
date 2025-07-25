@@ -6,26 +6,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-  <header class="ios-header-image"><img src="header.jpg" alt="Header" /></header>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
+  </header>
   <div class="container">
     <h2>Saved Tickets</h2>
     <div id="list"></div>
-    <canvas id="signPad" style="display:none; width:100%; height:150px; border:1px solid #ccc;"></canvas>
-    <button id="signBtn" style="display:none;" onclick="saveSignature()">Add Signature</button>
+
+    <div id="ticketDetails" style="display:none; margin-top: 2rem;">
+      <h3>📄 Ticket Details</h3>
+      <div id="detailsContent" class="load-entry"></div>
+      <canvas id="signPad" style="width:100%; height:150px; border:1px solid #ccc; margin-top:10px;"></canvas>
+      <button id="signBtn" onclick="saveSignature()">Add Signature</button>
+    </div>
+
     <button onclick="location.href='page5.html'">← Back</button>
   </div>
 
   <script>
     const list = document.getElementById("list");
+    const details = document.getElementById("ticketDetails");
+    const content = document.getElementById("detailsContent");
     let currentKey = null;
     let signaturePad = new SignaturePad(document.getElementById("signPad"));
 
     for (let k in localStorage) {
       if (!k.startsWith("ticket_")) continue;
-
       const d = JSON.parse(localStorage.getItem(k));
       const div = document.createElement("div");
       div.className = "load-entry";
@@ -33,24 +41,55 @@
         <strong>${d.date || "No Date"}</strong><br>
         Hauled By: ${d.hauledBy}<br>
         Destination: ${d.destination}<br>
-        <button onclick="view('${k}')">View & Sign</button>
+        <button onclick="view('${k}')">View Full Ticket</button>
       `;
       list.appendChild(div);
     }
 
     function view(key) {
       currentKey = key;
-      document.getElementById("signPad").style.display = "block";
-      document.getElementById("signBtn").style.display = "inline-block";
+      const d = JSON.parse(localStorage.getItem(key));
+      let html = `
+        <strong>Date:</strong> ${d.date || "--"}<br>
+        <strong>Hauled By:</strong> ${d.hauledBy}<br>
+        <strong>Sales Rep:</strong> ${d.salesRep}<br>
+        <strong>Truck #:</strong> ${d.truckNumber}<br>
+        <strong>TX Miles:</strong> ${d.txMiles}<br>
+        <strong>Work Order:</strong> ${d.workOrder}<br>
+        <strong>Invoice To:</strong> ${d.invoiceTo}<br>
+        <strong>Received From:</strong> ${d.receivedFrom}<br>
+        <strong>Destination:</strong> ${d.destination}<br>
+        <strong>Lease Name:</strong> ${d.leaseName}<br>
+        <strong>AFE #:</strong> ${d.afeNumber}<br>
+        <strong>PO #:</strong> ${d.poNumber}<br>
+        <strong>County:</strong> ${d.county}<br>
+        <strong>Shipped By:</strong> ${d.shippedBy}<br>
+        <strong>Received By:</strong> ${d.receivedBy}<br><br>
+        <strong>Line Items:</strong><br>
+        <ul>
+          ${(d["lineItems[]"] || []).map(item => `<li>${item}</li>`).join('')}
+        </ul>
+      `;
+
+      if (d.attachments && d.attachments.length > 0) {
+        html += `<strong>Attachments:</strong><br>`;
+        d.attachments.forEach((img, i) => {
+          html += `<img src="${img}" style="width:100%;max-height:300px;margin:10px 0;border:1px solid #ccc;border-radius:8px;" alt="Attachment ${i + 1}" />`;
+        });
+      }
+
+      content.innerHTML = html;
+      details.style.display = "block";
+      signaturePad.clear();
     }
 
     function saveSignature() {
-      if (!signaturePad || signaturePad.isEmpty()) return alert("Sign before submitting");
+      if (!signaturePad || signaturePad.isEmpty()) return alert("Please sign before submitting");
 
       const data = JSON.parse(localStorage.getItem(currentKey));
       data.signatureImage = signaturePad.toDataURL();
       localStorage.setItem(currentKey, JSON.stringify(data));
-      alert("Signature saved.");
+      alert("✅ Signature saved.");
       signaturePad.off();
     }
   </script>

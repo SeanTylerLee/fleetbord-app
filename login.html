@@ -6,14 +6,21 @@
   <title>Login</title>
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- PWA & Apple App Setup -->
+  <!-- PWA Support -->
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon.jpg" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
   <script>
-    // Skip login screen if already logged in
+    // Auto-create default admin user if no users exist
+    if (!localStorage.getItem("users")) {
+      localStorage.setItem("users", JSON.stringify([
+        { username: "admin", password: "31345", role: "admin" }
+      ]));
+    }
+
+    // Skip login if already logged in
     const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
     if (user && user.username) {
       window.location.replace('index.html');

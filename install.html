@@ -5,11 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Add to Home Screen</title>
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- PWA Meta Tags to show icon and app name -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.jpg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Monster" />
   <meta name="robots" content="noindex" />
 </head>
 <body>
   <header class="ios-header-image">
-    <img src="header.jpg" alt="Fleetbord Header" />
+    <img src="header.jpg" alt="Monster Header" />
   </header>
 
   <main class="container" style="text-align:center; padding:20px;">
@@ -25,7 +32,6 @@
   </main>
 
   <script>
-    // Optional: if already in standalone, redirect automatically
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     if (isStandalone) {
       window.location.replace('login.html');

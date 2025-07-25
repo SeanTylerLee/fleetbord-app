@@ -2,15 +2,70 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <!-- Prevent zooming and scale lock -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Dispatch</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Make header responsive */
+    header img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* iOS: Prevent zoom on input focus by using 16px font size */
+    input, select, button, textarea {
+      font-size: 16px !important;
+    }
+
+    .container {
+      padding: 1rem;
+    }
+
+    .btn {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 16px;
+      width: 100%;
+    }
+
+    .dispatch-card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 1rem;
+      background: var(--bg2, #f5f5f5);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 1rem;
+    }
+
+    select, input[type="checkbox"] {
+      margin-top: 5px;
+    }
+  </style>
 </head>
 <body>
-  <header><img src="header.jpg" alt="Header" /></header>
+  <header>
+    <img src="header.jpg" alt="Header" />
+  </header>
+
   <div class="container">
-  <!-- ✅ Button to go to loads.html -->
-<button class="btn" onclick="location.href='loads.html'">Loads</button>
+    <!-- ✅ Button to go to loads.html -->
+    <button class="btn" onclick="location.href='loads.html'">Loads</button>
+
     <h2>Dispatch Center</h2>
 
     <!-- Admin: Select Load and Drivers -->

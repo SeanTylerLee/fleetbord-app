@@ -2,53 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Dispatch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch Center</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      background: var(--bg, #fff);
-      color: var(--text, #000);
-    }
-    header img {
-      width: 100%;
-      display: block;
-    }
-    .container {
-      padding: 1rem;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    select, input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .btn {
-      margin-top: 15px;
-      padding: 12px;
-      width: 100%;
-      background: #007aff;
-      color: white;
-      font-weight: bold;
-      border: none;
-      border-radius: 10px;
-    }
-    .hidden { display: none; }
-    .dispatch-card {
-      border: 1px solid #ccc;
-      padding: 12px;
-      border-radius: 8px;
-      margin: 10px 0;
-      background: #f9f9f9;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    header img { width: 100%; display: block; }
+    .container { padding: 1rem; }
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+    label { margin-top: 10px; font-weight: bold; display: block; }
+    .btn { margin-top: 15px; padding: 12px; background: #007aff; color: white; font-weight: bold; border: none; border-radius: 10px; width: 100%; }
+    .dispatch-box { border: 1px solid #ccc; border-radius: 8px; padding: 10px; margin-top: 15px; }
+    .status-btn { margin: 4px; padding: 8px; background: #28a745; color: white; border: none; border-radius: 6px; font-size: 14px; }
+    .status-btn[disabled] { background: gray; }
+    .edited { color: red; font-weight: bold; }
+    .checklist-item { margin-bottom: 5px; }
   </style>
 </head>
 <body>
@@ -56,147 +24,160 @@
   <div class="container">
     <h2>Dispatch Center</h2>
 
-    <!-- Only admins can see the dispatch form -->
-    <div id="adminSection" class="hidden">
-      <label>Select Load to Dispatch:</label>
-      <select id="loadSelect">
-        <option value="">-- Choose a Load --</option>
-      </select>
-
-      <label>Select Driver(s):</label>
-      <div id="driverList"></div>
-
-      <label>Attach File or Photo:</label>
-      <input type="file" id="dispatchAttachment" accept="image/*,.pdf" />
-
-      <button class="btn" onclick="dispatchLoad()">🚛 Send Dispatch</button>
+    <div id="adminForm" class="hidden">
+      <label>Customer:</label><input type="text" id="customer" />
+      <label>Rate:</label><input type="number" id="rate" />
+      <label>Fuel Surcharge:</label><input type="number" id="surcharge" />
+      <label>Load Location:</label><input type="text" id="loadLocation" />
+      <label>Unload Location:</label><input type="text" id="unloadLocation" />
+      <label>Salesman:</label><input type="text" id="salesman" />
+      <label>Dispatch Notes:</label><textarea id="notes"></textarea>
+      <label>Dispatch Date & Time:</label><input type="datetime-local" id="dispatchDate" />
+      <label>Due Date & Time:</label><input type="datetime-local" id="dueDate" />
+      <label>Checklist (comma separated):</label><input type="text" id="checklist" placeholder="Straps, Fuel Card, Paperwork" />
+      <label>Attach File or Photo:</label><input type="file" id="attachment" accept="image/*,.pdf" />
+      <label>Google Maps Link (optional):</label><input type="url" id="mapPin" />
+      <label>Select Driver(s):</label><div id="driverList"></div>
+      <button class="btn" onclick="createDispatch()">Send Dispatch</button>
     </div>
 
-    <!-- All users see their assigned dispatches -->
-    <div>
-      <h3>Your Assigned Dispatches</h3>
-      <div id="dispatchList"></div>
-    </div>
+    <div id="userDispatches"><h3>Your Assigned Dispatches</h3><div id="dispatchList"></div></div>
   </div>
 
   <script>
-    const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
     const users = JSON.parse(localStorage.getItem("users") || "[]");
     const allDispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
-    const savedLoads = JSON.parse(localStorage.getItem("loads") || "[]");
     const dispatchList = document.getElementById("dispatchList");
-
-    // Admin Section
-    const adminSection = document.getElementById("adminSection");
-    const loadSelect = document.getElementById("loadSelect");
+    const adminForm = document.getElementById("adminForm");
     const driverList = document.getElementById("driverList");
 
-    if (user.role === "admin") {
-      adminSection.classList.remove("hidden");
-
-      // Populate loads dropdown
-      savedLoads.forEach((load, idx) => {
-        const option = document.createElement("option");
-        option.value = idx;
-        option.textContent = `${load.customer} | ${load.loadLocation} ➔ ${load.unloadLocation}`;
-        loadSelect.appendChild(option);
-      });
-
-      // Populate driver checkboxes
+    if (currentUser.role === "admin") {
+      adminForm.classList.remove("hidden");
       users.filter(u => u.role === "driver").forEach(driver => {
-        const label = document.createElement("label");
-        label.innerHTML = `<input type="checkbox" value="${driver.username}" /> ${driver.username}`;
-        driverList.appendChild(label);
+        const lbl = document.createElement("label");
+        lbl.innerHTML = `<input type="checkbox" value="${driver.username}" /> ${driver.username}`;
+        driverList.appendChild(lbl);
         driverList.appendChild(document.createElement("br"));
       });
     }
 
-    function dispatchLoad() {
-      const selectedIndex = loadSelect.value;
-      if (selectedIndex === "") return alert("Please select a load.");
+    function createDispatch() {
       const selectedDrivers = Array.from(driverList.querySelectorAll("input:checked")).map(cb => cb.value);
-      if (selectedDrivers.length === 0) return alert("Please select at least one driver.");
-
-      const baseLoad = savedLoads[selectedIndex];
-      const fileInput = document.getElementById("dispatchAttachment");
-      const file = fileInput.files[0];
+      if (selectedDrivers.length === 0) return alert("Select at least one driver.");
+      const fileInput = document.getElementById("attachment").files[0];
+      const checklist = (document.getElementById("checklist").value || "").split(",").map(i => i.trim()).filter(Boolean);
 
       const dispatch = {
-        ...baseLoad,
         id: Date.now(),
+        customer: document.getElementById("customer").value,
+        rate: document.getElementById("rate").value,
+        surcharge: document.getElementById("surcharge").value,
+        loadLocation: document.getElementById("loadLocation").value,
+        unloadLocation: document.getElementById("unloadLocation").value,
+        salesman: document.getElementById("salesman").value,
+        notes: document.getElementById("notes").value,
+        dispatchDate: document.getElementById("dispatchDate").value,
+        dueDate: document.getElementById("dueDate").value,
+        mapPin: document.getElementById("mapPin").value,
         drivers: selectedDrivers,
         accepted: [],
-        attachment: ""
+        attachment: "",
+        status: {},
+        checklist,
+        checklistProgress: {},
+        edited: false
       };
 
-      if (file) {
+      if (fileInput) {
         const reader = new FileReader();
-        reader.onload = e => {
-          dispatch.attachment = e.target.result;
-          saveDispatch(dispatch);
-        };
-        reader.readAsDataURL(file);
+        reader.onload = e => { dispatch.attachment = e.target.result; save(dispatch); };
+        reader.readAsDataURL(fileInput);
       } else {
-        saveDispatch(dispatch);
+        save(dispatch);
       }
     }
 
-    function saveDispatch(dispatch) {
+    function save(dispatch) {
       const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
       all.push(dispatch);
       localStorage.setItem("dispatches", JSON.stringify(all));
-      alert("✅ Load dispatched!");
-      window.location.reload();
+      alert("Dispatch Sent!");
+      location.reload();
     }
 
-    function loadDispatches() {
+    function loadUserDispatches() {
+      const user = currentUser.username;
+      const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
+      const assigned = all.filter(d => d.drivers.includes(user));
       dispatchList.innerHTML = "";
-      const relevant = allDispatches.filter(d => d.drivers.includes(user.username));
-      relevant.forEach(d => {
-        const div = document.createElement("div");
-        div.className = "dispatch-card";
-        div.innerHTML = `
-          <strong>Customer:</strong> ${d.customer}<br>
-          <strong>Rate:</strong> $${d.rate} | <strong>Fuel:</strong> $${d.surcharge}<br>
+
+      assigned.forEach(d => {
+        const box = document.createElement("div");
+        box.className = "dispatch-box";
+
+        let html = `
+          <strong>Customer:</strong> ${d.customer} ${d.edited ? '<span class="edited">[Edited]</span>' : ''}<br>
+          <strong>Rate:</strong> $${d.rate} | Fuel: $${d.surcharge}<br>
           <strong>Load:</strong> ${d.loadLocation}<br>
           <strong>Unload:</strong> ${d.unloadLocation}<br>
           <strong>Salesman:</strong> ${d.salesman}<br>
-          <strong>Dispatch Date:</strong> ${d.dispatchDate}<br>
-          <strong>Due Date:</strong> ${d.dueDate}<br>
+          <strong>Dispatch:</strong> ${d.dispatchDate}<br>
+          <strong>Due:</strong> ${d.dueDate}<br>
           <strong>Notes:</strong> ${d.notes}<br>
-          ${d.mapPin ? `<a href="${d.mapPin}" target="_blank">📍 Open Map</a><br>` : ""}
-          ${d.attachment ? `<a href="${d.attachment}" download="dispatch-file">📎 Download Attachment</a><br>` : ""}
-          <strong>Drivers:</strong> ${d.drivers.join(", ")}<br>
-          <strong>Accepted:</strong> ${d.accepted.length > 0 ? d.accepted.join(", ") : "None"}
+          ${d.mapPin ? `<a href="${d.mapPin}" target="_blank">📍 Map Link</a><br>` : ""}
+          ${d.attachment ? `<a href="${d.attachment}" download="dispatch_file">📎 Attachment</a><br>` : ""}
         `;
 
-        if (!d.accepted.includes(user.username)) {
-          const acceptBtn = document.createElement("button");
-          acceptBtn.className = "btn";
-          acceptBtn.textContent = "Accept Load";
-          acceptBtn.onclick = () => {
-            d.accepted.push(user.username);
-            const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
-            const i = all.findIndex(x => x.id === d.id);
-            if (i !== -1) {
-              all[i] = d;
-              localStorage.setItem("dispatches", JSON.stringify(all));
-              loadDispatches();
-            }
-          };
-          div.appendChild(acceptBtn);
+        if (d.checklist?.length) {
+          html += `<strong>Checklist:</strong><br>`;
+          d.checklist.forEach(item => {
+            const key = `${user}-${item}`;
+            const checked = (d.checklistProgress?.[key]) ? 'checked' : '';
+            html += `<label class="checklist-item"><input type="checkbox" onchange="toggleChecklist(${d.id}, '${key}')" ${checked}/> ${item}</label><br>`;
+          });
         }
 
-        dispatchList.appendChild(div);
+        box.innerHTML = html;
+
+        const buttons = ['Arrived', 'Loaded', 'Unloaded'];
+        buttons.forEach(btn => {
+          const key = `${user}-${btn}`;
+          const stamped = d.status?.[key];
+          const button = document.createElement("button");
+          button.className = "status-btn";
+          button.disabled = !!stamped;
+          button.innerText = stamped ? `${btn} ✅ (${stamped})` : btn;
+          if (!stamped) {
+            button.onclick = () => {
+              const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
+              const index = all.findIndex(x => x.id === d.id);
+              if (index > -1) {
+                all[index].status[key] = new Date().toLocaleString();
+                localStorage.setItem("dispatches", JSON.stringify(all));
+                loadUserDispatches();
+              }
+            };
+          }
+          box.appendChild(button);
+        });
+
+        dispatchList.appendChild(box);
       });
     }
 
-    loadDispatches();
-
-    // Theme check
-    if (localStorage.getItem("darkMode") === "true") {
-      document.documentElement.classList.add("dark-mode");
+    function toggleChecklist(id, key) {
+      const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
+      const index = all.findIndex(x => x.id === id);
+      if (index > -1) {
+        all[index].checklistProgress[key] = !all[index].checklistProgress[key];
+        localStorage.setItem("dispatches", JSON.stringify(all));
+        loadUserDispatches();
+      }
     }
+
+    loadUserDispatches();
+    if (localStorage.getItem("darkMode") === "true") document.documentElement.classList.add("dark-mode");
   </script>
 </body>
 </html>

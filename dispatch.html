@@ -12,16 +12,13 @@
       background: var(--bg, #fff);
       color: var(--text, #000);
     }
-
     header img {
       width: 100%;
       display: block;
     }
-
     .container {
       padding: 1rem;
     }
-
     input, select, textarea {
       width: 100%;
       padding: 0.6rem;
@@ -31,7 +28,6 @@
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
-
     button {
       background-color: #007aff;
       color: white;
@@ -42,7 +38,6 @@
       margin-bottom: 1rem;
       cursor: pointer;
     }
-
     .dispatch-card {
       border: 1px solid #ccc;
       border-radius: 10px;
@@ -50,28 +45,26 @@
       margin-bottom: 1rem;
       background: var(--card);
     }
-
     .status-btns button {
       background: #ccc;
       color: #000;
       margin-right: 0.5rem;
     }
-
-    .dark-mode .dispatch-card {
-      background: #1c1c1e;
-      color: #fff;
+    .file-preview a {
+      display: inline-block;
+      margin-top: 0.5rem;
+      color: #007aff;
+      text-decoration: underline;
     }
-
-    .file-preview {
-      font-size: 0.9rem;
-      color: gray;
-      margin-bottom: 0.5rem;
-    }
-
     .admin-tools {
       margin-top: 2rem;
       padding-top: 1rem;
       border-top: 2px solid #ddd;
+    }
+    .edited-tag {
+      color: red;
+      font-size: 0.85rem;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -82,17 +75,20 @@
     <h2 style="text-align:center;">Dispatch Panel</h2>
 
     <div id="adminPanel" style="display:none;">
-      <h3>Create New Dispatch</h3>
+      <h3>Create/Edit Dispatch</h3>
       <input id="customer" placeholder="Customer" />
       <input id="rate" placeholder="Rate ($)" type="number" />
       <input id="surcharge" placeholder="Fuel Surcharge ($)" type="number" />
       <input id="loadLoc" placeholder="Loading Location" />
       <input id="unloadLoc" placeholder="Unloading Location" />
       <input id="salesman" placeholder="Salesman" />
+      <label>Load Date & Time:</label>
       <input id="dispatchDate" type="datetime-local" />
+      <label>Unload Date & Time:</label>
       <input id="dueDate" type="datetime-local" />
       <textarea id="notes" placeholder="Dispatch Notes"></textarea>
-      <input id="mapPin" placeholder="Map Pin (Google Maps Link)" />
+      <input id="mapPinPickup" placeholder="Pickup Google Maps Link" />
+      <input id="mapPinDrop" placeholder="Delivery Google Maps Link" />
       <input id="photo" type="file" />
       <label>Select Drivers:</label>
       <div id="driverSelect"></div>
@@ -106,7 +102,7 @@
   <script>
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
     const allUsers = JSON.parse(localStorage.getItem("users") || "[]");
-    const dispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
+    let dispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
     const dispatchList = document.getElementById("dispatchList");
 
     if (currentUser.role === "admin") {
@@ -131,30 +127,31 @@
 
       const photoInput = document.getElementById("photo");
       const reader = new FileReader();
+      const newDispatch = {
+        id: Date.now(),
+        customer: customer.value,
+        rate: rate.value,
+        surcharge: surcharge.value,
+        loadLoc: loadLoc.value,
+        unloadLoc: unloadLoc.value,
+        salesman: salesman.value,
+        dispatchDate: dispatchDate.value,
+        dueDate: dueDate.value,
+        notes: notes.value,
+        mapPinPickup: mapPinPickup.value,
+        mapPinDrop: mapPinDrop.value,
+        photo: "",
+        recipients: selectedDrivers,
+        statuses: {},
+        edited: false
+      };
+
+      selectedDrivers.forEach(driver => {
+        newDispatch.statuses[driver] = {};
+      });
+
       reader.onload = function () {
-        const base64Photo = reader.result;
-
-        const newDispatch = {
-          id: Date.now(),
-          customer: customer.value,
-          rate: rate.value,
-          surcharge: surcharge.value,
-          loadLoc: loadLoc.value,
-          unloadLoc: unloadLoc.value,
-          salesman: salesman.value,
-          dispatchDate: dispatchDate.value,
-          dueDate: dueDate.value,
-          notes: notes.value,
-          mapPin: mapPin.value,
-          photo: base64Photo,
-          recipients: selectedDrivers,
-          statuses: {}  // username: { accepted: true/false, arrived: false, loaded: false, unloaded: false }
-        };
-
-        selectedDrivers.forEach(driver => {
-          newDispatch.statuses[driver] = { accepted: false, arrived: false, loaded: false, unloaded: false };
-        });
-
+        newDispatch.photo = reader.result;
         dispatches.push(newDispatch);
         localStorage.setItem("dispatches", JSON.stringify(dispatches));
         location.reload();
@@ -163,7 +160,9 @@
       if (photoInput.files.length > 0) {
         reader.readAsDataURL(photoInput.files[0]);
       } else {
-        reader.onload(); // proceed without image
+        dispatches.push(newDispatch);
+        localStorage.setItem("dispatches", JSON.stringify(dispatches));
+        location.reload();
       }
     }
 
@@ -185,34 +184,47 @@
           <strong>Load:</strong> ${d.loadLoc}<br/>
           <strong>Unload:</strong> ${d.unloadLoc}<br/>
           <strong>Salesman:</strong> ${d.salesman}<br/>
-          <strong>Dispatch Date:</strong> ${d.dispatchDate}<br/>
-          <strong>Due:</strong> ${d.dueDate}<br/>
+          <strong>Load Time:</strong> ${d.dispatchDate}<br/>
+          <strong>Unload Time:</strong> ${d.dueDate}<br/>
           <strong>Notes:</strong> ${d.notes}<br/>
-          ${d.mapPin ? `<a href="${d.mapPin}" target="_blank">📍 View Map</a><br/>` : ""}
-          ${d.photo ? `<div class="file-preview">📷 Photo attached</div>` : ""}
+          ${d.mapPinPickup ? `<a href="${d.mapPinPickup}" target="_blank">📍 Pickup Map</a><br/>` : ""}
+          ${d.mapPinDrop ? `<a href="${d.mapPinDrop}" target="_blank">📍 Delivery Map</a><br/>` : ""}
+          ${d.photo ? `<div class="file-preview"><a href="${d.photo}" target="_blank">📷 View Attached File</a></div>` : ""}
+          ${d.edited ? `<div class="edited-tag">This dispatch was edited</div>` : ""}
         `;
 
         if (isRecipient) {
           const status = d.statuses[currentUser.username];
-          html += `
-            <div class="status-btns">
-              <button onclick="acceptLoad(${d.id})" ${status.accepted ? "disabled" : ""}>Accept</button>
-              <button onclick="updateStatus(${d.id}, 'arrived')">Arrived</button>
-              <button onclick="updateStatus(${d.id}, 'loaded')">Loaded</button>
-              <button onclick="updateStatus(${d.id}, 'unloaded')">Unloaded</button>
-            </div>
-          `;
+          const now = new Date().toLocaleString();
+          html += `<div class="status-btns">`;
+
+          if (!status.accepted) {
+            html += `<button onclick="updateStatus(${d.id}, 'accepted')">Accept</button>`;
+          } else {
+            html += `<div>✅ Accepted: ${status.acceptedTime || now}</div>`;
+          }
+
+          ["arrived", "loaded", "unloaded"].forEach(k => {
+            if (!status[k]) {
+              html += `<button onclick="updateStatus(${d.id}, '${k}')">${k.charAt(0).toUpperCase() + k.slice(1)}</button>`;
+            } else {
+              html += `<div>✅ ${k.charAt(0).toUpperCase() + k.slice(1)}: ${status[k + "Time"]}</div>`;
+            }
+          });
+
+          html += `</div>`;
         }
 
         if (isAdmin) {
-          html += `<div class="admin-tools"><strong>Driver Status:</strong><br/>`;
+          html += `<div class="admin-tools"><strong>Status:</strong><br/>`;
           Object.entries(d.statuses).forEach(([driver, stat]) => {
-            html += `${driver}: Accepted: ${stat.accepted ? "✅" : "❌"}, 
-              Arrived: ${stat.arrived ? "✅" : "❌"}, 
-              Loaded: ${stat.loaded ? "✅" : "❌"}, 
-              Unloaded: ${stat.unloaded ? "✅" : "❌"}<br/>`;
+            html += `<strong>${driver}</strong><br/>`;
+            Object.entries(stat).forEach(([key, val]) => {
+              if (key.endsWith("Time")) return;
+              html += `${key}: ${val ? "✅" : "❌"} ${stat[key + "Time"] ? "at " + stat[key + "Time"] : ""}<br/>`;
+            });
           });
-          html += `</div>`;
+          html += `<button onclick="editDispatch(${d.id})">✏️ Edit</button></div>`;
         }
 
         card.innerHTML = html;
@@ -220,22 +232,35 @@
       });
     }
 
-    function acceptLoad(id) {
-      const index = dispatches.findIndex(d => d.id === id);
-      if (index > -1) {
-        dispatches[index].statuses[currentUser.username].accepted = true;
+    function updateStatus(id, key) {
+      const i = dispatches.findIndex(d => d.id === id);
+      if (i > -1) {
+        const now = new Date().toLocaleString();
+        dispatches[i].statuses[currentUser.username][key] = true;
+        dispatches[i].statuses[currentUser.username][key + "Time"] = now;
         localStorage.setItem("dispatches", JSON.stringify(dispatches));
         renderDispatches();
       }
     }
 
-    function updateStatus(id, key) {
-      const index = dispatches.findIndex(d => d.id === id);
-      if (index > -1) {
-        dispatches[index].statuses[currentUser.username][key] = true;
-        localStorage.setItem("dispatches", JSON.stringify(dispatches));
-        renderDispatches();
-      }
+    function editDispatch(id) {
+      const d = dispatches.find(d => d.id === id);
+      if (!d) return;
+      d.edited = true;
+      customer.value = d.customer;
+      rate.value = d.rate;
+      surcharge.value = d.surcharge;
+      loadLoc.value = d.loadLoc;
+      unloadLoc.value = d.unloadLoc;
+      salesman.value = d.salesman;
+      dispatchDate.value = d.dispatchDate;
+      dueDate.value = d.dueDate;
+      notes.value = d.notes;
+      mapPinPickup.value = d.mapPinPickup;
+      mapPinDrop.value = d.mapPinDrop;
+      dispatches = dispatches.filter(x => x.id !== id);
+      localStorage.setItem("dispatches", JSON.stringify(dispatches));
+      renderDispatches();
     }
 
     renderDispatches();

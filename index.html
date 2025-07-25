@@ -39,9 +39,7 @@
 </div>
 
 <script>
-  // Dark Mode Toggle
-  const toggle = document.getElementById('darkToggle');
-  toggle.checked = localStorage.getItem('theme') === 'dark';
+
   document.documentElement.classList.toggle('dark-mode', toggle.checked);
   toggle.addEventListener('change', () => {
     document.documentElement.classList.toggle('dark-mode', toggle.checked);

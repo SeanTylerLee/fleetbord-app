@@ -2,23 +2,85 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Prevent zoom on input focus -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Saved Loads</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
-    header img { width: 100%; display: block; }
-    .container { padding: 1rem; }
-    label { font-weight: bold; display: block; margin-top: 1rem; }
-    input, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
-    .btn { background: #007aff; color: white; border: none; padding: 10px; margin-top: 10px; width: 100%; border-radius: 8px; font-weight: bold; }
-    .load-box { background: #f8f8f8; padding: 12px; border-radius: 8px; margin-top: 10px; }
-    .load-box .actions { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
-    .load-box .pushed { color: red; font-weight: bold; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .container {
+      padding: 1rem;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 1rem;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px; /* Prevent iOS zoom */
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .btn {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .load-box {
+      background: #f8f8f8;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .load-box .actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .load-box .pushed {
+      color: red;
+      font-weight: bold;
+    }
+
+    button {
+      font-size: 16px; /* Prevent zoom */
+    }
   </style>
 </head>
 <body>
-  <header><img src="header.jpg" alt="Header"></header>
+  <header>
+    <img src="header.jpg" alt="Header" />
+  </header>
+
   <div class="container">
     <h2>Manage Saved Loads</h2>
 

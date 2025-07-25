@@ -14,11 +14,11 @@
   <meta name="apple-mobile-web-app-title" content="Fleetbord" />
 
   <script>
-  // Redirect to install help page if not in standalone mode
-if (!window.matchMedia('(display-mode: standalone)').matches && !navigator.standalone) {
-  window.location.replace("install.html");
-}
-  
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (!isInStandaloneMode) {
+      window.location.replace("install.html");
+    }
+
     const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
     if (!user || !user.username) {
       window.location.replace('login.html');
@@ -26,65 +26,65 @@ if (!window.matchMedia('(display-mode: standalone)').matches && !navigator.stand
   </script>
 </head>
 <body>
-<noscript>
-  <div style="text-align:center; color:red; padding:20px;">
-    ⚠️ JavaScript is required to use this app.
+  <noscript>
+    <div style="text-align:center; color:red; padding:20px;">
+      ⚠️ JavaScript is required to use this app.
+    </div>
+  </noscript>
+
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Monster" />
+  </header>
+
+  <div class="user-info" id="currentUserInfo">Logged in as: ...</div>
+
+  <div class="ios-list">
+    <a class="ios-item" href="rec.html">Driver Resources</a>
+    <a class="ios-item" href="page7.html">Messaging</a>
+    <a class="ios-item" href="settings.html">Settings</a>
+    <a class="ios-item" href="admin.html">User Manager (Admin)</a>
+    <div class="ios-item toggle-label">
+      <span>Dark Mode</span>
+      <input type="checkbox" id="darkToggle" />
+    </div>
+    <a class="ios-item" href="#" onclick="logout()">Logout</a>
   </div>
-</noscript>
 
-<header class="ios-header-image">
-  <img src="header.jpg" alt="Monster" />
-</header>
+  <script>
+    // Show current user info
+    const currentUserDisplay = document.getElementById("currentUserInfo");
+    if (user?.username) {
+      currentUserDisplay.textContent = `Logged in as: ${user.username} (${user.role})`;
+    }
 
-<div class="user-info" id="currentUserInfo">Logged in as: ...</div>
-
-<div class="ios-list">
-  <a class="ios-item" href="rec.html">Driver Resources</a>
-  <a class="ios-item" href="page7.html">Messaging</a>
-  <a class="ios-item" href="settings.html">Settings</a>
-  <a class="ios-item" href="admin.html">User Manager (Admin)</a>
-  <div class="ios-item toggle-label">
-    <span>Dark Mode</span>
-    <input type="checkbox" id="darkToggle" />
-  </div>
-  <a class="ios-item" href="#" onclick="logout()">Logout</a>
-</div>
-
-<script>
-  // Display logged in user
-  const currentUserDisplay = document.getElementById("currentUserInfo");
-  if (user?.username) {
-    currentUserDisplay.textContent = `Logged in as: ${user.username} (${user.role})`;
-  }
-
-  // Dark Mode Toggle
-  const toggle = document.getElementById('darkToggle');
-  toggle.checked = localStorage.getItem('theme') === 'dark';
-  document.documentElement.classList.toggle('dark-mode', toggle.checked);
-  toggle.addEventListener('change', () => {
+    // Dark Mode
+    const toggle = document.getElementById('darkToggle');
+    toggle.checked = localStorage.getItem('theme') === 'dark';
     document.documentElement.classList.toggle('dark-mode', toggle.checked);
-    localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
-  });
-
-  // Logout clears only localStorage
-  function logout() {
-    localStorage.removeItem("currentUser");
-    window.location.href = "login.html";
-  }
-
-  // Auto-refresh if service worker updates
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').then(reg => {
-      reg.onupdatefound = () => {
-        const newWorker = reg.installing;
-        newWorker.onstatechange = () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            window.location.reload();
-          }
-        };
-      };
+    toggle.addEventListener('change', () => {
+      document.documentElement.classList.toggle('dark-mode', toggle.checked);
+      localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
     });
-  }
-</script>
+
+    // Logout
+    function logout() {
+      localStorage.removeItem("currentUser");
+      window.location.href = "login.html";
+    }
+
+    // Auto-refresh when new version is deployed
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js').then(reg => {
+        reg.onupdatefound = () => {
+          const newWorker = reg.installing;
+          newWorker.onstatechange = () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          };
+        };
+      });
+    }
+  </script>
 </body>
 </html>

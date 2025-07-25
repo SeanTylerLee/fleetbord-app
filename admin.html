@@ -27,22 +27,18 @@
       margin-bottom: 1rem;
     }
 
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    input, select, textarea, button {
+    textarea, button {
       width: 100%;
       padding: 0.6rem;
       font-size: 1rem;
       border-radius: 8px;
-      border: 1px solid #ccc;
       box-sizing: border-box;
     }
 
     textarea {
       resize: vertical;
       min-height: 80px;
+      border: 1px solid #ccc;
     }
 
     button {
@@ -50,8 +46,8 @@
       color: white;
       font-weight: bold;
       border: none;
-      cursor: pointer;
       margin-top: 0.5rem;
+      cursor: pointer;
     }
 
     ul {
@@ -71,16 +67,12 @@
       font-size: 0.9rem;
     }
 
-    .log-button {
+    .button-group {
       margin-top: 2rem;
-      width: 100%;
-      padding: 0.7rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      background: #28a745;
-      color: #fff;
-      border: none;
-      cursor: pointer;
+    }
+
+    .button-group button {
+      margin-bottom: 1rem;
     }
 
     .section {
@@ -96,23 +88,6 @@
   <div class="container">
     <h2>Admin Panel</h2>
 
-    <!-- ✅ User Creation -->
-    <div class="form-group">
-      <input type="text" id="newUsername" placeholder="Username" />
-    </div>
-    <div class="form-group">
-      <input type="password" id="newPassword" placeholder="Password" />
-    </div>
-    <div class="form-group">
-      <select id="newRole">
-        <option value="driver">Driver</option>
-        <option value="office">Office</option>
-        <option value="mechanic">Mechanic</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
-    <button onclick="createUser()">Create User</button>
-
     <!-- ✅ Welcome Message Editor -->
     <div class="section">
       <h3>📢 Edit Welcome Center Message</h3>
@@ -126,7 +101,11 @@
       <ul id="userList"></ul>
     </div>
 
-    <button class="log-button" onclick="location.href='logs.html'">📋 View Login Logs</button>
+    <!-- ✅ Navigation -->
+    <div class="button-group">
+      <button onclick="location.href='users.html'">🛠 Manage User Profiles</button>
+      <button onclick="location.href='logs.html'">📋 View Login Logs</button>
+    </div>
   </div>
 
   <script>
@@ -135,25 +114,6 @@
     if (!currentUser || currentUser.role !== "admin") {
       alert("Access denied.");
       location.href = "login.html";
-    }
-
-    function createUser() {
-      const username = document.getElementById("newUsername").value.trim();
-      const password = document.getElementById("newPassword").value.trim();
-      const role = document.getElementById("newRole").value;
-
-      if (!username || !password) return alert("Enter all fields");
-
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      if (users.find(u => u.username === username)) {
-        alert("User already exists!");
-        return;
-      }
-
-      users.push({ username, password, role, active: true });
-      localStorage.setItem("users", JSON.stringify(users));
-      loadUserList();
-      alert("✅ User created.");
     }
 
     function deleteUser(index) {
@@ -196,7 +156,6 @@
       alert("✅ Message updated.");
     }
 
-    // Load on page start
     window.onload = () => {
       loadUserList();
       document.getElementById("welcomeMsgBox").value = localStorage.getItem("welcomeMessage") || "";

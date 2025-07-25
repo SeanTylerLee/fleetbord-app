@@ -5,145 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Messages</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.css" />
+  <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1"></script>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    header img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .back-button {
-      text-align: center;
-      padding: 1em;
-    }
-
-    .back-button button {
-      background: #007aff;
+    .emoji-btn { font-size: 20px; background: transparent; border: none; cursor: pointer; }
+    .reaction { cursor: pointer; padding-left: 6px; }
+    .online-dot { width: 10px; height: 10px; background: limegreen; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .typing-indicator { font-size: 13px; color: gray; margin-top: 4px; }
+    .unread-badge {
+      background: red;
       color: white;
-      padding: 12px 18px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .container {
-      padding: 1rem;
-    }
-
-    .chat-thread {
-      background: transparent;
-      max-height: 300px;
-      overflow-y: auto;
-      margin-bottom: 1rem;
-    }
-
-    .message-wrapper {
-      position: relative;
-      margin-bottom: 10px;
-      padding: 0 10px;
-    }
-
-    .message-bubble {
-      padding: 10px 14px;
-      border-radius: 18px;
-      max-width: 75%;
-      font-size: 15px;
-      line-height: 1.4em;
-      word-break: break-word;
-      display: inline-block;
-      position: relative;
-    }
-
-    .from-me {
-      background-color: #007aff;
-      color: white;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 10px;
       float: right;
-      border-bottom-right-radius: 0;
+      margin-left: 6px;
     }
-
-    .from-them {
-      background-color: #e5e5ea;
-      color: black;
-      float: left;
-      border-bottom-left-radius: 0;
+    .image-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center;
+      z-index: 9999; display: none;
     }
-
-    .dark-mode .from-them {
-      background-color: #333;
-      color: white;
-    }
-
-    .message-time {
-      font-size: 11px;
-      color: #888;
-      clear: both;
-      padding: 2px 4px;
-    }
-
-    .chat-footer {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .chat-footer input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-
-    .chat-footer input[type="file"] {
-      flex: none;
-    }
-
-    .chat-footer button {
-      padding: 10px 16px;
-      border-radius: 10px;
-      background: #007aff;
-      border: none;
-      color: white;
-      font-weight: bold;
-    }
-
-    .thread-list button {
-      display: block;
-      width: 100%;
-      text-align: left;
-      padding: 12px;
-      margin: 4px 0;
-      border: none;
-      background: var(--card);
-      border-radius: 10px;
-      font-size: 16px;
-    }
-
-    .image-preview {
-      max-width: 150px;
-      max-height: 150px;
-      margin-top: 5px;
-      border-radius: 10px;
-    }
-
-    .swipe-delete {
-      animation: shake 0.3s ease;
-    }
-
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      50% { transform: translateX(5px); }
-      75% { transform: translateX(-5px); }
-      100% { transform: translateX(0); }
+    .image-modal img {
+      max-width: 90%; max-height: 90%;
+      border-radius: 12px;
     }
   </style>
 </head>
@@ -154,177 +39,282 @@
   <div class="container">
     <h2 style="text-align:center;">Messages</h2>
 
+    <!-- THREAD LIST -->
     <div class="thread-list" id="threadList"></div>
 
+    <!-- NEW CHAT -->
     <div>
       <h3>Start New Chat</h3>
       <div id="recipientList"></div>
       <button onclick="startChat()">Start Chat</button>
     </div>
 
+    <!-- ACTIVE CHAT -->
     <div id="chatWindow" style="display:none;">
       <h3 id="chatTitle"></h3>
+      <div id="statusBar" class="typing-indicator"></div>
       <div id="chatThread" class="chat-thread"></div>
+
       <div class="chat-footer">
-        <input type="text" id="chatInput" placeholder="Type a message..." />
+        <button class="emoji-btn" onclick="toggleEmojiPicker()">😊</button>
+        <emoji-picker id="emojiPicker" style="display:none;"></emoji-picker>
+        <input type="text" id="chatInput" placeholder="Type a message..." oninput="sendTypingStatus()" />
         <input type="file" id="imageInput" accept="image/*" />
         <button onclick="sendMessage()">Send</button>
       </div>
     </div>
   </div>
 
-  <script>
-    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-    const users = JSON.parse(localStorage.getItem("users") || "[]").filter(u => u.username !== currentUser.username);
+  <!-- IMAGE MODAL PREVIEW -->
+  <div class="image-modal" id="imageModal" onclick="this.style.display='none'">
+    <img id="modalImage" src="" alt="Preview" />
+  </div>
 
-    const chatThread = document.getElementById("chatThread");
-    const chatTitle = document.getElementById("chatTitle");
-    const recipientList = document.getElementById("recipientList");
-    const threadList = document.getElementById("threadList");
+<script>
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const users = JSON.parse(localStorage.getItem("users") || "[]").filter(u => u.username !== currentUser.username);
+  const threadList = document.getElementById("threadList");
+  const recipientList = document.getElementById("recipientList");
+  const chatThread = document.getElementById("chatThread");
+  const chatTitle = document.getElementById("chatTitle");
+  const chatWindow = document.getElementById("chatWindow");
+  const statusBar = document.getElementById("statusBar");
+  const emojiPicker = document.getElementById("emojiPicker");
+  const chatInput = document.getElementById("chatInput");
 
-    let activeRecipients = [];
+  let activeRecipients = [];
+  let typingTimeout;
+  let activeChatKey = "";
 
-    function renderRecipients() {
-      recipientList.innerHTML = "";
-      users.forEach(u => {
-        const label = document.createElement("label");
-        label.innerHTML = '<input type="checkbox" value="' + u.username + '"> ' + u.username;
-        recipientList.appendChild(label);
-      });
-    }
+  function toggleEmojiPicker() {
+    emojiPicker.style.display = emojiPicker.style.display === "none" ? "block" : "none";
+  }
 
-    function renderThreads() {
-      threadList.innerHTML = "<h3>Conversation Threads</h3>";
-      const keys = Object.keys(localStorage).filter(k => k.startsWith("chat_"));
-      const seen = new Set();
-      keys.forEach(key => {
-        const participants = key.replace("chat_", "").split("_");
-        if (participants.includes(currentUser.username)) {
-          const label = participants.filter(p => p !== currentUser.username).join(", ") || "You";
-          if (!seen.has(key)) {
-            const btn = document.createElement("button");
-            btn.textContent = label;
-            btn.onclick = () => openThread(key);
-            threadList.appendChild(btn);
-            seen.add(key);
+  emojiPicker.addEventListener('emoji-click', e => {
+    chatInput.value += e.detail.unicode;
+    emojiPicker.style.display = "none";
+  });
+</script>
+<script>
+  function renderRecipients() {
+    recipientList.innerHTML = "";
+    users.forEach(u => {
+      const label = document.createElement("label");
+      label.innerHTML = `<input type="checkbox" value="${u.username}"> <span class="online-dot"></span>${u.username}`;
+      recipientList.appendChild(label);
+    });
+  }
+
+  function renderThreads() {
+    threadList.innerHTML = "<h3>Conversation Threads</h3>";
+    const keys = Object.keys(localStorage).filter(k => k.startsWith("chat_"));
+    const seen = new Set();
+
+    keys.forEach(key => {
+      const participants = key.replace("chat_", "").split("_");
+      if (participants.includes(currentUser.username)) {
+        const label = participants.filter(p => p !== currentUser.username).join(", ") || "You";
+        const unread = JSON.parse(localStorage.getItem("unread_" + key) || "[]");
+        const hasUnread = unread.includes(currentUser.username);
+
+        if (!seen.has(key)) {
+          const btn = document.createElement("button");
+          btn.textContent = label;
+          if (hasUnread) {
+            const badge = document.createElement("span");
+            badge.className = "unread-badge";
+            badge.textContent = "New";
+            btn.appendChild(badge);
           }
+          btn.onclick = () => openThread(key);
+          threadList.appendChild(btn);
+          seen.add(key);
         }
+      }
+    });
+  }
+
+  function startChat() {
+    const checked = Array.from(recipientList.querySelectorAll("input:checked"));
+    if (!checked.length) return alert("Select at least one user.");
+    activeRecipients = checked.map(cb => cb.value);
+    const title = [...activeRecipients, currentUser.username].sort().join("_");
+    openThread("chat_" + title);
+  }
+
+  function openThread(key) {
+    activeRecipients = key.replace("chat_", "").split("_").filter(u => u !== currentUser.username);
+    activeChatKey = key;
+    chatTitle.textContent = "Chat with: " + activeRecipients.join(", ");
+    chatWindow.style.display = "block";
+    markAsRead(key);
+    loadMessages(key);
+  }
+
+  function getChatKey() {
+    return "chat_" + [...activeRecipients, currentUser.username].sort().join("_");
+  }
+
+  function markAsRead(key) {
+    let unread = JSON.parse(localStorage.getItem("unread_" + key) || "[]");
+    unread = unread.filter(u => u !== currentUser.username);
+    localStorage.setItem("unread_" + key, JSON.stringify(unread));
+  }
+
+  function loadMessages(keyName) {
+    const key = keyName || getChatKey();
+    const messages = JSON.parse(localStorage.getItem(key) || "[]");
+    chatThread.innerHTML = "";
+
+    messages.forEach((msg, i) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message-wrapper";
+
+      const div = document.createElement("div");
+      div.className = "message-bubble " + (msg.from === currentUser.username ? "from-me" : "from-them");
+      div.textContent = msg.text;
+
+      // Image preview
+      if (msg.imageData) {
+        const img = document.createElement("img");
+        img.src = msg.imageData;
+        img.className = "image-preview";
+        img.onclick = () => showImageModal(img.src);
+        wrapper.appendChild(img);
+      }
+
+      // Seen-by
+      if (msg.seenBy && msg.from !== currentUser.username) {
+        const seen = document.createElement("div");
+        seen.className = "message-time";
+        seen.textContent = "Seen by: " + msg.seenBy.filter(n => n !== msg.from).join(", ");
+        wrapper.appendChild(seen);
+      }
+
+      // Reactions
+      const reactionBar = document.createElement("div");
+      ["👍", "❤️", "😂"].forEach(emoji => {
+        const r = document.createElement("span");
+        r.className = "reaction";
+        r.textContent = emoji;
+        r.onclick = () => addReaction(i, emoji);
+        reactionBar.appendChild(r);
       });
-    }
+      wrapper.appendChild(div);
+      wrapper.appendChild(reactionBar);
 
-    function startChat() {
-      const checked = Array.from(recipientList.querySelectorAll("input:checked"));
-      if (!checked.length) return alert("Select at least one user.");
-      activeRecipients = checked.map(cb => cb.value);
-      const title = [...activeRecipients, currentUser.username].sort().join(", ");
-      openThread("chat_" + title);
-    }
+      // Timestamp
+      const time = document.createElement("div");
+      time.className = "message-time";
+      time.textContent = new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      wrapper.appendChild(time);
 
-    function openThread(key) {
-      const names = key.replace("chat_", "").split("_");
-      activeRecipients = names.filter(n => n !== currentUser.username);
-      chatTitle.innerText = "Chat with: " + activeRecipients.join(", ");
-      document.getElementById("chatWindow").style.display = "block";
-      loadMessages(key);
-    }
+      chatThread.appendChild(wrapper);
+    });
 
-    function getChatKey() {
-      return "chat_" + [...activeRecipients, currentUser.username].sort().join("_");
-    }
+    chatThread.scrollTop = chatThread.scrollHeight;
+  }
 
-    function loadMessages(keyName) {
-      const key = keyName || getChatKey();
-      const messages = JSON.parse(localStorage.getItem(key) || "[]");
-      chatThread.innerHTML = "";
-      messages.forEach((msg, i) => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "message-wrapper";
+  function showImageModal(src) {
+    const modal = document.getElementById("imageModal");
+    const img = document.getElementById("modalImage");
+    img.src = src;
+    modal.style.display = "flex";
+  }
 
-        const div = document.createElement("div");
-        div.className = "message-bubble " + (msg.from === currentUser.username ? "from-me" : "from-them");
-        div.textContent = msg.text;
+  function addReaction(index, emoji) {
+    const key = getChatKey();
+    const messages = JSON.parse(localStorage.getItem(key) || "[]");
+    messages[index].text += ` ${emoji}`;
+    localStorage.setItem(key, JSON.stringify(messages));
+    loadMessages(key);
+  }
 
-        // Swipe to delete if from me
-        if (msg.from === currentUser.username) {
-          div.addEventListener("touchstart", function (e) {
-            const startX = e.changedTouches[0].screenX;
-            div.addEventListener("touchend", function endSwipe(ev) {
-              const endX = ev.changedTouches[0].screenX;
-              if (startX - endX > 50) {
-                messages.splice(i, 1);
-                localStorage.setItem(key, JSON.stringify(messages));
-                loadMessages(key);
-              }
-              div.removeEventListener("touchend", endSwipe);
-            });
-          });
-        }
+  function sendMessage() {
+    const input = document.getElementById("chatInput");
+    const imageInput = document.getElementById("imageInput");
+    const text = input.value.trim();
+    if (!text && !imageInput.files.length) return;
 
-        wrapper.appendChild(div);
+    const key = getChatKey();
+    const messages = JSON.parse(localStorage.getItem(key) || "[]");
 
-        if (msg.imageData) {
-          const img = document.createElement("img");
-          img.src = msg.imageData;
-          img.className = "image-preview";
-          wrapper.appendChild(img);
-        }
+    const newMessage = {
+      from: currentUser.username,
+      text,
+      time: Date.now(),
+      seenBy: [currentUser.username]
+    };
 
-        const time = document.createElement("div");
-        time.className = "message-time";
-        time.textContent = new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        wrapper.appendChild(time);
+    const notifyUsers = [...activeRecipients];
+    notifyUsers.forEach(u => {
+      const unread = JSON.parse(localStorage.getItem("unread_" + key) || "[]");
+      if (!unread.includes(u)) {
+        unread.push(u);
+        localStorage.setItem("unread_" + key, JSON.stringify(unread));
+      }
+    });
 
-        chatThread.appendChild(wrapper);
-      });
-      chatThread.scrollTop = chatThread.scrollHeight;
-    }
-
-    function sendMessage() {
-      const input = document.getElementById("chatInput");
-      const imageInput = document.getElementById("imageInput");
-      const text = input.value.trim();
-      const key = getChatKey();
-      const messages = JSON.parse(localStorage.getItem(key) || "[]");
-
-      const newMessage = {
-        from: currentUser.username,
-        text,
-        time: Date.now()
-      };
-
-      if (imageInput.files.length) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          newMessage.imageData = e.target.result;
-          messages.push(newMessage);
-          localStorage.setItem(key, JSON.stringify(messages));
-          input.value = "";
-          imageInput.value = "";
-          loadMessages(key);
-        };
-        reader.readAsDataURL(imageInput.files[0]);
-      } else {
+    if (imageInput.files.length) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        newMessage.imageData = e.target.result;
         messages.push(newMessage);
         localStorage.setItem(key, JSON.stringify(messages));
         input.value = "";
+        imageInput.value = "";
         loadMessages(key);
-      }
+      };
+      reader.readAsDataURL(imageInput.files[0]);
+    } else {
+      messages.push(newMessage);
+      localStorage.setItem(key, JSON.stringify(messages));
+      input.value = "";
+      loadMessages(key);
     }
 
-    if (localStorage.getItem("darkMode") === "true") {
-      document.documentElement.classList.add("dark-mode");
+    // Send push notification
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("New message from " + currentUser.username, { body: text || "Image" });
     }
+  }
 
-    // Live refresh every second
-    setInterval(() => {
-      const key = getChatKey();
-      if (document.getElementById("chatWindow").style.display !== "none") {
-        loadMessages(key);
-      }
-    }, 1000);
+  function sendTypingStatus() {
+    const key = getChatKey();
+    const typingKey = "typing_" + key;
+    localStorage.setItem(typingKey, currentUser.username);
 
-    renderRecipients();
-    renderThreads();
-  </script>
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      localStorage.removeItem(typingKey);
+    }, 2000);
+  }
+
+  function checkTypingStatus() {
+    const key = getChatKey();
+    const typingKey = "typing_" + key;
+    const typingUser = localStorage.getItem(typingKey);
+    if (typingUser && typingUser !== currentUser.username) {
+      statusBar.textContent = typingUser + " is typing...";
+    } else {
+      statusBar.textContent = "";
+    }
+  }
+
+  setInterval(() => {
+    if (chatWindow.style.display !== "none") {
+      loadMessages(activeChatKey);
+      checkTypingStatus();
+    }
+  }, 1000);
+
+  // Push permission
+  if ("Notification" in window && Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
+
+  renderRecipients();
+  renderThreads();
+</script>
 </body>
 </html>

@@ -43,141 +43,146 @@
 
     <div id="userDispatches"><h3>Your Assigned Dispatches</h3><div id="dispatchList"></div></div>
   </div>
+<script>
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const dispatchList = document.getElementById("dispatchList");
+  const adminForm = document.getElementById("adminForm");
+  const driverList = document.getElementById("driverList");
 
-  <script>
-    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const allDispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
-    const dispatchList = document.getElementById("dispatchList");
-    const adminForm = document.getElementById("adminForm");
-    const driverList = document.getElementById("driverList");
+  if (currentUser.role === "admin") {
+    adminForm.classList.remove("hidden");
 
-    if (currentUser.role === "admin") {
-      adminForm.classList.remove("hidden");
-      users.filter(u => u.role === "driver").forEach(driver => {
-        const lbl = document.createElement("label");
-        lbl.innerHTML = `<input type="checkbox" value="${driver.username}" /> ${driver.username}`;
-        driverList.appendChild(lbl);
-        driverList.appendChild(document.createElement("br"));
-      });
+    const driverUsers = users.filter(u => u.role === "driver");
+    driverUsers.forEach(driver => {
+      const label = document.createElement("label");
+      label.innerHTML = `<input type="checkbox" value="${driver.username}" /> ${driver.username}`;
+      driverList.appendChild(label);
+      driverList.appendChild(document.createElement("br"));
+    });
+
+    // ⬇️ Inject saved load if selected
+    const loadIndex = localStorage.getItem("loadToDispatch");
+    if (loadIndex !== null) {
+      const loads = JSON.parse(localStorage.getItem("savedLoads") || "[]");
+      const load = loads[loadIndex];
+      if (load) {
+        document.getElementById("customer").value = load.customer || "";
+        document.getElementById("rate").value = load.rate || "";
+        document.getElementById("surcharge").value = load.fuel || "";
+        document.getElementById("salesman").value = load.salesman || "";
+        document.getElementById("loadLocation").value = load.loadLocation || "";
+        document.getElementById("unloadLocation").value = load.unloadLocation || "";
+        document.getElementById("notes").value = load.notes || "";
+
+        // Optional: store checklist with dispatch (you can expand that later)
+        localStorage.removeItem("loadToDispatch");
+      }
     }
+  }
 
-    function createDispatch() {
-      const selectedDrivers = Array.from(driverList.querySelectorAll("input:checked")).map(cb => cb.value);
-      if (selectedDrivers.length === 0) return alert("Select at least one driver.");
-      const fileInput = document.getElementById("attachment").files[0];
-      const checklist = (document.getElementById("checklist").value || "").split(",").map(i => i.trim()).filter(Boolean);
+  function createDispatch() {
+    const selectedDrivers = Array.from(driverList.querySelectorAll("input:checked")).map(cb => cb.value);
+    if (selectedDrivers.length === 0) return alert("Select at least one driver.");
 
-      const dispatch = {
-        id: Date.now(),
-        customer: document.getElementById("customer").value,
-        rate: document.getElementById("rate").value,
-        surcharge: document.getElementById("surcharge").value,
-        loadLocation: document.getElementById("loadLocation").value,
-        unloadLocation: document.getElementById("unloadLocation").value,
-        salesman: document.getElementById("salesman").value,
-        notes: document.getElementById("notes").value,
-        dispatchDate: document.getElementById("dispatchDate").value,
-        dueDate: document.getElementById("dueDate").value,
-        mapPin: document.getElementById("mapPin").value,
-        drivers: selectedDrivers,
-        accepted: [],
-        attachment: "",
-        status: {},
-        checklist,
-        checklistProgress: {},
-        edited: false
+    const fileInput = document.getElementById("attachment");
+    const file = fileInput.files[0];
+
+    const dispatch = {
+      id: Date.now(),
+      customer: document.getElementById("customer").value,
+      rate: document.getElementById("rate").value,
+      surcharge: document.getElementById("surcharge").value,
+      loadLocation: document.getElementById("loadLocation").value,
+      unloadLocation: document.getElementById("unloadLocation").value,
+      salesman: document.getElementById("salesman").value,
+      notes: document.getElementById("notes").value,
+      dispatchDate: document.getElementById("dispatchDate").value,
+      dueDate: document.getElementById("dueDate").value,
+      mapPin: document.getElementById("mapPin").value,
+      drivers: selectedDrivers,
+      accepted: [],
+      attachment: ""
+    };
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        dispatch.attachment = e.target.result;
+        saveDispatch(dispatch);
       };
-
-      if (fileInput) {
-        const reader = new FileReader();
-        reader.onload = e => { dispatch.attachment = e.target.result; save(dispatch); };
-        reader.readAsDataURL(fileInput);
-      } else {
-        save(dispatch);
-      }
+      reader.readAsDataURL(file);
+    } else {
+      saveDispatch(dispatch);
     }
+  }
 
-    function save(dispatch) {
-      const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
-      all.push(dispatch);
-      localStorage.setItem("dispatches", JSON.stringify(all));
-      alert("Dispatch Sent!");
-      location.reload();
-    }
+  function saveDispatch(dispatch) {
+    const allDispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
+    allDispatches.push(dispatch);
+    localStorage.setItem("dispatches", JSON.stringify(allDispatches));
+    alert("Dispatch sent!");
+    window.location.reload();
+  }
 
-    function loadUserDispatches() {
-      const user = currentUser.username;
-      const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
-      const assigned = all.filter(d => d.drivers.includes(user));
-      dispatchList.innerHTML = "";
+  function loadUserDispatches() {
+    const allDispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
+    const userDispatches = allDispatches.filter(d => d.drivers.includes(currentUser.username));
+    dispatchList.innerHTML = "";
 
-      assigned.forEach(d => {
-        const box = document.createElement("div");
-        box.className = "dispatch-box";
+    userDispatches.forEach(d => {
+      const div = document.createElement("div");
+      div.style.border = "1px solid #ccc";
+      div.style.borderRadius = "10px";
+      div.style.padding = "10px";
+      div.style.margin = "10px 0";
+      div.innerHTML = `
+        <strong>Customer:</strong> ${d.customer}<br>
+        <strong>Rate:</strong> $${d.rate} | <strong>Surcharge:</strong> $${d.surcharge}<br>
+        <strong>Load:</strong> ${d.loadLocation}<br>
+        <strong>Unload:</strong> ${d.unloadLocation}<br>
+        <strong>Salesman:</strong> ${d.salesman}<br>
+        <strong>Notes:</strong> ${d.notes}<br>
+        <strong>Dispatch Date:</strong> ${d.dispatchDate}<br>
+        <strong>Due Date:</strong> ${d.dueDate}<br>
+        ${d.mapPin ? `<a href="${d.mapPin}" target="_blank">📍 Open Map</a><br>` : ""}
+        ${d.attachment ? `<a href="${d.attachment}" download="attachment.jpg">📎 Download Attachment</a><br>` : ""}
+        <strong>Other Drivers on Load:</strong> ${d.drivers.join(", ")}<br>
+        <strong>Accepted By:</strong> ${d.accepted.length > 0 ? d.accepted.join(", ") : "None"}<br>
+      `;
 
-        let html = `
-          <strong>Customer:</strong> ${d.customer} ${d.edited ? '<span class="edited">[Edited]</span>' : ''}<br>
-          <strong>Rate:</strong> $${d.rate} | Fuel: $${d.surcharge}<br>
-          <strong>Load:</strong> ${d.loadLocation}<br>
-          <strong>Unload:</strong> ${d.unloadLocation}<br>
-          <strong>Salesman:</strong> ${d.salesman}<br>
-          <strong>Dispatch:</strong> ${d.dispatchDate}<br>
-          <strong>Due:</strong> ${d.dueDate}<br>
-          <strong>Notes:</strong> ${d.notes}<br>
-          ${d.mapPin ? `<a href="${d.mapPin}" target="_blank">📍 Map Link</a><br>` : ""}
-          ${d.attachment ? `<a href="${d.attachment}" download="dispatch_file">📎 Attachment</a><br>` : ""}
-        `;
-
-        if (d.checklist?.length) {
-          html += `<strong>Checklist:</strong><br>`;
-          d.checklist.forEach(item => {
-            const key = `${user}-${item}`;
-            const checked = (d.checklistProgress?.[key]) ? 'checked' : '';
-            html += `<label class="checklist-item"><input type="checkbox" onchange="toggleChecklist(${d.id}, '${key}')" ${checked}/> ${item}</label><br>`;
-          });
-        }
-
-        box.innerHTML = html;
-
-        const buttons = ['Arrived', 'Loaded', 'Unloaded'];
-        buttons.forEach(btn => {
-          const key = `${user}-${btn}`;
-          const stamped = d.status?.[key];
-          const button = document.createElement("button");
-          button.className = "status-btn";
-          button.disabled = !!stamped;
-          button.innerText = stamped ? `${btn} ✅ (${stamped})` : btn;
-          if (!stamped) {
-            button.onclick = () => {
-              const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
-              const index = all.findIndex(x => x.id === d.id);
-              if (index > -1) {
-                all[index].status[key] = new Date().toLocaleString();
-                localStorage.setItem("dispatches", JSON.stringify(all));
-                loadUserDispatches();
-              }
-            };
+      if (!d.accepted.includes(currentUser.username)) {
+        const acceptBtn = document.createElement("button");
+        acceptBtn.innerText = "Accept Load";
+        acceptBtn.className = "btn";
+        acceptBtn.onclick = () => {
+          d.accepted.push(currentUser.username);
+          const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
+          const index = all.findIndex(x => x.id === d.id);
+          if (index !== -1) {
+            all[index] = d;
+            localStorage.setItem("dispatches", JSON.stringify(all));
+            loadUserDispatches();
           }
-          box.appendChild(button);
-        });
-
-        dispatchList.appendChild(box);
-      });
-    }
-
-    function toggleChecklist(id, key) {
-      const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
-      const index = all.findIndex(x => x.id === id);
-      if (index > -1) {
-        all[index].checklistProgress[key] = !all[index].checklistProgress[key];
-        localStorage.setItem("dispatches", JSON.stringify(all));
-        loadUserDispatches();
+        };
+        div.appendChild(acceptBtn);
       }
-    }
 
-    loadUserDispatches();
-    if (localStorage.getItem("darkMode") === "true") document.documentElement.classList.add("dark-mode");
-  </script>
+      dispatchList.appendChild(div);
+    });
+  }
+
+  loadUserDispatches();
+
+  // iOS behavior handling
+  document.addEventListener('touchstart', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+  window.history.pushState(null, null, window.location.href);
+  window.onpopstate = () => window.history.go(1);
+
+  if (localStorage.getItem("darkMode") === "true") {
+    document.documentElement.classList.add("dark-mode");
+  }
+</script>
+
 </body>
 </html>

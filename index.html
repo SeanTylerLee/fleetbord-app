@@ -6,7 +6,7 @@
   <title>Monster</title>
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- PWA Icon Support -->
+  <!-- PWA Support -->
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon.jpg" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -14,8 +14,7 @@
   <meta name="apple-mobile-web-app-title" content="Fleetbord" />
 
   <script>
-    // Redirect to login page if not logged in
-    const user = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null');
+    const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
     if (!user || !user.username) {
       window.location.replace('login.html');
     }
@@ -32,33 +31,28 @@
   <img src="header.jpg" alt="Monster" />
 </header>
 
-<div style="text-align:center; font-size:14px; color:gray; padding:5px;">
-  Logged in as: <strong id="currentUserInfo">...</strong>
-</div>
+<div class="user-info" id="currentUserInfo">Logged in as: ...</div>
 
 <div class="ios-list">
-  <a class="ios-item" href="rec.html">Driver Recources</a>
+  <a class="ios-item" href="rec.html">Driver Resources</a>
   <a class="ios-item" href="page7.html">Messaging</a>
   <a class="ios-item" href="settings.html">Settings</a>
   <a class="ios-item" href="admin.html">User Manager (Admin)</a>
+  <div class="ios-item toggle-label">
+    <span>Dark Mode</span>
+    <input type="checkbox" id="darkToggle" />
+  </div>
   <a class="ios-item" href="#" onclick="logout()">Logout</a>
 </div>
 
-<div style="text-align:center; margin:20px 0;">
-  <label style="font-size:14px;">
-    <input type="checkbox" id="darkToggle" />
-    Dark Mode
-  </label>
-</div>
-
 <script>
-  // Display username
+  // Display logged in user
   const currentUserDisplay = document.getElementById("currentUserInfo");
-  if (currentUserDisplay && user?.username) {
-    currentUserDisplay.textContent = `${user.username} (${user.role})`;
+  if (user?.username) {
+    currentUserDisplay.textContent = `Logged in as: ${user.username} (${user.role})`;
   }
 
-  // Dark mode toggle
+  // Dark Mode Toggle
   const toggle = document.getElementById('darkToggle');
   toggle.checked = localStorage.getItem('theme') === 'dark';
   document.documentElement.classList.toggle('dark-mode', toggle.checked);
@@ -67,14 +61,13 @@
     localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
   });
 
-  // Logout
+  // Logout clears only localStorage
   function logout() {
     localStorage.removeItem("currentUser");
-    sessionStorage.removeItem("currentUser");
     window.location.href = "login.html";
   }
 
-  // Service worker auto-refresh
+  // Auto-refresh if service worker updates
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js').then(reg => {
       reg.onupdatefound = () => {

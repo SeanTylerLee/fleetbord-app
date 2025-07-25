@@ -1,133 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Settings</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="apple-touch-icon" href="icon.jpg" />
+  <link rel="manifest" href="manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      background: #f2f2f7;
-    }
-
-    .dark-mode {
-      background-color: #000;
-      color: #fff;
-    }
-
-    .ios-header-image img {
-      width: 100%;
-      height: auto;
-    }
-
-    .user-info {
-      text-align: center;
-      font-size: 1em;
-      color: #555;
-      padding: 5px 0;
-    }
-
-    .container {
-      padding: 10px 0;
-    }
-
-    h2 {
-      font-size: 1.4em;
-      margin: 16px;
-      color: #888;
-    }
-
-    .ios-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .ios-item {
-      background: #fff;
-      padding: 15px 16px;
-      border-top: 1px solid #ccc;
-      font-size: 1em;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: #000;
-      text-decoration: none;
-    }
-
-    .ios-item:first-child {
-      border-top: none;
-    }
-
-    .ios-item:active {
-      background: #e5e5ea;
-    }
-
-    .dark-mode .ios-item {
-      background: #1c1c1e;
-      color: #fff;
-      border-color: #3a3a3c;
-    }
-
-    .ios-item button, .ios-item a {
-      font-size: 1em;
-      background: none;
-      border: none;
-      color: inherit;
-      padding: 0;
-      margin: 0;
-      width: 100%;
-      text-align: left;
-      text-decoration: none;
-    }
-
-    .toggle-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    input[type="checkbox"] {
-      width: 45px;
-      height: 26px;
-      appearance: none;
-      background: #ccc;
-      border-radius: 13px;
-      position: relative;
-      outline: none;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    input[type="checkbox"]:checked {
-      background: #34c759;
-    }
-
-    input[type="checkbox"]::before {
-      content: "";
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #fff;
-      top: 3px;
-      left: 3px;
-      transition: 0.3s;
-    }
-
-    input[type="checkbox"]:checked::before {
-      transform: translateX(19px);
-    }
-  </style>
 </head>
 <body>
   <header class="ios-header-image">
     <img src="header.jpg" alt="Header" />
   </header>
+
   <div class="user-info" id="userInfo">Logged in as: ...</div>
 
   <div class="container">
@@ -158,36 +45,39 @@
   </div>
 
   <script>
-    const darkToggle = document.getElementById('darkModeToggle');
-    const notifyToggle = document.getElementById('notifyToggle');
-    const autoRefreshToggle = document.getElementById('autoRefreshToggle');
-
+    // Get user from localStorage only (no sessionStorage)
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     document.getElementById("userInfo").innerText = currentUser?.username
       ? `Logged in as: ${currentUser.username} (${currentUser.role})`
       : "Not logged in";
 
+    // Dark Mode setup
+    const darkToggle = document.getElementById('darkModeToggle');
     if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.classList.add('dark-mode');
       darkToggle.checked = true;
     }
-
     darkToggle.addEventListener('change', () => {
       document.documentElement.classList.toggle('dark-mode', darkToggle.checked);
       localStorage.setItem('theme', darkToggle.checked ? 'dark' : 'light');
     });
 
+    // Notification toggle
+    const notifyToggle = document.getElementById('notifyToggle');
     notifyToggle.checked = localStorage.getItem('notifications') === 'on';
     notifyToggle.addEventListener('change', () => {
       localStorage.setItem('notifications', notifyToggle.checked ? 'on' : 'off');
       alert('Notifications ' + (notifyToggle.checked ? 'enabled' : 'disabled') + ' (simulated)');
     });
 
+    // Auto Refresh toggle
+    const autoRefreshToggle = document.getElementById('autoRefreshToggle');
     autoRefreshToggle.checked = localStorage.getItem('autoRefresh') === 'true';
     autoRefreshToggle.addEventListener('change', () => {
       localStorage.setItem('autoRefresh', autoRefreshToggle.checked.toString());
     });
 
+    // Clear local data
     function clearData() {
       if (confirm('Clear all saved app data?')) {
         localStorage.clear();
@@ -197,9 +87,9 @@
       }
     }
 
+    // Logout
     function logout() {
       localStorage.removeItem('currentUser');
-      sessionStorage.removeItem('currentUser');
       window.location.href = 'login.html';
     }
   </script>

@@ -39,6 +39,9 @@
       <input type="text" name="shippedBy" placeholder="Shipped By" />
       <input type="text" name="receivedBy" placeholder="Received By" />
 
+      <h3>Attach Paperwork or Photos</h3>
+      <input type="file" id="ticketFiles" accept="image/*" multiple />
+
       <h3>Signature</h3>
       <canvas id="signature-pad" style="border:1px solid #ccc; width:100%; height:150px;"></canvas>
       <button type="button" onclick="clearSignature()">Clear</button>
@@ -46,6 +49,7 @@
       <input type="hidden" id="signatureImage" name="signatureImage" />
       <button type="submit">✔ Save & Generate PDF</button>
     </form>
+
     <a href="saved-tickets.html" class="ios-item">📂 Open Saved Tickets</a>
   </div>
 
@@ -86,10 +90,48 @@
         }
       }
 
+      // Handle multiple attachments
+      const fileInput = document.getElementById("ticketFiles");
+      ticket.attachments = [];
+      const files = fileInput.files;
+
+      if (files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const reader = new FileReader();
+          await new Promise((resolve) => {
+            reader.onload = () => {
+              ticket.attachments.push(reader.result);
+              resolve();
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+      }
+
+      finalizeTicket(ticket);
+    }
+
+    async function finalizeTicket(ticket) {
       const id = "ticket_" + Date.now();
       localStorage.setItem(id, JSON.stringify(ticket));
+
+      const submitted = JSON.parse(localStorage.getItem("submittedTickets") || "[]");
+      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      submitted.push({
+        driver: currentUser.username || "unknown",
+        date: ticket.date,
+        ticketNumber: ticket.workOrder || "N/A",
+        lease: ticket.leaseName || "",
+        notes: ticket.notes || "",
+        attachment: (ticket.attachments && ticket.attachments[0]) || ""
+      });
+      localStorage.setItem("submittedTickets", JSON.stringify(submitted));
+
       await generatePDF(ticket);
-      signaturePad.off(); // disable after signing
+      signaturePad.off();
+      alert("✅ Ticket saved and submitted!");
+      window.location.href = "index.html";
     }
 
     async function generatePDF(d) {
@@ -145,6 +187,15 @@
       if (d.signatureImage) {
         doc.text("Signature:", 40, y);
         doc.addImage(d.signatureImage, "PNG", 120, y - 10, 180, 60);
+        y += 80;
+      }
+
+      if (d.attachments && d.attachments.length > 0) {
+        for (let i = 0; i < d.attachments.length; i++) {
+          doc.addPage();
+          doc.text(`Attachment #${i + 1}`, 40, 40);
+          doc.addImage(d.attachments[i], "JPEG", 40, 60, 500, 350);
+        }
       }
 
       doc.save("ticket.pdf");

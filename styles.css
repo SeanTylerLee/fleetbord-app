@@ -250,6 +250,7 @@ th {
   flex: 1;
   min-width: 100px;
 }
+
 /* Messaging Chat Styles */
 .chat-thread {
   padding: 10px;
@@ -306,6 +307,7 @@ th {
   border-top: 1px solid #ccc;
   position: sticky;
   bottom: 0;
+  z-index: 10;
 }
 
 .chat-footer input[type="text"] {
@@ -317,6 +319,10 @@ th {
   background: var(--bg);
 }
 
+.chat-footer input[type="file"] {
+  font-size: 14px;
+}
+
 .chat-footer button {
   background: var(--button);
   color: #fff;
@@ -325,6 +331,7 @@ th {
   border-radius: 12px;
   font-size: 15px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 /* Image previews */

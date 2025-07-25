@@ -46,6 +46,10 @@
       <button onclick="autoLoginAdmin()" style="padding: 10px 15px; font-size: 14px;">🔓 Login as Admin</button>
     </div>
 
+    <div style="text-align:center; margin-top:10px;">
+      <button onclick="addTestDrivers()" style="padding: 10px 15px; font-size: 14px;">➕ Add Test Drivers</button>
+    </div>
+
     <p style="text-align:center; margin-top:1em;">
       Having trouble? <a href="report.html">Report Issue</a>
     </p>
@@ -78,7 +82,26 @@
       handleLogin(new Event('submit'));
     }
 
-    // Auto-apply dark mode if saved
+    function addTestDrivers() {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const existingUsernames = users.map(u => u.username.toLowerCase());
+
+      const newUsers = [
+        { username: "Sean", password: "1", role: "driver" },
+        { username: "Skyler", password: "1", role: "driver" }
+      ];
+
+      newUsers.forEach(user => {
+        if (!existingUsernames.includes(user.username.toLowerCase())) {
+          users.push(user);
+        }
+      });
+
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("Test drivers added successfully!");
+    }
+
+    // Apply dark mode if saved
     if (localStorage.getItem("theme") === "dark") {
       document.documentElement.classList.add("dark-mode");
     }

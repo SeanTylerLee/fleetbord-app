@@ -2,146 +2,190 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Safety</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      background: var(--bg, #fff);
-      color: var(--text, #000);
-    }
-
-    .ios-header-image img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .container {
-      padding: 1rem;
-    }
-
-    .message-box, .ack-box {
-      background: var(--card, #f9f9f9);
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    }
-
-    input, textarea, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-
-    button {
-      background-color: #007aff;
-      color: white;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .ack-button {
-      background: #28a745;
-    }
-
-    .acknowledged {
-      color: green;
-      font-weight: bold;
-    }
-
-    .admin-section {
-      background: #eef;
-      padding: 1rem;
-      margin-bottom: 2rem;
-      border-radius: 12px;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    .container { padding: 1rem; }
+    header img { width: 100%; display: block; }
+    .message-box { background: var(--card); padding: 1rem; margin-bottom: 1rem; border-radius: 10px; }
+    .acknowledged { color: green; font-weight: bold; }
+    canvas { border: 1px solid #ccc; width: 100%; height: 120px; margin-top: 10px; border-radius: 10px; }
+    .quiz-box { margin-top: 10px; padding: 10px; background: #eef; border-radius: 10px; }
+    .admin-box { background: #eef; padding: 10px; border-radius: 10px; margin-bottom: 20px; }
+    input, textarea, select, button { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ccc; border-radius: 8px; }
+    button { background: #007aff; color: white; font-weight: bold; border: none; }
+    .alert-banner { background: #ffeeba; padding: 10px; margin-bottom: 10px; border-left: 4px solid orange; border-radius: 8px; }
+    .reply-link { color: #007aff; font-size: 14px; margin-top: 10px; display: inline-block; }
   </style>
 </head>
 <body>
-  <div class="ios-header-image">
-    <img src="header.jpg" alt="Header" />
-  </div>
-
+  <header><img src="header.jpg" alt="Header" /></header>
   <div class="container">
-    <h2>Safety Messages</h2>
+    <div id="alertBanner" class="alert-banner" style="display:none;"></div>
 
-    <div id="adminTools" class="admin-section" style="display:none;">
+    <div id="adminTools" class="admin-box" style="display:none;">
       <h3>Post New Safety Message</h3>
-      <textarea id="safetyInput" placeholder="Enter safety topic or meeting note here..."></textarea>
-      <button onclick="postSafetyMessage()">Post Message</button>
+      <textarea id="safetyText" placeholder="Enter safety message"></textarea>
+      <input type="text" id="quizQuestion" placeholder="Confirmation question (optional)" />
+      <input type="text" id="quizAnswer" placeholder="Correct answer" />
+      <input type="date" id="meetingDate" />
+      <label><input type="checkbox" id="recurringCheck" /> Recurring message</label>
+      <input type="file" id="safetyAttachment" accept="image/*,.pdf" />
+      <button onclick="postSafety()">Post</button>
     </div>
 
     <div id="messageList"></div>
+
+    <h3>Report Safety Concern</h3>
+    <textarea id="concernText" placeholder="Report your safety concern..."></textarea>
+    <button onclick="submitConcern()">Submit Concern</button>
+
+    <h3>My Acknowledged Messages</h3>
+    <ul id="myHistory"></ul>
   </div>
 
+  <canvas id="signaturePad"></canvas>
+  <button id="clearSig" onclick="clearSig()" style="display:none;">Clear Signature</button>
+
   <script>
-    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-    const isAdmin = currentUser.role === "admin";
-
-    const safetyKey = "safetyMessages";
+    const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const isAdmin = user.role === "admin" || user.role === "office";
+    const messages = JSON.parse(localStorage.getItem("safetyMessages") || "[]");
+    const acknowledged = JSON.parse(localStorage.getItem("safetyAck_" + user.username) || "[]");
     const messageList = document.getElementById("messageList");
-    const adminTools = document.getElementById("adminTools");
+    const sigCanvas = document.getElementById("signaturePad");
+    const sigPad = new SignaturePad(sigCanvas);
+    document.getElementById("clearSig").style.display = "none";
 
-    if (isAdmin) {
-      adminTools.style.display = "block";
-    }
+    if (isAdmin) document.getElementById("adminTools").style.display = "block";
 
-    function postSafetyMessage() {
-      const text = document.getElementById("safetyInput").value.trim();
-      if (!text) return alert("Enter a message first.");
-      const messages = JSON.parse(localStorage.getItem(safetyKey) || "[]");
-      messages.push({ id: Date.now(), text, acks: [] });
-      localStorage.setItem(safetyKey, JSON.stringify(messages));
-      document.getElementById("safetyInput").value = "";
-      renderMessages();
-    }
+    function postSafety() {
+      const text = document.getElementById("safetyText").value.trim();
+      const quizQ = document.getElementById("quizQuestion").value.trim();
+      const quizA = document.getElementById("quizAnswer").value.trim();
+      const date = document.getElementById("meetingDate").value;
+      const recurring = document.getElementById("recurringCheck").checked;
+      const fileInput = document.getElementById("safetyAttachment");
 
-    function acknowledgeMessage(id) {
-      const messages = JSON.parse(localStorage.getItem(safetyKey) || "[]");
-      const msg = messages.find(m => m.id === id);
-      if (!msg.acks.includes(currentUser.username)) {
-        msg.acks.push(currentUser.username);
-        localStorage.setItem(safetyKey, JSON.stringify(messages));
-        renderMessages();
+      if (!text) return alert("Enter message");
+
+      const newMsg = {
+        id: Date.now(),
+        text,
+        quizQ,
+        quizA,
+        date,
+        recurring,
+        attachment: "",
+        acks: []
+      };
+
+      if (fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          newMsg.attachment = reader.result;
+          messages.unshift(newMsg);
+          localStorage.setItem("safetyMessages", JSON.stringify(messages));
+          render();
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        messages.unshift(newMsg);
+        localStorage.setItem("safetyMessages", JSON.stringify(messages));
+        render();
       }
+
+      document.getElementById("safetyText").value = "";
     }
 
-    function renderMessages() {
-      const messages = JSON.parse(localStorage.getItem(safetyKey) || "[]");
+    function acknowledge(id) {
+      const quizInput = document.getElementById(`quiz-${id}`);
+      const answer = quizInput ? quizInput.value.trim() : "";
+      const msg = messages.find(m => m.id === id);
+      if (msg.quizQ && answer.toLowerCase() !== msg.quizA.toLowerCase()) {
+        return alert("Incorrect answer");
+      }
+
+      if (sigPad.isEmpty()) {
+        return alert("Please sign before acknowledging");
+      }
+
+      msg.acks.push({ user: user.username, sig: sigPad.toDataURL(), time: Date.now() });
+      acknowledged.push(id);
+      localStorage.setItem("safetyMessages", JSON.stringify(messages));
+      localStorage.setItem("safetyAck_" + user.username, JSON.stringify(acknowledged));
+      render();
+    }
+
+    function render() {
       messageList.innerHTML = "";
+      document.getElementById("alertBanner").style.display = messages.some(m => !acknowledged.includes(m.id)) ? "block" : "none";
+      document.getElementById("alertBanner").textContent = "⚠️ You have unread safety messages.";
 
       messages.forEach(msg => {
         const div = document.createElement("div");
         div.className = "message-box";
-        div.innerHTML = `<p>${msg.text}</p>`;
+        div.innerHTML = `<strong>${msg.date || "No date"}</strong><br><p>${msg.text}</p>`;
 
-        const alreadyAcked = msg.acks.includes(currentUser.username);
-
-        if (isAdmin) {
-          div.innerHTML += `<div class="ack-box"><strong>Acknowledged by:</strong><br>${msg.acks.join(", ") || "No one yet"}</div>`;
-        } else {
-          if (alreadyAcked) {
-            div.innerHTML += `<p class="acknowledged">✅ You acknowledged this message.</p>`;
+        if (msg.attachment) {
+          if (msg.attachment.startsWith("data:application/pdf")) {
+            div.innerHTML += `<a href="${msg.attachment}" target="_blank">📄 View PDF</a><br>`;
           } else {
-            div.innerHTML += `<button class="ack-button" onclick="acknowledgeMessage(${msg.id})">Acknowledge</button>`;
+            div.innerHTML += `<img src="${msg.attachment}" style="max-width:100%; border-radius:10px;"/><br>`;
           }
+        }
+
+        if (msg.quizQ) {
+          div.innerHTML += `<div class="quiz-box">
+            <strong>Quiz:</strong> ${msg.quizQ}<br>
+            <input type="text" id="quiz-${msg.id}" placeholder="Answer required" />
+          </div>`;
+        }
+
+        if (acknowledged.includes(msg.id)) {
+          div.innerHTML += `<p class="acknowledged">✅ You acknowledged this message.</p>`;
+        } else {
+          div.innerHTML += `<button onclick="acknowledge(${msg.id})">Acknowledge with Signature</button>`;
+          document.getElementById("clearSig").style.display = "inline-block";
+        }
+
+        if (isAdmin && msg.acks.length > 0) {
+          div.innerHTML += `<p><strong>Who acknowledged:</strong><br>${msg.acks.map(a => a.user).join(", ")}</p>`;
         }
 
         messageList.appendChild(div);
       });
+
+      // history list
+      const history = document.getElementById("myHistory");
+      history.innerHTML = "";
+      messages.forEach(m => {
+        if (acknowledged.includes(m.id)) {
+          const li = document.createElement("li");
+          li.textContent = `${m.date || ""} - ${m.text.slice(0, 40)}...`;
+          history.appendChild(li);
+        }
+      });
     }
 
-    renderMessages();
+    function clearSig() {
+      sigPad.clear();
+    }
+
+    function submitConcern() {
+      const concern = document.getElementById("concernText").value.trim();
+      if (!concern) return alert("Enter your concern.");
+      const log = JSON.parse(localStorage.getItem("safetyReports") || "[]");
+      log.push({ user: user.username, concern, date: new Date().toLocaleString() });
+      localStorage.setItem("safetyReports", JSON.stringify(log));
+      alert("Submitted.");
+      document.getElementById("concernText").value = "";
+    }
+
+    render();
   </script>
 </body>
 </html>

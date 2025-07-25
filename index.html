@@ -22,40 +22,71 @@
   </script>
 </head>
 <body>
-  <header class="ios-header-image">
-    <img src="header.jpg" alt="Monster" />
-  </header>
-
-  <div class="ios-list">
-  <a class="ios-item" href="rec.html">Driver Recources</a>
-    <a class="ios-item" href="page1.html">Loads</a>
-    <a class="ios-item" href="dispatch.html">Dispatch</a>
-    <a class="ios-item" href="page5.html">Tickets</a>
-    <a class="ios-item" href="page7.html">Messaging</a>
-    <a class="ios-item" href="settings.html">Settings</a>
-    <a class="ios-item" href="admin.html">User Manager (Admin)</a>
+<noscript>
+  <div style="text-align:center; color:red; padding:20px;">
+    ⚠️ JavaScript is required to use this app.
   </div>
+</noscript>
 
-  <script>
-    // Dark mode toggle support
-    const userTheme = localStorage.getItem('theme');
-    if (userTheme === 'dark') {
-      document.documentElement.classList.add('dark-mode');
-    }
+<header class="ios-header-image">
+  <img src="header.jpg" alt="Monster" />
+</header>
 
-    // Auto-refresh when new code is deployed
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js').then(reg => {
-        reg.onupdatefound = () => {
-          const newWorker = reg.installing;
-          newWorker.onstatechange = () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              window.location.reload();
-            }
-          };
+<div style="text-align:center; font-size:14px; color:gray; padding:5px;">
+  Logged in as: <strong id="currentUserInfo">...</strong>
+</div>
+
+<div class="ios-list">
+  <a class="ios-item" href="rec.html">Driver Recources</a>
+  <a class="ios-item" href="page7.html">Messaging</a>
+  <a class="ios-item" href="settings.html">Settings</a>
+  <a class="ios-item" href="admin.html">User Manager (Admin)</a>
+  <a class="ios-item" href="#" onclick="logout()">Logout</a>
+</div>
+
+<div style="text-align:center; margin:20px 0;">
+  <label style="font-size:14px;">
+    <input type="checkbox" id="darkToggle" />
+    Dark Mode
+  </label>
+</div>
+
+<script>
+  // Display username
+  const currentUserDisplay = document.getElementById("currentUserInfo");
+  if (currentUserDisplay && user?.username) {
+    currentUserDisplay.textContent = `${user.username} (${user.role})`;
+  }
+
+  // Dark mode toggle
+  const toggle = document.getElementById('darkToggle');
+  toggle.checked = localStorage.getItem('theme') === 'dark';
+  document.documentElement.classList.toggle('dark-mode', toggle.checked);
+  toggle.addEventListener('change', () => {
+    document.documentElement.classList.toggle('dark-mode', toggle.checked);
+    localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
+  });
+
+  // Logout
+  function logout() {
+    localStorage.removeItem("currentUser");
+    sessionStorage.removeItem("currentUser");
+    window.location.href = "login.html";
+  }
+
+  // Service worker auto-refresh
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js').then(reg => {
+      reg.onupdatefound = () => {
+        const newWorker = reg.installing;
+        newWorker.onstatechange = () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            window.location.reload();
+          }
         };
-      });
-    }
-  </script>
+      };
+    });
+  }
+</script>
 </body>
 </html>

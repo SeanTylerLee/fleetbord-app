@@ -8,10 +8,12 @@ body {
   overscroll-behavior: none; /* Prevent pull to refresh */
 }
 
-/* Header image at the top of the page */
 .header-image {
-  width: 100%;
+  width: 100vw;
+  height: 150px;
+  object-fit: cover; /* fills box, cropping if needed */
   display: block;
+
 }
 
 /* Container for all main page content */

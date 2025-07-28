@@ -1,26 +1,27 @@
 /* Global base styles to simulate an iOS app */
 body {
   margin: 0;
+  padding: 0;
   background-color: #000; /* Dark mode */
   color: white;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow-x: hidden;       /* Prevent side scrolling */
-  overscroll-behavior: none; /* Prevent pull to refresh */
+  overflow-x: hidden;          /* Prevent side scrolling */
+  overscroll-behavior: none;   /* Prevent pull to refresh */
+  -webkit-touch-callout: none; /* Disable touch callout */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlights */
 }
 
-/* Ensures header image fills the width and keeps a clean height */
+/* Ensures header image fills the width and stays clean */
 .header-image {
-  width: 100vw;               /* Full viewport width */
-  height: auto;               /* Let the height scale proportionally */
-  max-height: 150px;          /* Optional: limit height to avoid taking over the screen */
-  object-fit: cover;          /* Crop if needed but don't distort */
-  display: block;             /* Remove unwanted spacing */
+  width: 100vw;            /* Full viewport width */
+  height: 120px;           /* Fixed height for uniform look */
+  object-fit: cover;       /* Crop and scale properly */
+  display: block;
   margin: 0;
   padding: 0;
-
 }
 
-/* Container for all main page content */
+/* Main container for the page */
 .container {
   padding: 1rem;
 }
@@ -32,7 +33,7 @@ body {
   margin-bottom: 1rem;
 }
 
-/* Section that contains the page links */
+/* Section with navigation buttons */
 .menu-section {
   background: #1c1c1e;
   border-radius: 12px;
@@ -40,7 +41,7 @@ body {
   margin-bottom: 2rem;
 }
 
-/* Individual clickable menu items */
+/* Each page navigation item */
 .menu-item {
   display: block;
   padding: 1rem;
@@ -50,17 +51,17 @@ body {
   transition: background 0.3s ease;
 }
 
-/* Remove bottom border on last item */
+/* Last item has no border */
 .menu-item:last-child {
   border-bottom: none;
 }
 
-/* Highlight when tapped */
+/* Touch highlight when tapped */
 .menu-item:active {
   background: #2c2c2e;
 }
 
-/* Settings button/link area at the bottom */
+/* Settings link at bottom of page */
 .bottom-link {
   text-align: center;
   margin-top: 3rem;
@@ -69,12 +70,13 @@ body {
 .settings-link {
   font-size: 1rem;
   text-decoration: none;
-  color: #0a84ff; /* iOS blue */
+  color: #0a84ff; /* iOS-style blue */
 }
 
-/* Prevent user from zooming or dragging */
+/* Prevent zoom and highlight behavior globally */
 * {
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-text-size-adjust: 100%;
 }

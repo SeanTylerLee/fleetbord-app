@@ -12,11 +12,15 @@ body {
 }
 
 /* Ensures header image fills the width and stays clean */
+/* Ensures header image fills the width and looks great on iPhone */
 .header-image {
-  width: 100vw;
-  height: 120px;
-  object-fit: cover;
+  width: 100vw;               /* Full screen width */
+  max-height: 80px;           /* Keeps it short and sleek */
+  height: auto;               /* Maintain aspect ratio */
+  object-fit: contain;        /* Scale the image without cropping */
   display: block;
+  margin: 0;
+  padding: 0;
 }
 
 /* Main container for the page */

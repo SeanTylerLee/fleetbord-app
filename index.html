@@ -2,52 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" 
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>My app</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sean Lee</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#000000" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <link rel="apple-touch-icon" href="icon.jpg" />
-  <script>
-    // Auto redirect if not logged in (customize this logic if needed)
-    const user = localStorage.getItem('currentUser');
-    if (!user) window.location.href = 'login.html';
-  </script>
 </head>
 <body>
   <header>
-    <img src="header.jpg" alt="Header" style="width:100%; display:block;" />
+    <img src="header.jpg" alt="Header" style="width:100%; display:block;">
   </header>
 
-  <main class="container">
-    <h1 style="text-align:center;">Home</h1>
-    <ul class="menu">
-      <li><a href="page1.html">Page 1</a></li>
-      <li><a href="page2.html">Page 2</a></li>
-      <li><a href="page3.html">Page 3</a></li>
-      <li><a href="page4.html">Page 4</a></li>
-      <li><a href="page5.html">Page 5</a></li>
-      <li><a href="settings.html">⚙️ Settings</a></li>
-    </ul>
-  </main>
+  <div class="container">
+    <h1 class="title">Dashboard</h1>
 
-  <script>
-    // Check for updated service worker and refresh
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').then(reg => {
-        reg.onupdatefound = () => {
-          const installing = reg.installing;
-          installing.onstatechange = () => {
-            if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-              window.location.reload();
-            }
-          };
-        };
-      });
-    }
-  </script>
+    <!-- User Info Box -->
+    <div class="card">
+      <div class="avatar-circle">SL</div>
+      <div class="user-info">
+        <div class="user-name">Sean Lee</div>
+        <div class="user-subtext">Admin - Fleet Management</div>
+      </div>
+    </div>
+
+    <!-- First Section -->
+    <div class="section">
+      <a class="section-link" href="page1.html">Loads</a>
+      <a class="section-link" href="page2.html">Tickets</a>
+      <a class="section-link" href="page3.html">Reimbursements</a>
+    </div>
+
+    <!-- Second Section -->
+    <div class="section">
+      <a class="section-link" href="page4.html">Dispatch</a>
+      <a class="section-link" href="page5.html">Repairs</a>
+      <a class="section-link" href="page6.html">Messages</a>
+    </div>
+
+    <!-- Final Section -->
+    <div class="section">
+      <a class="section-link" href="settings.html">Settings</a>
+      <a class="section-link" href="safety.html">Safety</a>
+      <a class="section-link" href="schedule.html">Schedule</a>
+    </div>
+  </div>
 </body>
 </html>

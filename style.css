@@ -13,12 +13,10 @@ body {
 
 /* Ensures header image fills the width and stays clean */
 .header-image {
-  width: 100vw;            /* Full viewport width */
-  height: 120px;           /* Fixed height for uniform look */
-  object-fit: cover;       /* Crop and scale properly */
+  width: 100vw;
+  height: 120px;
+  object-fit: cover;
   display: block;
-  margin: 0;
-  padding: 0;
 }
 
 /* Main container for the page */

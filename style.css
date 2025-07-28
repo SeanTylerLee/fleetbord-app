@@ -8,11 +8,15 @@ body {
   overscroll-behavior: none; /* Prevent pull to refresh */
 }
 
+/* Ensures header image fills the width and keeps a clean height */
 .header-image {
-  width: 100vw;
-  height: 150px;
-  object-fit: cover; /* fills box, cropping if needed */
-  display: block;
+  width: 100vw;               /* Full viewport width */
+  height: auto;               /* Let the height scale proportionally */
+  max-height: 150px;          /* Optional: limit height to avoid taking over the screen */
+  object-fit: cover;          /* Crop if needed but don't distort */
+  display: block;             /* Remove unwanted spacing */
+  margin: 0;
+  padding: 0;
 
 }
 

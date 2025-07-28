@@ -1,75 +1,74 @@
+/* Global base styles to simulate an iOS app */
 body {
   margin: 0;
+  background-color: #000; /* Dark mode */
+  color: white;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #000;
-  color: white;
+  overflow-x: hidden;       /* Prevent side scrolling */
+  overscroll-behavior: none; /* Prevent pull to refresh */
 }
 
-.title {
-  padding: 1rem;
-  font-size: 1.6rem;
-  font-weight: bold;
+/* Header image at the top of the page */
+.header-image {
+  width: 100%;
+  display: block;
 }
 
+/* Container for all main page content */
 .container {
-  padding: 0 1rem;
-}
-
-.card {
-  display: flex;
-  align-items: center;
-  background: #1c1c1e;
   padding: 1rem;
+}
+
+/* Page title styling */
+.page-title {
+  font-size: 1.5rem;
+  font-weight: bold;
   margin-bottom: 1rem;
-  border-radius: 12px;
 }
 
-.avatar-circle {
-  width: 50px;
-  height: 50px;
-  background: #3a3a3c;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-.user-info {
-  margin-left: 1rem;
-}
-
-.user-name {
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.user-subtext {
-  color: #aaa;
-  font-size: 0.9rem;
-}
-
-.section {
+/* Section that contains the page links */
+.menu-section {
   background: #1c1c1e;
   border-radius: 12px;
-  margin-bottom: 1rem;
   overflow: hidden;
+  margin-bottom: 2rem;
 }
 
-.section-link {
+/* Individual clickable menu items */
+.menu-item {
   display: block;
   padding: 1rem;
-  border-bottom: 1px solid #2c2c2e;
-  color: white;
   text-decoration: none;
+  color: white;
+  border-bottom: 1px solid #2c2c2e;
+  transition: background 0.3s ease;
 }
 
-.section-link:last-child {
+/* Remove bottom border on last item */
+.menu-item:last-child {
   border-bottom: none;
 }
 
-.section-link:active {
+/* Highlight when tapped */
+.menu-item:active {
   background: #2c2c2e;
+}
+
+/* Settings button/link area at the bottom */
+.bottom-link {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.settings-link {
+  font-size: 1rem;
+  text-decoration: none;
+  color: #0a84ff; /* iOS blue */
+}
+
+/* Prevent user from zooming or dragging */
+* {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }

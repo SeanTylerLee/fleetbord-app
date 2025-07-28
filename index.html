@@ -1,51 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Meta settings to make it behave like a native iOS app -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Sean Lee</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="manifest" href="manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Page title -->
+  <title>Sean Lee PWA</title>
+
+  <!-- Optional iOS splash icon -->
+  <link rel="apple-touch-icon" href="icon.jpg">
 </head>
+
 <body>
+  <!-- Header image at top of page (your logo) -->
   <header>
-    <img src="header.jpg" alt="Header" style="width:100%; display:block;">
+    <img src="images/header.jpg" alt="Sean Lee" class="header-image">
   </header>
 
-  <div class="container">
-    <h1 class="title">Dashboard</h1>
+  <!-- Main content container -->
+  <main class="container">
+    <!-- Title / Dashboard label -->
+    <h1 class="page-title">Main Menu</h1>
 
-    <!-- User Info Box -->
-    <div class="card">
-      <div class="avatar-circle">SL</div>
-      <div class="user-info">
-        <div class="user-name">Sean Lee</div>
-        <div class="user-subtext">Admin - Fleet Management</div>
-      </div>
+    <!-- Section for links to other pages -->
+    <div class="menu-section">
+      <!-- Each link represents a separate feature/page in the PWA -->
+      <a href="page1.html" class="menu-item">Page 1</a>
+      <a href="page2.html" class="menu-item">Page 2</a>
+      <a href="page3.html" class="menu-item">Page 3</a>
+      <a href="page4.html" class="menu-item">Page 4</a>
+      <a href="page5.html" class="menu-item">Page 5</a>
     </div>
 
-    <!-- First Section -->
-    <div class="section">
-      <a class="section-link" href="page1.html">Loads</a>
-      <a class="section-link" href="page2.html">Tickets</a>
-      <a class="section-link" href="page3.html">Reimbursements</a>
+    <!-- Settings link placed at the bottom -->
+    <div class="bottom-link">
+      <a href="settings.html" class="settings-link">⚙️ Settings</a>
     </div>
-
-    <!-- Second Section -->
-    <div class="section">
-      <a class="section-link" href="page4.html">Dispatch</a>
-      <a class="section-link" href="page5.html">Repairs</a>
-      <a class="section-link" href="page6.html">Messages</a>
-    </div>
-
-    <!-- Final Section -->
-    <div class="section">
-      <a class="section-link" href="settings.html">Settings</a>
-      <a class="section-link" href="safety.html">Safety</a>
-      <a class="section-link" href="schedule.html">Schedule</a>
-    </div>
-  </div>
+  </main>
 </body>
 </html>

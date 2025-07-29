@@ -1,46 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Meta settings to make it behave like a native iOS app -->
+<link rel="manifest" href="manifest.json" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <link rel="manifest" href="manifest.json" />
+  <title>My App</title>
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- Page title -->
-  <title>Sean Lee </title>
-
-  <!-- Optional iOS splash icon -->
-  <link rel="apple-touch-icon" href="icon.jpg">
 </head>
 
 <body>
-  <!-- Header image at top of page (your logo) -->
+
+  <!-- Header Image -->
   <header>
-    <img src="images/header.jpg" alt="Sean Lee" class="header-image">
+    <img src="images/header.jpg" alt="App Header" class="header-img">
   </header>
 
-  <!-- Main content container -->
+  <!-- Main content -->
   <main class="container">
-    <!-- Title / Dashboard label -->
-    <h1 class="page-title">Main Menu </h1>
-
-    <!-- Section for links to other pages -->
-    <div class="menu-section">
-      <!-- Each link represents a separate feature/page in the PWA -->
-      <a href="page1.html" class="menu-item">Page 1</a>
-      <a href="page2.html" class="menu-item">Page 2</a>
-      <a href="page3.html" class="menu-item">Page 3</a>
-      <a href="page4.html" class="menu-item">Page 4</a>
-      <a href="page5.html" class="menu-item">Page 5</a>
-    </div>
-
-    <!-- Settings link placed at the bottom -->
-    <div class="bottom-link">
-      <a href="settings.html" class="settings-link">⚙️ Settings</a>
-    </div>
+    <h1>Welcome to the App</h1>
+    <p>This is the home screen of your PWA. Use the navigation bar below to move through the app.</p>
   </main>
+
+  <!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <a href="javascript:history.back()">
+    <img src="images/back.jpg" alt="Back" class="nav-icon">
+  </a>
+</nav>
+    <a href="index.html">
+      <img src="images/home.jpg" alt="Back" class="nav-icon">
+    </a>
+    <a href="settings.html">
+      <img src="images/settings.jpg" alt="Settings" class="nav-icon">
+    </a>
+  </nav>
+
 </body>
 </html>

@@ -1,6 +1,6 @@
 {
-  "name": "Sean Lee",
-  "short_name": "SeanLee",
+  "name": "Monster PWA",
+  "short_name": "Monster",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#000000",

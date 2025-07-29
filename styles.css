@@ -1,84 +1,36 @@
-/* Global base styles to simulate an iOS app */
-body {
+lbody {
   margin: 0;
   padding: 0;
-  background-color: #2c2c2e; /* Dark mode */
-  color: white;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow-x: hidden;          /* Prevent side scrolling */
-  overscroll-behavior: none;   /* Prevent pull to refresh */
-  -webkit-touch-callout: none; /* Disable touch callout */
-  -webkit-tap-highlight-color: transparent; /* Remove tap highlights */
-}
-
-/* Ensures header image fills the width and stays clean */
-/* Ensures header image fills the width and looks great on iPhone */
-.header-image {
-  width: 100vw;               /* Full screen width */
-  max-height: 80px;           /* Keeps it short and sleek */
-  height: auto;               /* Maintain aspect ratio */
-  object-fit: contain;        /* Scale the image without cropping */
-  display: block;
-  margin: 0;
-  padding: 0;
-}
-
-/* Main container for the page */
-.container {
-  padding: 1rem;
-}
-
-/* Page title styling */
-.page-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-}
-
-/* Section with navigation buttons */
-.menu-section {
-  background: #1c1c1e;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 2rem;
-}
-
-/* Each page navigation item */
-.menu-item {
-  display: block;
-  padding: 1rem;
-  text-decoration: none;
+  background-color: #000; /* Match your icon background */
   color: white;
-  border-bottom: 1px solid #2c2c2e;
-  transition: background 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
-/* Last item has no border */
-.menu-item:last-child {
-  border-bottom: none;
+.header-img {
+  width: 100%;
+  display: block;
 }
 
-/* Touch highlight when tapped */
-.menu-item:active {
-  background: #2c2c2e;
-}
-
-/* Settings link at bottom of page */
-.bottom-link {
+.container {
+  flex: 1;
+  padding: 20px;
+  box-sizing: border-box;
   text-align: center;
-  margin-top: 3rem;
 }
 
-.settings-link {
-  font-size: 1rem;
-  text-decoration: none;
-  color: #0a84ff; /* iOS-style blue */
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  background-color: #000; /* Match your icon background */
+  padding: 12px 0;
+  border-top: 1px solid #333;
 }
 
-/* Prevent zoom and highlight behavior globally */
-* {
-  touch-action: manipulation;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-text-size-adjust: 100%;
+.nav-icon {
+  width: 32px;
+  height: 32px;
+  filter: invert(100%); /* Ensures the white icons stay visible on black */
 }

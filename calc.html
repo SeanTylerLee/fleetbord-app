@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <title>Loan Calculator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- Header Image -->
+  <header>
+    <img src="images/Header.PNG" alt="App Header" class="header-img">
+  </header>
+
+  <!-- Main content -->
+  <main class="container">
+    <h2>Loan Calculator</h2>
+    <form id="loanForm">
+      <label for="amount">Loan Amount:</label>
+      <input type="number" id="amount" placeholder="Enter loan amount" required />
+
+      <label for="rate">Annual Interest Rate (%):</label>
+      <input type="number" step="0.01" id="rate" placeholder="e.g. 6.5" required />
+
+      <label for="years">Loan Term (Years):</label>
+      <input type="number" id="years" placeholder="Enter number of years" required />
+
+      <button type="submit" class="btn">Calculate</button>
+    </form>
+
+    <div id="results" style="margin-top: 20px;">
+      <p><strong>Monthly Payment:</strong> <span id="monthlyPayment">-</span></p>
+      <p><strong>Total Payment:</strong> <span id="totalPayment">-</span></p>
+      <p><strong>Total Interest:</strong> <span id="totalInterest">-</span></p>
+    </div>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="index.html">
+      <img src="images/home.jpg" alt="Home" class="nav-icon">
+    </a>
+    <a href="settings.html">
+      <img src="images/settings.jpg" alt="Settings" class="nav-icon">
+    </a>
+  </nav>
+
+  <!-- Loan Calculator Script -->
+  <script>
+    document.getElementById('loanForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const amount = parseFloat(document.getElementById('amount').value);
+      const interest = parseFloat(document.getElementById('rate').value) / 100 / 12;
+      const payments = parseInt(document.getElementById('years').value) * 12;
+
+      const x = Math.pow(1 + interest, payments);
+      const monthly = (amount * x * interest) / (x - 1);
+
+      if (isFinite(monthly)) {
+        document.getElementById('monthlyPayment').textContent = '$' + monthly.toFixed(2);
+        document.getElementById('totalPayment').textContent = '$' + (monthly * payments).toFixed(2);
+        document.getElementById('totalInterest').textContent = '$' + ((monthly * payments) - amount).toFixed(2);
+      } else {
+        document.getElementById('monthlyPayment').textContent = 'Invalid input';
+        document.getElementById('totalPayment').textContent = '-';
+        document.getElementById('totalInterest').textContent = '-';
+      }
+    });
+  </script>
+
+</body>
+</html>

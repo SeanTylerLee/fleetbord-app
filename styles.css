@@ -126,3 +126,36 @@ main {
 .toggle-switch input:checked + .slider:before {
   transform: translateX(20px);
 }
+
+
+/* calc style */
+
+
+input, label, button {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 12px auto;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+input {
+  padding: 12px;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+}
+
+button.btn {
+  padding: 12px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button.btn:hover {
+  background-color: #005ecb;
+}

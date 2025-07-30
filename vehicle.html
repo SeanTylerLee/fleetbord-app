@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <title>Vehicles</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- Header Image -->
+  <header>
+    <img src="images/Header.PNG" alt="App Header" class="header-img">
+  </header>
+
+  <!-- Main content -->
+  <main class="container">
+    <h2>Add Vehicle</h2>
+    <form id="vehicleForm">
+      <input type="text" id="vname" placeholder="Vehicle Name" required />
+      <input type="text" id="oilFilter" placeholder="Oil Filter" required />
+      <input type="text" id="oilType" placeholder="Oil Type" required />
+      <input type="text" id="oilCapacity" placeholder="Oil Capacity" required />
+      <input type="text" id="airFilter" placeholder="Air Filter" required />
+      <button type="submit" class="btn">Add Vehicle</button>
+    </form>
+
+    <hr>
+
+    <div>
+      <label for="vehicleSelect"><strong>Select Vehicle:</strong></label>
+      <select id="vehicleSelect" style="width: 100%; padding: 10px; margin-top: 10px;"></select>
+    </div>
+
+    <div id="vehicleDetails" style="margin-top: 20px;"></div>
+
+    <div id="oilLogSection" style="display: none;">
+      <h3>Oil Change Log</h3>
+      <form id="oilChangeForm">
+        <input type="date" id="oilDate" required />
+        <input type="number" id="oilMileage" placeholder="Mileage" required />
+        <button type="submit" class="btn">Add Oil Change</button>
+      </form>
+      <ul id="oilChangeList" style="margin-top: 10px;"></ul>
+    </div>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="index.html">
+      <img src="images/home.jpg" alt="Home" class="nav-icon">
+    </a>
+    <a href="settings.html">
+      <img src="images/settings.jpg" alt="Settings" class="nav-icon">
+    </a>
+  </nav>
+
+  <!-- Script -->
+  <script>
+    const vehicleForm = document.getElementById('vehicleForm');
+    const oilChangeForm = document.getElementById('oilChangeForm');
+    const vehicleSelect = document.getElementById('vehicleSelect');
+    const vehicleDetails = document.getElementById('vehicleDetails');
+    const oilChangeList = document.getElementById('oilChangeList');
+    const oilLogSection = document.getElementById('oilLogSection');
+
+    const getVehicles = () => JSON.parse(localStorage.getItem('vehicles') || '{}');
+    const saveVehicles = (data) => localStorage.setItem('vehicles', JSON.stringify(data));
+
+    // Add new vehicle
+    vehicleForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = Date.now().toString();
+      const vehicles = getVehicles();
+      vehicles[id] = {
+        id,
+        name: document.getElementById('vname').value,
+        oilFilter: document.getElementById('oilFilter').value,
+        oilType: document.getElementById('oilType').value,
+        oilCapacity: document.getElementById('oilCapacity').value,
+        airFilter: document.getElementById('airFilter').value,
+        oilLogs: []
+      };
+      saveVehicles(vehicles);
+      populateVehicleSelect();
+      vehicleForm.reset();
+      alert("Vehicle added!");
+    });
+
+    // Populate select dropdown
+    function populateVehicleSelect() {
+      const vehicles = getVehicles();
+      vehicleSelect.innerHTML = '<option disabled selected>Select Vehicle</option>';
+      Object.values(vehicles).forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.id;
+        opt.textContent = v.name;
+        vehicleSelect.appendChild(opt);
+      });
+    }
+
+    // Handle vehicle selection
+    vehicleSelect.addEventListener('change', function () {
+      const vehicles = getVehicles();
+      const selected = vehicles[this.value];
+      if (selected) {
+        displayVehicle(selected);
+        oilLogSection.style.display = 'block';
+      }
+    });
+
+    // Add oil change log
+    oilChangeForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const vehicleId = vehicleSelect.value;
+      const vehicles = getVehicles();
+      if (!vehicles[vehicleId]) return;
+      vehicles[vehicleId].oilLogs.push({
+        date: document.getElementById('oilDate').value,
+        mileage: document.getElementById('oilMileage').value
+      });
+      saveVehicles(vehicles);
+      displayLogs(vehicles[vehicleId].oilLogs);
+      oilChangeForm.reset();
+    });
+
+    // Display vehicle info
+    function displayVehicle(v) {
+      vehicleDetails.innerHTML = `
+        <h3>${v.name}</h3>
+        <p><strong>Oil Filter:</strong> ${v.oilFilter}</p>
+        <p><strong>Oil Type:</strong> ${v.oilType}</p>
+        <p><strong>Oil Capacity:</strong> ${v.oilCapacity}</p>
+        <p><strong>Air Filter:</strong> ${v.airFilter}</p>
+      `;
+      displayLogs(v.oilLogs);
+    }
+
+    // Display oil change logs
+    function displayLogs(logs) {
+      oilChangeList.innerHTML = '';
+      logs.forEach(log => {
+        const li = document.createElement('li');
+        li.textContent = `Date: ${log.date} -- Mileage: ${log.mileage}`;
+        oilChangeList.appendChild(li);
+      });
+    }
+
+    // On page load
+    window.onload = populateVehicleSelect;
+  </script>
+
+</body>
+</html>

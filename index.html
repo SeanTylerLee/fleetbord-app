@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Monster</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.jpg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Fleetbord" />
+  <style>
+    .badge {
+      background-color: red;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+<noscript>
+  <div style="text-align:center; color:red; padding:20px;">
+    ⚠️ JavaScript is required to use this app.
+  </div>
+</noscript>
+
+<header class="ios-header-image">
+  <img src="header.jpg" alt="Monster" />
+</header>
+
+<!-- ✅ WELCOME CENTER MESSAGE -->
+<div id="welcomeMessage" style="margin: 15px; padding: 12px; border-left: 4px solid #007aff; background: #f1f1f1; font-size: 16px; border-radius: 8px;">
+  Loading welcome message...
+</div>
+
+<!-- ✅ Role-Based Menu Container -->
+<div class="ios-list" id="menuList"></div>
+
+<a class="ios-item" href="#" onclick="logout()">Logout</a>
+
+<script>
+  // Load current user
+  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  if (!user || !user.username) {
+    location.href = "login.html";
+  }
+
+  // Show welcome message
+  document.getElementById("welcomeMessage").textContent = localStorage.getItem("welcomeMessage") || "👋 Welcome to Monster Fleet App!";
+
+  // Build role-based menu
+  const menu = document.getElementById("menuList");
+  const role = user.role;
+
+  const newMessages = JSON.parse(localStorage.getItem("newMessages") || "0");
+  const newDispatches = JSON.parse(localStorage.getItem("newDispatches") || "0");
+  const badge = count => count > 0 ? `<span class="badge">${count}</span>` : "";
+
+  if (role === "mechanic") {
+    menu.innerHTML += `<a class="ios-item" href="page2.html">Reimbursements</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page6.html">Mechanical</a>`;
+    menu.innerHTML += `<a class="ios-item" href="mechanic.html">Mechanic Panel</a>`;
+    menu.innerHTML += `<a class="ios-item" href="schedule.html">Schedule</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page3.html">Forms</a>`;
+    menu.innerHTML += `<a class="ios-item" href="forum.html">Forum</a>`;
+    menu.innerHTML += `<a class="ios-item" href="safety.html">Safety ${badge(newMessages)}</a>`;
+    menu.innerHTML += `<a class="ios-item" href="settings.html">Settings</a>`;
+  } else {
+    // Regular shared menu for all other roles
+    menu.innerHTML += `<a class="ios-item" href="page4.html">Dispatch ${badge(newDispatches)}</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page1.html">Loads</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page2.html">Reimbursements</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page5.html">Tickets</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page6.html">Mechanical</a>`;
+    menu.innerHTML += `<a class="ios-item" href="schedule.html">Schedule</a>`;
+    menu.innerHTML += `<a class="ios-item" href="page3.html">Forms</a>`;
+    menu.innerHTML += `<a class="ios-item" href="forum.html">Forum</a>`;
+    menu.innerHTML += `<a class="ios-item" href="safety.html">Safety ${badge(newMessages)}</a>`;
+    menu.innerHTML += `<a class="ios-item" href="settings.html">Settings</a>`;
+  }
+
+  // Office and admin button to office.html
+  if (role === "admin" || role === "office") {
+    const officeBtn = document.createElement("button");
+    officeBtn.textContent = "📁 Go to Office View";
+    officeBtn.className = "btn";
+    officeBtn.style.margin = "10px 15px";
+    officeBtn.onclick = () => location.href = "office.html";
+    document.body.appendChild(officeBtn);
+  }
+
+  // Admin-only menu
+  if (role === "admin") {
+    menu.innerHTML += `<a class="ios-item" href="admin.html">Admin Panel</a>`;
+    menu.innerHTML += `<a class="ios-item" href="users.html">User Profiles</a>`;
+    menu.innerHTML += `<a class="ios-item" href="logs.html">Login Logs</a>`;
+  }
+
+  // PWA install redirect
+  document.addEventListener('DOMContentLoaded', () => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    if (!isStandalone && !location.href.includes("install.html")) {
+      window.location.replace("install.html");
+    }
+  });
+
+  function logout() {
+    localStorage.removeItem("currentUser");
+    window.location.href = "login.html";
+  }
+
+  // Service worker auto-reload on update
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js').then(reg => {
+      reg.onupdatefound = () => {
+        const newWorker = reg.installing;
+        newWorker.onstatechange = () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            window.location.reload();
+          }
+        };
+      };
+    });
+  }
+</script>
+</body>
+</html>

@@ -12,7 +12,7 @@ body {
 
 /* HEADER */
 header {
-  background-color: #CCCCCC;
+  background-color: #DBDBDB;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0);
 }
 
@@ -34,7 +34,7 @@ main {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  background-color: #CCCCCC; /* Light gray background */
+  background-color: #DBDBDB; /* Light gray background */
   padding: 10px 0;
   border-top: 1px solid #B0B0B0;
   position: fixed;
@@ -49,7 +49,7 @@ main {
   align-items: center;
   width: 50px;
   height: 50px;
-  background-color: #CCCCCC; /* Match background */
+  background-color: #DBDBDB; /* Match background */
   border-radius: 12px;
 }
 

@@ -1,0 +1,39 @@
+:root {
+  --bg: #f2f2f7;
+  --text: #000;
+  --primary: #007aff;
+  --card: #fff;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  padding: 1rem;
+}
+
+input, button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+}
+
+.header-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}

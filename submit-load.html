@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <link rel="stylesheet" href="styles.css" />
+  <title>Submit Load</title>
+</head>
+<body>
+  <header><img src="header.jpg" class="header-img" alt="Header"></header>
+  <main class="container">
+    <h2>Submit Load Ticket</h2>
+    <form id="loadForm">
+      <input type="date" id="date" required />
+      <input type="text" id="customer" placeholder="Customer" required />
+      <input type="text" id="pickup" placeholder="Pickup Location" required />
+      <input type="text" id="delivery" placeholder="Delivery Location" required />
+      <textarea id="notes" placeholder="Notes"></textarea>
+      <label>Upload up to 5 images:</label>
+      <input type="file" accept="image/*" multiple id="photos" />
+      <button type="submit">Submit</button>
+    </form>
+    <button onclick="logout()">Log Out</button>
+  </main>
+
+  <script>
+    const ticketKey = "submittedTickets";
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "driver") {
+      alert("Access denied");
+      window.location.href = "index.html";
+    }
+
+    function loadTickets() {
+      return JSON.parse(localStorage.getItem(ticketKey) || "[]");
+    }
+
+    function saveTickets(tickets) {
+      localStorage.setItem(ticketKey, JSON.stringify(tickets));
+    }
+
+    document.getElementById("loadForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const photos = document.getElementById("photos").files;
+      if (photos.length > 5) return alert("Only 5 images allowed.");
+
+      const ticket = {
+        driver: user.username,
+        date: document.getElementById("date").value,
+        customer: document.getElementById("customer").value,
+        pickup: document.getElementById("pickup").value,
+        delivery: document.getElementById("delivery").value,
+        notes: document.getElementById("notes").value,
+        photos: []
+      };
+
+      if (photos.length > 0) {
+        let loaded = 0;
+        Array.from(photos).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            ticket.photos.push(e.target.result);
+            loaded++;
+            if (loaded === photos.length) {
+              const all = loadTickets();
+              all.push(ticket);
+              saveTickets(all);
+              alert("Load submitted.");
+              document.getElementById("loadForm").reset();
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      } else {
+        const all = loadTickets();
+        all.push(ticket);
+        saveTickets(all);
+        alert("Load submitted.");
+        this.reset();
+      }
+    });
+
+    function logout() {
+      localStorage.removeItem("user");
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <link rel="stylesheet" href="styles.css" />
+  <title>Schedule</title>
+</head>
+<body>
+  <header><img src="header.jpg" class="header-img" alt="Header" /></header>
+  <main class="container">
+    <h2>Schedule / Time Off</h2>
+
+    <div id="driverSection" style="display:none;">
+      <form id="timeOffForm">
+        <input type="date" id="offDate" required />
+        <textarea id="reason" placeholder="Reason for time off" required></textarea>
+        <button type="submit">Request Time Off</button>
+      </form>
+      <h3>My Requests</h3>
+      <div id="myRequests"></div>
+    </div>
+
+    <div id="dispatcherSection" style="display:none;">
+      <h3>Pending Time Off Requests</h3>
+      <div id="pendingRequests"></div>
+    </div>
+
+    <button onclick="logout()">Log Out</button>
+  </main>
+
+  <script>
+    const requestKey = "timeOffRequests";
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !["driver", "dispatcher"].includes(user.role)) {
+      alert("Access denied");
+      window.location.href = "index.html";
+    }
+
+    function loadRequests() {
+      return JSON.parse(localStorage.getItem(requestKey) || "[]");
+    }
+
+    function saveRequests(reqs) {
+      localStorage.setItem(requestKey, JSON.stringify(reqs));
+    }
+
+    function renderMyRequests() {
+      const list = loadRequests().filter(r => r.user === user.username);
+      const container = document.getElementById("myRequests");
+      container.innerHTML = "";
+      list.forEach(r => {
+        container.innerHTML += `
+          <div style="border:1px solid #ccc;padding:10px;border-radius:10px;margin-bottom:10px;">
+            ${r.date} - ${r.reason}<br/>
+            Status: ${r.status}
+            ${r.status === "Pending" ? `<br/><button onclick="cancelRequest('${r.id}')">Cancel</button>` : ""}
+          </div>
+        `;
+      });
+    }
+
+    function renderPendingRequests() {
+      const list = loadRequests().filter(r => r.status === "Pending");
+      const container = document.getElementById("pendingRequests");
+      container.innerHTML = "";
+      list.forEach(r => {
+        container.innerHTML += `
+          <div style="border:1px solid #ccc;padding:10px;border-radius:10px;margin-bottom:10px;">
+            ${r.date} - ${r.reason}<br/>
+            Requested by: ${r.user}<br/>
+            <button onclick="respondRequest('${r.id}', 'Approved')">Approve</button>
+            <button onclick="respondRequest('${r.id}', 'Denied')">Deny</button>
+          </div>
+        `;
+      });
+    }
+
+    function cancelRequest(id) {
+      let list = loadRequests();
+      list = list.filter(r => r.id !== id);
+      saveRequests(list);
+      renderMyRequests();
+    }
+
+    function respondRequest(id, response) {
+      const list = loadRequests();
+      const req = list.find(r => r.id === id);
+      if (req) {
+        req.status = response;
+        saveRequests(list);
+        renderPendingRequests();
+      }
+    }
+
+    function generateID() {
+      return "id-" + Math.random().toString(36).substr(2, 9);
+    }
+
+    if (user.role === "driver") {
+      document.getElementById("driverSection").style.display = "block";
+
+      document.getElementById("timeOffForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const date = document.getElementById("offDate").value;
+        const reason = document.getElementById("reason").value;
+
+        const list = loadRequests();
+        list.push({
+          id: generateID(),
+          user: user.username,
+          date,
+          reason,
+          status: "Pending"
+        });
+
+        saveRequests(list);
+        alert("Request submitted");
+        this.reset();
+        renderMyRequests();
+      });
+
+      renderMyRequests();
+    }
+
+    if (user.role === "dispatcher") {
+      document.getElementById("dispatcherSection").style.display = "block";
+      renderPendingRequests();
+    }
+
+    function logout() {
+      localStorage.removeItem("user");
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

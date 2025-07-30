@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <link rel="stylesheet" href="styles.css" />
+  <title>Office Panel</title>
+</head>
+<body>
+  <header><img src="header.jpg" class="header-img" alt="Header"></header>
+  <main class="container">
+    <h2>Submitted Load Tickets</h2>
+    <div id="loadList"></div>
+    <button onclick="logout()">Log Out</button>
+  </main>
+
+  <script>
+    const ticketKey = "submittedTickets";
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "office") {
+      alert("Access denied");
+      window.location.href = "index.html";
+    }
+
+    function loadTickets() {
+      return JSON.parse(localStorage.getItem(ticketKey) || "[]");
+    }
+
+    function renderTickets() {
+      const tickets = loadTickets();
+      const list = document.getElementById("loadList");
+      list.innerHTML = "";
+
+      if (tickets.length === 0) {
+        list.innerHTML = "<p>No tickets submitted.</p>";
+        return;
+      }
+
+      tickets.forEach((ticket, index) => {
+        const images = (ticket.photos || []).map(img =>
+          `<img src="${img}" style="width:100px;margin:4px;border-radius:5px;">`
+        ).join("");
+
+        list.innerHTML += `
+          <div style="border:1px solid #ccc;padding:10px;border-radius:10px;margin-bottom:15px;">
+            <strong>Driver:</strong> ${ticket.driver}<br/>
+            <strong>Date:</strong> ${ticket.date}<br/>
+            <strong>Customer:</strong> ${ticket.customer}<br/>
+            <strong>Pickup:</strong> ${ticket.pickup}<br/>
+            <strong>Delivery:</strong> ${ticket.delivery}<br/>
+            <strong>Notes:</strong> ${ticket.notes}<br/><br/>
+            ${images}
+          </div>
+        `;
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem("user");
+      window.location.href = "index.html";
+    }
+
+    renderTickets();
+  </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <link rel="stylesheet" href="styles.css" />
+  <title>Admin Panel</title>
+</head>
+<body>
+  <header><img src="header.jpg" class="header-img" alt="Header"></header>
+  <main class="container">
+    <h2>User Management</h2>
+
+    <form id="userForm">
+      <input type="text" id="newUsername" placeholder="New Username" required />
+      <input type="password" id="newPassword" placeholder="Password" required />
+      <select id="newRole" required>
+        <option value="">Select Role</option>
+        <option value="dispatcher">Dispatcher</option>
+        <option value="driver">Driver</option>
+        <option value="mechanic">Mechanic</option>
+        <option value="office">Office</option>
+      </select>
+      <button type="submit">Create User</button>
+    </form>
+
+    <hr />
+
+    <h3>Existing Users</h3>
+    <div id="userList"></div>
+
+    <button onclick="logout()">Log Out</button>
+  </main>
+
+  <script>
+    const usersKey = 'users';
+
+    function loadUsers() {
+      const stored = localStorage.getItem(usersKey);
+      return stored ? JSON.parse(stored) : [{ username: "A", password: "1", role: "admin" }];
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(usersKey, JSON.stringify(users));
+    }
+
+    function renderUsers() {
+      const users = loadUsers();
+      const list = document.getElementById("userList");
+      list.innerHTML = "";
+
+      users.forEach((user, index) => {
+        if (user.role === "admin") return; // don't edit admin
+
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <strong>${user.username}</strong> - ${user.role}
+          <button onclick="deleteUser(${index})">Delete</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function deleteUser(index) {
+      const users = loadUsers();
+      users.splice(index, 1);
+      saveUsers(users);
+      renderUsers();
+    }
+
+    document.getElementById("userForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const username = document.getElementById("newUsername").value.trim();
+      const password = document.getElementById("newPassword").value.trim();
+      const role = document.getElementById("newRole").value;
+
+      if (!username || !password || !role) return alert("All fields are required.");
+
+      const users = loadUsers();
+      if (users.find(u => u.username === username)) return alert("Username already exists.");
+
+      users.push({ username, password, role });
+      saveUsers(users);
+      renderUsers();
+      this.reset();
+    });
+
+    function logout() {
+      localStorage.removeItem("user");
+      window.location.href = "index.html";
+    }
+
+    // Check access and load
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    if (!currentUser || currentUser.role !== "admin") {
+      alert("Access denied");
+      window.location.href = "index.html";
+    } else {
+      renderUsers();
+    }
+  </script>
+</body>
+</html>

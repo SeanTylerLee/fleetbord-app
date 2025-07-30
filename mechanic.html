@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <link rel="stylesheet" href="styles.css" />
+  <title>Mechanic Panel</title>
+</head>
+<body>
+  <header><img src="header.jpg" class="header-img" alt="Header"></header>
+  <main class="container">
+    <h2>Reported Breakdowns</h2>
+    <div id="breakdownList"></div>
+    <button onclick="logout()">Log Out</button>
+  </main>
+
+  <script>
+    const breakdownKey = "breakdowns";
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "mechanic") {
+      alert("Access denied");
+      window.location.href = "index.html";
+    }
+
+    function loadBreakdowns() {
+      return JSON.parse(localStorage.getItem(breakdownKey) || "[]");
+    }
+
+    function saveBreakdowns(data) {
+      localStorage.setItem(breakdownKey, JSON.stringify(data));
+    }
+
+    function markComplete(index) {
+      const breakdowns = loadBreakdowns();
+      breakdowns[index].status = "Completed";
+      breakdowns[index].completedBy = user.username;
+      breakdowns[index].completedAt = new Date().toLocaleString();
+      saveBreakdowns(breakdowns);
+      renderBreakdowns();
+    }
+
+    function renderBreakdowns() {
+      const breakdowns = loadBreakdowns();
+      const list = document.getElementById("breakdownList");
+      list.innerHTML = "";
+
+      if (breakdowns.length === 0) {
+        list.innerHTML = "<p>No breakdowns reported.</p>";
+        return;
+      }
+
+      breakdowns.forEach((item, index) => {
+        list.innerHTML += `
+          <div style="border:1px solid #ccc;padding:10px;margin-bottom:15px;border-radius:10px;">
+            <strong>${item.unit}</strong> - Reported by ${item.driver}<br/>
+            Date: ${item.date}<br/>
+            Description: ${item.description}<br/>
+            Status: ${item.status || "Pending"}<br/>
+            ${item.status === "Completed" ? `
+              Completed By: ${item.completedBy}<br/>
+              At: ${item.completedAt}<br/>
+            ` : `
+              <button onclick="markComplete(${index})">Mark Completed</button>
+            `}
+          </div>
+        `;
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem("user");
+      window.location.href = "index.html";
+    }
+
+    renderBreakdowns();
+  </script>
+</body>
+</html>

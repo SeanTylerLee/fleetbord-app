@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <link rel="stylesheet" href="styles.css" />
+  <title>Report Breakdown</title>
+</head>
+<body>
+  <header><img src="header.jpg" class="header-img" alt="Header"></header>
+  <main class="container">
+    <h2>Report a Breakdown</h2>
+    <form id="breakdownForm">
+      <input type="text" id="unit" placeholder="Unit Number" required />
+      <input type="date" id="date" required />
+      <textarea id="description" placeholder="Describe the issue" required></textarea>
+      <button type="submit">Submit</button>
+    </form>
+    <button onclick="logout()">Log Out</button>
+  </main>
+
+  <script>
+    const breakdownKey = "breakdowns";
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "driver") {
+      alert("Access denied");
+      window.location.href = "index.html";
+    }
+
+    function loadBreakdowns() {
+      return JSON.parse(localStorage.getItem(breakdownKey) || "[]");
+    }
+
+    function saveBreakdowns(data) {
+      localStorage.setItem(breakdownKey, JSON.stringify(data));
+    }
+
+    document.getElementById("breakdownForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const unit = document.getElementById("unit").value;
+      const date = document.getElementById("date").value;
+      const description = document.getElementById("description").value;
+
+      const breakdown = {
+        driver: user.username,
+        unit,
+        date,
+        description,
+        status: "Pending"
+      };
+
+      const list = loadBreakdowns();
+      list.push(breakdown);
+      saveBreakdowns(list);
+      alert("Breakdown submitted");
+      this.reset();
+    });
+
+    function logout() {
+      localStorage.removeItem("user");
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

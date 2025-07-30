@@ -54,8 +54,8 @@ main {
 }
 
 .nav-icon {
-  width: 28px;
-  height: 28px;
+  width: 108px;
+  height: 108px;
   object-fit: contain;
   filter: none; /* Remove invert unless your icons need color correction */
 }

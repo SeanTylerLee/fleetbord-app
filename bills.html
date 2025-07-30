@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>My Bills</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header>
+    <img src="images/Header.PNG" alt="App Header" class="header-img">
+  </header>
+
+  <main class="container">
+    <h2>Monthly Bills</h2>
+    <button onclick="location.href='addbills.html'" class="btn">➕ Add Bills</button>
+    <ul id="billDisplay" style="margin-top: 20px;"></ul>
+    <button onclick="resetPayments()" class="btn-delete" style="margin-top: 20px;">Reset Monthly Payments</button>
+  </main>
+
+  <script>
+    function getBills() {
+      return JSON.parse(localStorage.getItem('bills') || '[]');
+    }
+
+    function getPaidStatus() {
+      return JSON.parse(localStorage.getItem('paidBills') || '{}');
+    }
+
+    function savePaidStatus(status) {
+      localStorage.setItem('paidBills', JSON.stringify(status));
+    }
+
+    function renderBills() {
+      const list = document.getElementById('billDisplay');
+      const bills = getBills();
+      const paid = getPaidStatus();
+      list.innerHTML = "";
+
+      bills.forEach(bill => {
+        const isPaid = paid[bill.name] === true;
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <strong>${bill.name}</strong> – $${bill.amount} due on day ${bill.dueDay} ${bill.autopay ? '(Autopay)' : ''}
+          <br>
+          <label>
+            <input type="checkbox" onchange="togglePaid('${bill.name}')" ${isPaid ? 'checked' : ''} />
+            Mark as Paid
+          </label>
+          <hr>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function togglePaid(name) {
+      const paid = getPaidStatus();
+      paid[name] = !paid[name];
+      savePaidStatus(paid);
+      renderBills();
+    }
+
+    function resetPayments() {
+      if (confirm("Clear all paid checkboxes for a new month?")) {
+        localStorage.removeItem('paidBills');
+        renderBills();
+      }
+    }
+
+    window.onload = renderBills;
+  </script>
+</body>
+</html>

@@ -8,45 +8,55 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <title>Calendar</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     .calendar {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
+      gap: 6px;
       margin-top: 1rem;
     }
 
     .day {
       background: var(--card);
       padding: 10px;
-      border-radius: 10px;
+      border: 2px solid #aaa;
+      border-radius: 12px;
       text-align: center;
       font-size: 14px;
-      min-height: 60px;
+      min-height: 80px;
       position: relative;
+      cursor: pointer;
+      transition: border-color 0.2s;
     }
 
-    .day span {
-      font-weight: bold;
+    .day:hover {
+      border-color: #007aff;
+    }
+
+    .day.today {
+      outline: 3px solid #007aff;
     }
 
     .note {
-      margin-top: 4px;
+      margin-top: 6px;
       font-size: 12px;
       color: var(--text);
+      white-space: pre-wrap;
     }
 
-    .edit-btn {
-      position: absolute;
-      top: 4px;
-      right: 6px;
-      font-size: 12px;
-      background: #007aff;
-      color: white;
-      border: none;
-      border-radius: 5px;
+    .tag {
+      display: inline-block;
+      font-size: 10px;
       padding: 2px 6px;
+      border-radius: 8px;
+      margin-top: 4px;
     }
+
+    .tag.urgent { background: #ff3b30; color: white; }
+    .tag.reminder { background: #ffcc00; color: black; }
+    .tag.done { background: #34c759; color: white; }
+    .tag.info { background: #007aff; color: white; }
 
     .modal {
       position: fixed;
@@ -62,21 +72,50 @@
     .modal-content {
       background: var(--bg);
       padding: 20px;
-      border-radius: 10px;
+      border-radius: 12px;
       width: 90%;
       max-width: 400px;
     }
 
-    .modal-content textarea {
+    .modal-content textarea,
+    .modal-content select {
       width: 100%;
-      height: 100px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       padding: 10px;
       font-size: 16px;
+      border-radius: 6px;
     }
 
-    .modal-content button {
-      margin-right: 10px;
+    .month-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .month-controls button {
+      font-size: 20px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: none;
+      background: #007aff;
+      color: white;
+    }
+
+    #monthLabel {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    #exportBtn {
+      margin: 10px auto;
+      display: block;
+      background: #333;
+      color: white;
+      padding: 6px 12px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
     }
   </style>
 </head>
@@ -88,88 +127,161 @@
 </header>
 
 <main class="container">
-  <h2>Monthly Calendar</h2>
+  <div class="month-controls">
+    <button onclick="changeMonth(-1)">⏪</button>
+    <div id="monthLabel"></div>
+    <button onclick="changeMonth(1)">⏩</button>
+  </div>
+
+  <button id="exportBtn" onclick="exportPDF()">Export as PDF</button>
   <div id="calendar" class="calendar"></div>
 </main>
 
-<!-- Modal for editing notes -->
+<!-- Modal -->
 <div id="noteModal" class="modal" style="display:none;">
   <div class="modal-content">
     <h3 id="modalDate"></h3>
     <textarea id="noteInput" placeholder="Enter your note..."></textarea>
+    <select id="tagInput">
+      <option value="">No Tag</option>
+      <option value="urgent">🔴 Urgent</option>
+      <option value="reminder">🟡 Reminder</option>
+      <option value="done">🟢 Done</option>
+      <option value="info">🔵 Info</option>
+    </select>
     <button onclick="saveNote()">Save</button>
     <button onclick="deleteNote()">Delete</button>
     <button onclick="closeModal()">Cancel</button>
   </div>
 </div>
 
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-    <a href="index.html">
-      <img src="images/home.jpg" alt="Home" class="nav-icon">
-    </a>
-    <a href="settings.html">
-      <img src="images/settings.jpg" alt="Settings" class="nav-icon">
-    </a>
-  </nav>
-  
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <a href="index.html"><img src="images/home.jpg" alt="Home" class="nav-icon"></a>
+  <a href="settings.html"><img src="images/settings.jpg" alt="Settings" class="nav-icon"></a>
+</nav>
+
 <script>
-  const calendarEl = document.getElementById('calendar');
-  const modal = document.getElementById('noteModal');
-  const noteInput = document.getElementById('noteInput');
-  const modalDate = document.getElementById('modalDate');
+  let calendarEl = document.getElementById('calendar');
+  let modal = document.getElementById('noteModal');
+  let noteInput = document.getElementById('noteInput');
+  let tagInput = document.getElementById('tagInput');
+  let modalDate = document.getElementById('modalDate');
+  let monthLabel = document.getElementById('monthLabel');
+
+  let current = new Date();
   let selectedDate = "";
 
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth(); // 0-based index
+  const tagClasses = {
+    urgent: 'Urgent',
+    reminder: 'Reminder',
+    done: 'Done',
+    info: 'Info'
+  };
 
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const startDay = new Date(year, month, 1).getDay(); // 0=Sun
+  function renderCalendar() {
+    calendarEl.innerHTML = "";
+    const year = current.getFullYear();
+    const month = current.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const days = new Date(year, month + 1, 0).getDate();
 
-  for (let i = 0; i < startDay; i++) {
-    const emptyCell = document.createElement('div');
-    calendarEl.appendChild(emptyCell);
-  }
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+                        "July", "August", "September", "October", "November", "December"];
+    monthLabel.textContent = `${monthNames[month]} ${year}`;
 
-  for (let day = 1; day <= daysInMonth; day++) {
-    const cell = document.createElement('div');
-    cell.className = 'day';
-    cell.innerHTML = `<span>${day}</span><div class="note" id="note-${day}"></div>
-      <button class="edit-btn" onclick="editNote(${day})">Edit</button>`;
-    const savedNote = localStorage.getItem(`note-${year}-${month}-${day}`);
-    if (savedNote) {
-      cell.querySelector('.note').textContent = savedNote;
+    for (let i = 0; i < firstDay; i++) {
+      calendarEl.appendChild(document.createElement('div'));
     }
-    calendarEl.appendChild(cell);
+
+    for (let day = 1; day <= days; day++) {
+      const dateKey = `${year}-${month}-${day}`;
+      const savedNote = localStorage.getItem(`note-${dateKey}`) || "";
+      const savedTag = localStorage.getItem(`tag-${dateKey}`) || "";
+      const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+
+      const cell = document.createElement('div');
+      cell.className = 'day' + (isToday ? ' today' : '');
+      cell.setAttribute("data-date", dateKey);
+      cell.onclick = () => editNote(dateKey);
+
+      cell.innerHTML = `
+        <span>${day}</span>
+        <div class="note" id="note-${day}">${savedNote}</div>
+        ${savedTag ? `<div class="tag ${savedTag}">${tagClasses[savedTag]}</div>` : ""}`;
+
+      calendarEl.appendChild(cell);
+    }
   }
 
-  function editNote(day) {
-    selectedDate = `${year}-${month}-${day}`;
-    modalDate.textContent = `Note for ${month + 1}/${day}/${year}`;
-    noteInput.value = localStorage.getItem(`note-${selectedDate}`) || "";
+  function changeMonth(offset) {
+    current.setMonth(current.getMonth() + offset);
+    renderCalendar();
+  }
+
+  function editNote(dateKey) {
+    selectedDate = dateKey;
+    const savedNote = localStorage.getItem(`note-${dateKey}`) || "";
+    const savedTag = localStorage.getItem(`tag-${dateKey}`) || "";
+
+    modalDate.textContent = `Note for ${selectedDate}`;
+    noteInput.value = savedNote;
+    tagInput.value = savedTag;
     modal.style.display = 'flex';
   }
 
   function saveNote() {
     const text = noteInput.value.trim();
+    const tag = tagInput.value;
     localStorage.setItem(`note-${selectedDate}`, text);
-    const [, , day] = selectedDate.split('-');
-    document.getElementById(`note-${parseInt(day)}`).textContent = text;
+    localStorage.setItem(`tag-${selectedDate}`, tag);
+    renderCalendar();
     closeModal();
   }
 
   function deleteNote() {
     localStorage.removeItem(`note-${selectedDate}`);
-    const [, , day] = selectedDate.split('-');
-    document.getElementById(`note-${parseInt(day)}`).textContent = "";
+    localStorage.removeItem(`tag-${selectedDate}`);
+    renderCalendar();
     closeModal();
   }
 
   function closeModal() {
     modal.style.display = 'none';
     noteInput.value = '';
+    tagInput.value = '';
   }
+
+  async function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(12);
+    const title = `${monthLabel.textContent} Notes`;
+    doc.text(title, 10, 10);
+    let y = 20;
+    const year = current.getFullYear();
+    const month = current.getMonth();
+    const days = new Date(year, month + 1, 0).getDate();
+
+    for (let day = 1; day <= days; day++) {
+      const dateKey = `${year}-${month}-${day}`;
+      const note = localStorage.getItem(`note-${dateKey}`) || "";
+      const tag = localStorage.getItem(`tag-${dateKey}`) || "";
+
+      if (note || tag) {
+        doc.text(`${month + 1}/${day}/${year}: ${note} ${tag ? '(' + tagClasses[tag] + ')' : ''}`, 10, y);
+        y += 8;
+        if (y > 280) {
+          doc.addPage();
+          y = 10;
+        }
+      }
+    }
+
+    doc.save(`Calendar_${month + 1}_${year}.pdf`);
+  }
+
+  renderCalendar();
 </script>
 
 </body>

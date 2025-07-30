@@ -8,21 +8,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <title>Vehicles</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    .btn-delete { background-color: #d9534f; color: white; padding: 6px 10px; border: none; border-radius: 6px; }
-    .btn-edit { background-color: #007aff; color: white; padding: 6px 10px; border: none; border-radius: 6px; margin-left: 5px; }
-    li { margin-bottom: 8px; }
-  </style>
 </head>
 
 <body>
-
   <!-- Header Image -->
   <header>
-    <img src="images/Header.PNG" alt="App Header" class="header-img">
+    <img src="images/header.jpg" alt="App Header" class="header-img">
   </header>
 
-  <!-- Main content -->
   <main class="container">
     <h2 id="formTitle">Add Vehicle</h2>
     <form id="vehicleForm">
@@ -36,168 +29,123 @@
 
     <hr>
 
-    <div>
-      <label for="vehicleSelect"><strong>Select Vehicle:</strong></label>
-      <select id="vehicleSelect" style="width: 100%; padding: 10px; margin-top: 10px;"></select>
-    </div>
-
-    <div id="vehicleDetails" style="margin-top: 20px;"></div>
-
-    <div id="oilLogSection" style="display: none;">
-      <h3>Oil Change Log</h3>
-      <form id="oilChangeForm">
-        <input type="date" id="oilDate" required />
-        <input type="number" id="oilMileage" placeholder="Mileage" required />
-        <button type="submit" class="btn">Add Oil Change</button>
-      </form>
-      <ul id="oilChangeList" style="margin-top: 10px;"></ul>
-    </div>
+    <div id="vehicleList"></div>
   </main>
 
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-    <a href="index.html">
-      <img src="images/home.jpg" alt="Home" class="nav-icon">
-    </a>
-    <a href="settings.html">
-      <img src="images/settings.jpg" alt="Settings" class="nav-icon">
-    </a>
-  </nav>
-
-  <!-- Script -->
   <script>
-    const vehicleForm = document.getElementById('vehicleForm');
-    const oilChangeForm = document.getElementById('oilChangeForm');
-    const vehicleSelect = document.getElementById('vehicleSelect');
-    const vehicleDetails = document.getElementById('vehicleDetails');
-    const oilChangeList = document.getElementById('oilChangeList');
-    const oilLogSection = document.getElementById('oilLogSection');
+    let vehicles = JSON.parse(localStorage.getItem('vehicles') || '[]');
+    let editIndex = -1;
 
-    const getVehicles = () => JSON.parse(localStorage.getItem('vehicles') || '{}');
-    const saveVehicles = (data) => localStorage.setItem('vehicles', JSON.stringify(data));
+    function saveVehicles() {
+      localStorage.setItem('vehicles', JSON.stringify(vehicles));
+    }
 
-    let editVehicleId = null;
+    function renderVehicles() {
+      const list = document.getElementById('vehicleList');
+      list.innerHTML = '';
+      vehicles.forEach((v, i) => {
+        const card = document.createElement('div');
+        card.className = 'vehicle-card';
 
-    // Add or update vehicle
-    vehicleForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const vehicles = getVehicles();
-      const id = editVehicleId || Date.now().toString();
-      vehicles[id] = {
-        ...vehicles[id],
-        id,
-        name: document.getElementById('vname').value,
-        oilFilter: document.getElementById('oilFilter').value,
-        oilType: document.getElementById('oilType').value,
-        oilCapacity: document.getElementById('oilCapacity').value,
-        airFilter: document.getElementById('airFilter').value,
-        oilLogs: vehicles[id]?.oilLogs || []
-      };
-      saveVehicles(vehicles);
-      populateVehicleSelect();
-      vehicleForm.reset();
-      editVehicleId = null;
-      document.getElementById('formTitle').innerText = "Add Vehicle";
-      alert("Vehicle saved!");
-    });
+        const header = document.createElement('div');
+        header.className = 'vehicle-header';
+        header.textContent = v.name;
+        header.addEventListener('click', () => {
+          body.classList.toggle('open');
+        });
 
-    // Populate dropdown
-    function populateVehicleSelect() {
-      const vehicles = getVehicles();
-      vehicleSelect.innerHTML = '<option disabled selected>Select Vehicle</option>';
-      Object.values(vehicles).forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v.id;
-        opt.textContent = v.name;
-        vehicleSelect.appendChild(opt);
+        const body = document.createElement('div');
+        body.className = 'vehicle-body';
+        body.innerHTML = `
+          <p><strong>Oil Filter:</strong> ${v.oilFilter}</p>
+          <p><strong>Oil Type:</strong> ${v.oilType}</p>
+          <p><strong>Oil Capacity:</strong> ${v.oilCapacity}</p>
+          <p><strong>Air Filter:</strong> ${v.airFilter}</p>
+
+          <h4>Add Oil Change</h4>
+          <input type="date" id="date-${i}" />
+          <input type="number" id="mileage-${i}" placeholder="Mileage" />
+          <button onclick="addOilChange(${i})" class="btn-secondary">Add</button>
+
+          <h4>Oil Changes</h4>
+          <div id="oilList-${i}">
+            ${v.oilChanges.map((o, j) => `
+              <div class="oil-entry">
+                ${o.date} – ${o.mileage} mi
+                <button onclick="deleteOilChange(${i}, ${j})" class="btn-delete">Delete</button>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="btn-row">
+            <button onclick="editVehicle(${i})" class="btn-secondary">Edit</button>
+            <button onclick="deleteVehicle(${i})" class="btn-delete">Delete</button>
+          </div>
+        `;
+
+        card.appendChild(header);
+        card.appendChild(body);
+        list.appendChild(card);
       });
     }
 
-    // On vehicle select
-    vehicleSelect.addEventListener('change', function () {
-      const vehicles = getVehicles();
-      const selected = vehicles[this.value];
-      if (selected) {
-        displayVehicle(selected);
-        oilLogSection.style.display = 'block';
-      }
-    });
-
-    // Oil log add
-    oilChangeForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const vehicleId = vehicleSelect.value;
-      const vehicles = getVehicles();
-      if (!vehicles[vehicleId]) return;
-      vehicles[vehicleId].oilLogs.push({
-        date: document.getElementById('oilDate').value,
-        mileage: document.getElementById('oilMileage').value
-      });
-      saveVehicles(vehicles);
-      displayVehicle(vehicles[vehicleId]);
-      oilChangeForm.reset();
-    });
-
-    // Display vehicle info
-    function displayVehicle(v) {
-      vehicleDetails.innerHTML = `
-        <h3>${v.name}</h3>
-        <p><strong>Oil Filter:</strong> ${v.oilFilter}</p>
-        <p><strong>Oil Type:</strong> ${v.oilType}</p>
-        <p><strong>Oil Capacity:</strong> ${v.oilCapacity}</p>
-        <p><strong>Air Filter:</strong> ${v.airFilter}</p>
-        <button class="btn-edit" onclick="editVehicle('${v.id}')">Edit Vehicle</button>
-        <button class="btn-delete" onclick="deleteVehicle('${v.id}')">Delete Vehicle</button>
-      `;
-      displayLogs(v.id, v.oilLogs);
+    function addOilChange(index) {
+      const date = document.getElementById(`date-${index}`).value;
+      const mileage = document.getElementById(`mileage-${index}`).value;
+      if (!date || !mileage) return alert('Date and mileage required');
+      vehicles[index].oilChanges.push({ date, mileage });
+      saveVehicles();
+      renderVehicles();
     }
 
-    // Edit vehicle
-    function editVehicle(id) {
-      const v = getVehicles()[id];
+    function deleteOilChange(vehicleIndex, changeIndex) {
+      vehicles[vehicleIndex].oilChanges.splice(changeIndex, 1);
+      saveVehicles();
+      renderVehicles();
+    }
+
+    function editVehicle(index) {
+      const v = vehicles[index];
       document.getElementById('vname').value = v.name;
       document.getElementById('oilFilter').value = v.oilFilter;
       document.getElementById('oilType').value = v.oilType;
       document.getElementById('oilCapacity').value = v.oilCapacity;
       document.getElementById('airFilter').value = v.airFilter;
-      document.getElementById('formTitle').innerText = "Edit Vehicle";
-      editVehicleId = id;
+      editIndex = index;
+      document.getElementById('formTitle').innerText = 'Edit Vehicle';
     }
 
-    // Delete vehicle
-    function deleteVehicle(id) {
-      if (confirm("Are you sure you want to delete this vehicle?")) {
-        const vehicles = getVehicles();
-        delete vehicles[id];
-        saveVehicles(vehicles);
-        populateVehicleSelect();
-        vehicleDetails.innerHTML = '';
-        oilChangeList.innerHTML = '';
-        oilLogSection.style.display = 'none';
+    function deleteVehicle(index) {
+      if (confirm('Delete this vehicle?')) {
+        vehicles.splice(index, 1);
+        saveVehicles();
+        renderVehicles();
       }
     }
 
-    // Display logs with delete option
-    function displayLogs(vehicleId, logs) {
-      oilChangeList.innerHTML = '';
-      logs.forEach((log, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `Date: ${log.date} -- Mileage: ${log.mileage}
-          <button class="btn-delete" onclick="deleteLog('${vehicleId}', ${index})">Delete</button>`;
-        oilChangeList.appendChild(li);
-      });
-    }
+    document.getElementById('vehicleForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const v = {
+        name: document.getElementById('vname').value,
+        oilFilter: document.getElementById('oilFilter').value,
+        oilType: document.getElementById('oilType').value,
+        oilCapacity: document.getElementById('oilCapacity').value,
+        airFilter: document.getElementById('airFilter').value,
+        oilChanges: vehicles[editIndex]?.oilChanges || []
+      };
+      if (editIndex > -1) {
+        vehicles[editIndex] = v;
+        editIndex = -1;
+        document.getElementById('formTitle').innerText = 'Add Vehicle';
+      } else {
+        vehicles.push(v);
+      }
+      saveVehicles();
+      this.reset();
+      renderVehicles();
+    });
 
-    // Delete log entry
-    function deleteLog(vehicleId, index) {
-      const vehicles = getVehicles();
-      vehicles[vehicleId].oilLogs.splice(index, 1);
-      saveVehicles(vehicles);
-      displayVehicle(vehicles[vehicleId]);
-    }
-
-    window.onload = populateVehicleSelect;
+    window.onload = renderVehicles;
   </script>
-
 </body>
 </html>

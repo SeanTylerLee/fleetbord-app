@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <title>Calendar</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-top: 1rem;
+    }
+
+    .day {
+      background: var(--card);
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 14px;
+      min-height: 60px;
+      position: relative;
+    }
+
+    .day span {
+      font-weight: bold;
+    }
+
+    .note {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .edit-btn {
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: 12px;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 2px 6px;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: var(--bg);
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .modal-content textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    .modal-content button {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <img src="images/Header.PNG" alt="App Header" class="header-img">
+</header>
+
+<main class="container">
+  <h2>Monthly Calendar</h2>
+  <div id="calendar" class="calendar"></div>
+</main>
+
+<!-- Modal for editing notes -->
+<div id="noteModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3 id="modalDate"></h3>
+    <textarea id="noteInput" placeholder="Enter your note..."></textarea>
+    <button onclick="saveNote()">Save</button>
+    <button onclick="deleteNote()">Delete</button>
+    <button onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- Bottom Navigation -->
+<nav>
+  <a href="index.html">
+    <img src="images/home.jpg" alt="Home" class="nav-icon">
+  </a>
+  <a href="settings.html">
+    <img src="images/settings.jpg" alt="Settings" class="nav-icon">
+  </a>
+</nav>
+
+<script>
+  const calendarEl = document.getElementById('calendar');
+  const modal = document.getElementById('noteModal');
+  const noteInput = document.getElementById('noteInput');
+  const modalDate = document.getElementById('modalDate');
+  let selectedDate = "";
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth(); // 0-based index
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startDay = new Date(year, month, 1).getDay(); // 0=Sun
+
+  for (let i = 0; i < startDay; i++) {
+    const emptyCell = document.createElement('div');
+    calendarEl.appendChild(emptyCell);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const cell = document.createElement('div');
+    cell.className = 'day';
+    cell.innerHTML = `<span>${day}</span><div class="note" id="note-${day}"></div>
+      <button class="edit-btn" onclick="editNote(${day})">Edit</button>`;
+    const savedNote = localStorage.getItem(`note-${year}-${month}-${day}`);
+    if (savedNote) {
+      cell.querySelector('.note').textContent = savedNote;
+    }
+    calendarEl.appendChild(cell);
+  }
+
+  function editNote(day) {
+    selectedDate = `${year}-${month}-${day}`;
+    modalDate.textContent = `Note for ${month + 1}/${day}/${year}`;
+    noteInput.value = localStorage.getItem(`note-${selectedDate}`) || "";
+    modal.style.display = 'flex';
+  }
+
+  function saveNote() {
+    const text = noteInput.value.trim();
+    localStorage.setItem(`note-${selectedDate}`, text);
+    const [, , day] = selectedDate.split('-');
+    document.getElementById(`note-${parseInt(day)}`).textContent = text;
+    closeModal();
+  }
+
+  function deleteNote() {
+    localStorage.removeItem(`note-${selectedDate}`);
+    const [, , day] = selectedDate.split('-');
+    document.getElementById(`note-${parseInt(day)}`).textContent = "";
+    closeModal();
+  }
+
+  function closeModal() {
+    modal.style.display = 'none';
+    noteInput.value = '';
+  }
+</script>
+
+</body>
+</html>

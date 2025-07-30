@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profiles</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .form-row input, .form-row select {
+      margin-bottom: 10px;
+    }
+    .form-row img {
+      max-width: 100px;
+      border: 1px solid #ccc;
+      margin: 4px 0;
+    }
+    .user-card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+      background: #f9f9f9;
+    }
+    .user-card h4 {
+      margin-top: 0;
+    }
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header">
+  </header>
+
+  <div class="container" style="padding:20px;">
+    <h2>User Management</h2>
+
+    <label for="roleFilter">Filter by Role:</label>
+    <select id="roleFilter" onchange="renderUsers()">
+      <option value="">All Roles</option>
+      <option value="driver">Driver</option>
+      <option value="office">Office</option>
+      <option value="mechanic">Mechanic</option>
+      <option value="admin">Admin</option>
+    </select>
+
+    <hr>
+
+    <div id="userList"></div>
+    <a class="ios-item" href="admin.html" style="margin-top: 20px;">← Back to Admin Panel</a>
+  </div>
+
+  <script>
+    const userList = document.getElementById('userList');
+    const roleFilter = document.getElementById('roleFilter');
+
+    function renderUsers() {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const filter = roleFilter.value;
+      userList.innerHTML = "";
+
+      users.forEach((user, index) => {
+        if (filter && user.role !== filter) return;
+
+        const div = document.createElement("div");
+        div.className = "user-card";
+
+        div.innerHTML = `
+          <h4>${user.username} (${user.role})</h4>
+          <label>Password:<input type="text" value="${user.password}" onchange="updateField(${index}, 'password', this.value)" /></label><br>
+          <label>Truck #: <input type="text" value="${user.truckNumber || ''}" onchange="updateField(${index}, 'truckNumber', this.value)" /></label><br>
+          <label>Trailer #: <input type="text" value="${user.trailerNumber || ''}" onchange="updateField(${index}, 'trailerNumber', this.value)" /></label><br>
+          <label>License #: <input type="text" value="${user.licenseNumber || ''}" onchange="updateField(${index}, 'licenseNumber', this.value)" /></label><br>
+          <label>License Exp: <input type="date" value="${user.licenseExp || ''}" onchange="updateField(${index}, 'licenseExp', this.value)" /></label><br>
+          <label>Medical Card #: <input type="text" value="${user.medicalCard || ''}" onchange="updateField(${index}, 'medicalCard', this.value)" /></label><br>
+          <label>Medical Exp: <input type="date" value="${user.medicalExp || ''}" onchange="updateField(${index}, 'medicalExp', this.value)" /></label><br>
+          
+          <label>Upload License Image: <input type="file" accept="image/*" onchange="handleImageUpload(${index}, 'licenseImage', this)" /></label><br>
+          ${user.licenseImage ? `<img src="${user.licenseImage}" />` : ''}
+          
+          <label>Upload Medical Card Image: <input type="file" accept="image/*" onchange="handleImageUpload(${index}, 'medicalImage', this)" /></label><br>
+          ${user.medicalImage ? `<img src="${user.medicalImage}" />` : ''}
+          
+          <div class="button-row">
+            <button onclick="toggleLock(${index})">${user.active === false ? "Unlock" : "Lock"}</button>
+            <button onclick="deleteUser(${index})">Delete</button>
+            <button onclick="exportPDF(${index})">Export PDF</button>
+          </div>
+        `;
+        userList.appendChild(div);
+      });
+    }
+
+    function updateField(index, field, value) {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      users[index][field] = value;
+      localStorage.setItem("users", JSON.stringify(users));
+    }
+
+    function deleteUser(index) {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      if (confirm(`Delete user "${users[index].username}"?`)) {
+        users.splice(index, 1);
+        localStorage.setItem("users", JSON.stringify(users));
+        renderUsers();
+      }
+    }
+
+    function toggleLock(index) {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      users[index].active = !users[index].active;
+      localStorage.setItem("users", JSON.stringify(users));
+      renderUsers();
+    }
+
+    function handleImageUpload(index, field, input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const users = JSON.parse(localStorage.getItem("users") || "[]");
+        users[index][field] = reader.result;
+        localStorage.setItem("users", JSON.stringify(users));
+        renderUsers();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function exportPDF(index) {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const u = users[index];
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(12);
+      doc.text(`User Profile: ${u.username}`, 20, 20);
+      doc.text(`Role: ${u.role}`, 20, 40);
+      doc.text(`Truck #: ${u.truckNumber || ''}`, 20, 60);
+      doc.text(`Trailer #: ${u.trailerNumber || ''}`, 20, 80);
+      doc.text(`License #: ${u.licenseNumber || ''}`, 20, 100);
+      doc.text(`License Exp: ${u.licenseExp || ''}`, 20, 120);
+      doc.text(`Medical Card #: ${u.medicalCard || ''}`, 20, 140);
+      doc.text(`Medical Exp: ${u.medicalExp || ''}`, 20, 160);
+
+      if (u.licenseImage) {
+        doc.addImage(u.licenseImage, 'JPEG', 20, 180, 80, 50);
+        doc.text('License Image', 20, 240);
+      }
+
+      if (u.medicalImage) {
+        doc.addImage(u.medicalImage, 'JPEG', 120, 180, 80, 50);
+        doc.text('Medical Card Image', 120, 240);
+      }
+
+      doc.save(`${u.username}_profile.pdf`);
+    }
+
+    renderUsers();
+  </script>
+</body>
+</html>

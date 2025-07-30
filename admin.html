@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      background: var(--bg, #fff);
+      color: var(--text, #000);
+    }
+
+    header img {
+      width: 100%;
+      display: block;
+    }
+
+    .container {
+      padding: 1rem;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      box-sizing: border-box;
+      margin-bottom: 0.8rem;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #007aff;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    .button-group {
+      margin-top: 2rem;
+    }
+
+    .button-group button {
+      margin-bottom: 1rem;
+    }
+
+    .section {
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="header.jpg" alt="Header" />
+  </header>
+
+  <div class="container">
+    <h2>Admin Panel</h2>
+
+    <!-- ✅ Create New User -->
+    <div class="section">
+      <h3>👤 Add New User</h3>
+      <input type="text" id="newUsername" placeholder="Username" />
+      <input type="password" id="newPassword" placeholder="Password" />
+      <select id="newRole">
+        <option value="driver">Driver</option>
+        <option value="office">Office</option>
+        <option value="mechanic">Mechanic</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button onclick="createUser()">Create User</button>
+    </div>
+
+    <!-- ✅ Welcome Message Editor -->
+    <div class="section">
+      <h3>📢 Edit Welcome Center Message</h3>
+      <textarea id="welcomeMsgBox" placeholder="Enter a message users will see on their home screen..."></textarea>
+      <button onclick="updateWelcomeMessage()">Update Message</button>
+    </div>
+
+    <!-- ✅ Navigation -->
+    <div class="button-group">
+      <button onclick="location.href='users.html'">🛠 Manage User Profiles</button>
+      <button onclick="location.href='logs.html'">📋 View Login Logs</button>
+    </div>
+  </div>
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser || currentUser.role !== "admin") {
+      alert("Access denied.");
+      location.href = "login.html";
+    }
+
+    function createUser() {
+      const username = document.getElementById("newUsername").value.trim();
+      const password = document.getElementById("newPassword").value.trim();
+      const role = document.getElementById("newRole").value;
+
+      if (!username || !password) {
+        alert("Enter all fields.");
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      if (users.find(u => u.username === username)) {
+        alert("User already exists!");
+        return;
+      }
+
+      users.push({ username, password, role, active: true });
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("✅ User created.");
+      document.getElementById("newUsername").value = '';
+      document.getElementById("newPassword").value = '';
+    }
+
+    function updateWelcomeMessage() {
+      const msg = document.getElementById("welcomeMsgBox").value.trim();
+      localStorage.setItem("welcomeMessage", msg || "👋 Welcome to Monster Fleet App!");
+      alert("✅ Message updated.");
+    }
+
+    window.onload = () => {
+      document.getElementById("welcomeMsgBox").value = localStorage.getItem("welcomeMessage") || "";
+    };
+  </script>
+</body>
+</html>

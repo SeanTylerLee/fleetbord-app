@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Login</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- PWA Setup -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.jpg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+  <script>
+    // Create default admin if no users exist
+    const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    if (!existingUsers.length) {
+      localStorage.setItem("users", JSON.stringify([
+        { username: "admin", password: "31345", role: "admin" }
+      ]));
+    }
+
+    // Skip login if already logged in
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    if (currentUser && currentUser.username) {
+      window.location.replace('index.html');
+    }
+  </script>
+</head>
+<body>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Fleetbord" />
+  </header>
+
+  <div class="container">
+    <h2 style="text-align:center;">Login</h2>
+
+    <form onsubmit="return handleLogin(event)" class="login-form">
+      <input type="text" id="username" class="form-input" placeholder="Username" required autofocus />
+      <input type="password" id="password" class="form-input" placeholder="Password" required />
+      <button type="submit" class="form-button">Login</button>
+    </form>
+
+    <div style="text-align:center; margin-top:10px;">
+      <button onclick="autoLoginAdmin()" style="padding: 10px 15px; font-size: 14px;">🔓 Login as Admin</button>
+    </div>
+
+    <div style="text-align:center; margin-top:10px;">
+      <button onclick="addTestDrivers()" style="padding: 10px 15px; font-size: 14px;">➕ Add Test Drivers</button>
+    </div>
+
+    <p style="text-align:center; margin-top:1em;">
+      Having trouble? <a href="report.html">Report Issue</a>
+    </p>
+  </div>
+
+  <script>
+    function handleLogin(e) {
+      e.preventDefault();
+
+      const enteredUsername = document.getElementById("username").value.trim();
+      const enteredPassword = document.getElementById("password").value.trim();
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+      const user = users.find(u =>
+        u.username.toLowerCase() === enteredUsername.toLowerCase() &&
+        u.password === enteredPassword
+      );
+
+      if (user) {
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        window.location.href = "index.html";
+      } else {
+        alert("Invalid username or password.");
+      }
+    }
+
+    function autoLoginAdmin() {
+      document.getElementById("username").value = "admin";
+      document.getElementById("password").value = "31345";
+      handleLogin(new Event('submit'));
+    }
+
+    function addTestDrivers() {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const existingUsernames = users.map(u => u.username.toLowerCase());
+
+      const newUsers = [
+        { username: "Sean", password: "1", role: "driver" },
+        { username: "Skyler", password: "1", role: "driver" }
+      ];
+
+      newUsers.forEach(user => {
+        if (!existingUsernames.includes(user.username.toLowerCase())) {
+          users.push(user);
+        }
+      });
+
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("Test drivers added successfully!");
+    }
+
+    // Apply dark mode if saved
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.classList.add("dark-mode");
+    }
+  </script>
+</body>
+</html>

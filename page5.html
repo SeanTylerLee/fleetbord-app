@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Tickets</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <header class="ios-header-image">
+    <img src="header.jpg" alt="Header" />
+  </header>
+
+  <div class="container">
+    <h2>Ticket Entry</h2>
+    <form id="ticketForm">
+      <input type="text" name="hauledBy" placeholder="Hauled By" />
+      <input type="text" name="salesRep" placeholder="Sales Rep" />
+      <input type="text" name="truckNumber" placeholder="Truck #" />
+      <input type="text" name="txMiles" placeholder="TX Miles" />
+      <input type="text" name="workOrder" placeholder="Work Order" />
+      <input type="text" name="invoiceTo" placeholder="Invoice To" />
+      <input type="text" name="receivedFrom" placeholder="Received From" />
+      <input type="text" name="destination" placeholder="Destination" />
+      <input type="text" name="leaseName" placeholder="Lease Name" />
+      <input type="text" name="afeNumber" placeholder="AFE #" />
+      <input type="text" name="poNumber" placeholder="PO #" />
+      <input type="text" name="county" placeholder="County" />
+      <input type="date" name="date" />
+
+      <h3>Line Items</h3>
+      <div id="lineItems">
+        <textarea name="lineItems[]" rows="3" placeholder="Qty / Description / Miles / Price" style="width:100%;margin-bottom:10px;"></textarea>
+      </div>
+      <button type="button" onclick="addLine()">➕ Add Row</button>
+
+      <input type="text" name="shippedBy" placeholder="Shipped By" />
+      <input type="text" name="receivedBy" placeholder="Received By" />
+
+      <h3>Attach Paperwork or Photos</h3>
+      <input type="file" id="ticketFiles" accept="image/*" multiple />
+
+      <h3>Signature</h3>
+      <canvas id="signature-pad" style="border:1px solid #ccc; width:100%; height:150px;"></canvas>
+      <button type="button" onclick="clearSignature()">Clear</button>
+
+      <input type="hidden" id="signatureImage" name="signatureImage" />
+      <button type="submit">✔ Save & Generate PDF</button>
+    </form>
+
+    <a href="saved-tickets.html" class="ios-item">📂 Open Saved Tickets</a>
+  </div>
+
+  <script>
+    let signaturePad;
+    window.onload = () => {
+      signaturePad = new SignaturePad(document.getElementById("signature-pad"));
+      document.getElementById("ticketForm").addEventListener("submit", saveTicket);
+    };
+
+    function clearSignature() {
+      signaturePad.clear();
+    }
+
+    function addLine() {
+      const textarea = document.createElement("textarea");
+      textarea.name = "lineItems[]";
+      textarea.rows = 3;
+      textarea.placeholder = "Qty / Description / Miles / Price";
+      textarea.style.width = "100%";
+      textarea.style.marginBottom = "10px";
+      document.getElementById("lineItems").appendChild(textarea);
+    }
+
+    async function saveTicket(e) {
+      e.preventDefault();
+
+      const form = new FormData(e.target);
+      form.set("signatureImage", signaturePad.isEmpty() ? "" : signaturePad.toDataURL());
+
+      const ticket = {};
+      for (let [k, v] of form.entries()) {
+        if (k.endsWith("[]")) {
+          ticket[k] = ticket[k] || [];
+          ticket[k].push(v);
+        } else {
+          ticket[k] = v;
+        }
+      }
+
+      // Handle multiple attachments
+      const fileInput = document.getElementById("ticketFiles");
+      ticket.attachments = [];
+      const files = fileInput.files;
+
+      if (files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const reader = new FileReader();
+          await new Promise((resolve) => {
+            reader.onload = () => {
+              ticket.attachments.push(reader.result);
+              resolve();
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+      }
+
+      finalizeTicket(ticket);
+    }
+
+    async function finalizeTicket(ticket) {
+      const id = "ticket_" + Date.now();
+      localStorage.setItem(id, JSON.stringify(ticket));
+
+      const submitted = JSON.parse(localStorage.getItem("submittedTickets") || "[]");
+      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      submitted.push({
+        driver: currentUser.username || "unknown",
+        date: ticket.date,
+        ticketNumber: ticket.workOrder || "N/A",
+        lease: ticket.leaseName || "",
+        notes: ticket.notes || "",
+        attachment: (ticket.attachments && ticket.attachments[0]) || ""
+      });
+      localStorage.setItem("submittedTickets", JSON.stringify(submitted));
+
+      await generatePDF(ticket);
+      signaturePad.off();
+      alert("✅ Ticket saved and submitted!");
+      window.location.href = "index.html";
+    }
+
+    async function generatePDF(d) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt", format: "letter" });
+
+      const img = new Image();
+      img.src = "header.jpg";
+      await new Promise(r => { img.onload = r });
+
+      doc.addImage(img, "JPEG", 40, 30, 200, 50);
+      doc.setFontSize(11);
+      doc.text("Monster Services", 300, 50);
+      doc.text("12345 Main St, City, ST 12345", 300, 65);
+      doc.text("Phone: (123) 456-7890 | Fax: (123) 456-7891", 300, 80);
+
+      let y = 100;
+      const write = (label, val) => {
+        doc.text(`${label} ${val || ''}`, 40, y);
+        y += 16;
+      };
+
+      write("Hauled By:", d.hauledBy);
+      write("Sales Rep:", d.salesRep);
+      write("Truck #:", d.truckNumber);
+      write("TX Miles:", d.txMiles);
+      write("Work Order:", d.workOrder);
+      write("Invoice To:", d.invoiceTo);
+      write("Received From:", d.receivedFrom);
+      write("Destination:", d.destination);
+      write("Lease Name:", d.leaseName);
+      write("AFE #:", d.afeNumber);
+      write("PO #:", d.poNumber);
+      write("County:", d.county);
+      write("Date:", d.date);
+
+      y += 10;
+      doc.setFont("helvetica", "bold");
+      doc.text("Line Items", 40, y);
+      doc.setFont("helvetica", "normal");
+      y += 14;
+
+      for (let i = 0; i < (d["lineItems[]"] || []).length; i++) {
+        const line = d["lineItems[]"][i];
+        doc.text(line, 50, y);
+        y += 14;
+      }
+
+      y += 10;
+      write("Shipped By:", d.shippedBy);
+      write("Received By:", d.receivedBy);
+
+      if (d.signatureImage) {
+        doc.text("Signature:", 40, y);
+        doc.addImage(d.signatureImage, "PNG", 120, y - 10, 180, 60);
+        y += 80;
+      }
+
+      if (d.attachments && d.attachments.length > 0) {
+        for (let i = 0; i < d.attachments.length; i++) {
+          doc.addPage();
+          doc.text(`Attachment #${i + 1}`, 40, 40);
+          doc.addImage(d.attachments[i], "JPEG", 40, 60, 500, 350);
+        }
+      }
+
+      doc.save("ticket.pdf");
+    }
+  </script>
+</body>
+</html>

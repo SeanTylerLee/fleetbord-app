@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Prevent zooming and scale lock -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Dispatch</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Make header responsive */
+    header img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* iOS: Prevent zoom on input focus by using 16px font size */
+    input, select, button, textarea {
+      font-size: 16px !important;
+    }
+
+    .container {
+      padding: 1rem;
+    }
+
+    .btn {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 16px;
+      width: 100%;
+    }
+
+    .dispatch-card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 1rem;
+      background: var(--bg2, #f5f5f5);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 1rem;
+    }
+
+    select, input[type="checkbox"] {
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="header.jpg" alt="Header" />
+  </header>
+
+  <div class="container">
+    <!-- ✅ Button to go to loads.html -->
+    <button class="btn" onclick="location.href='loads.html'">Loads</button>
+
+    <h2>Dispatch Center</h2>
+
+    <!-- Admin: Select Load and Drivers -->
+    <div id="dispatchForm" class="hidden">
+      <label>Select Load:</label>
+      <select id="loadSelect"></select>
+
+      <label>Select Driver(s):</label>
+      <div id="driverList"></div>
+
+      <button class="btn" onclick="assignDispatch()">Send Dispatch</button>
+    </div>
+
+    <!-- Driver View -->
+    <div id="userDispatches">
+      <h3>Your Assigned Dispatches</h3>
+      <div id="dispatchList"></div>
+    </div>
+  </div>
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const allDispatches = JSON.parse(localStorage.getItem("dispatches") || "[]");
+    const savedLoads = JSON.parse(localStorage.getItem("savedLoads") || "[]");
+
+    const loadSelect = document.getElementById("loadSelect");
+    const driverList = document.getElementById("driverList");
+    const dispatchForm = document.getElementById("dispatchForm");
+    const dispatchList = document.getElementById("dispatchList");
+
+    if (currentUser.role === "admin") {
+      dispatchForm.classList.remove("hidden");
+
+      // Populate saved loads
+      savedLoads.forEach((load, i) => {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `${load.customer} (${load.loadLocation} → ${load.unloadLocation})`;
+        loadSelect.appendChild(option);
+      });
+
+      // Populate driver list
+      users.filter(u => u.role === "driver").forEach(driver => {
+        const label = document.createElement("label");
+        label.innerHTML = `<input type="checkbox" value="${driver.username}"> ${driver.username}`;
+        driverList.appendChild(label);
+        driverList.appendChild(document.createElement("br"));
+      });
+    }
+
+    function assignDispatch() {
+      const selectedIndex = loadSelect.value;
+      if (selectedIndex === "") return alert("Please select a load.");
+      const selectedDrivers = Array.from(driverList.querySelectorAll("input:checked")).map(cb => cb.value);
+      if (!selectedDrivers.length) return alert("Select at least one driver.");
+
+      const load = savedLoads[selectedIndex];
+      const dispatch = {
+        ...load,
+        id: Date.now(),
+        drivers: selectedDrivers,
+        accepted: [],
+        arrived: [],
+        loaded: [],
+        unloaded: [],
+        status: {},
+        checklist: load.checklist || [],
+        lastEdited: new Date().toISOString()
+      };
+
+      allDispatches.push(dispatch);
+      localStorage.setItem("dispatches", JSON.stringify(allDispatches));
+      alert("✅ Dispatch sent!");
+      window.location.reload();
+    }
+
+    function loadUserDispatches() {
+      const userDispatches = allDispatches.filter(d => d.drivers.includes(currentUser.username));
+      dispatchList.innerHTML = "";
+
+      userDispatches.forEach(d => {
+        const div = document.createElement("div");
+        div.className = "dispatch-card";
+        div.innerHTML = `
+          <strong>${d.customer}</strong><br>
+          ${d.loadLocation} → ${d.unloadLocation}<br>
+          Rate: $${d.rate} + Fuel: $${d.surcharge}<br>
+          Salesman: ${d.salesman}<br>
+          Dispatch: ${d.dispatchDate} ${d.dispatchTime || ""} → Due: ${d.dueDate} ${d.dueTime || ""}<br>
+          ${d.mapPin ? `<a href="${d.mapPin}" target="_blank">📍 Map Link</a><br>` : ""}
+          ${d.notes ? `<em>Notes:</em> ${d.notes}<br>` : ""}
+          <small>Last Edited: ${new Date(d.lastEdited).toLocaleString()}</small><br>
+        `;
+
+        if (d.attachment) {
+          div.innerHTML += `<a href="${d.attachment}" download="attachment.jpg">📎 Download Attachment</a><br>`;
+        }
+
+        if (!d.accepted.includes(currentUser.username)) {
+          const btn = document.createElement("button");
+          btn.textContent = "✅ Accept";
+          btn.className = "btn";
+          btn.onclick = () => updateStatus(d.id, "accepted");
+          div.appendChild(btn);
+        }
+
+        // Status buttons
+        ["arrived", "loaded", "unloaded"].forEach(status => {
+          if (!d[status].includes(currentUser.username)) {
+            const btn = document.createElement("button");
+            btn.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            btn.className = "btn";
+            btn.onclick = () => updateStatus(d.id, status);
+            div.appendChild(btn);
+          } else {
+            div.innerHTML += `✅ ${status.charAt(0).toUpperCase() + status.slice(1)} at ${d.status[currentUser.username + "_" + status]}<br>`;
+          }
+        });
+
+        // Checklist
+        if (d.checklist?.length) {
+          div.innerHTML += `<strong>Checklist:</strong><ul>`;
+          d.checklist.forEach(item => {
+            div.innerHTML += `<li>🧾 ${item}</li>`;
+          });
+          div.innerHTML += `</ul>`;
+        }
+
+        dispatchList.appendChild(div);
+      });
+    }
+
+    function updateStatus(dispatchId, type) {
+      const all = JSON.parse(localStorage.getItem("dispatches") || "[]");
+      const index = all.findIndex(d => d.id === dispatchId);
+      if (index !== -1) {
+        const dispatch = all[index];
+        if (!dispatch[type].includes(currentUser.username)) {
+          dispatch[type].push(currentUser.username);
+          dispatch.status[currentUser.username + "_" + type] = new Date().toLocaleString();
+          dispatch.lastEdited = new Date().toISOString();
+          all[index] = dispatch;
+          localStorage.setItem("dispatches", JSON.stringify(all));
+          loadUserDispatches();
+        }
+      }
+    }
+
+    loadUserDispatches();
+
+    if (localStorage.getItem("darkMode") === "true") {
+      document.documentElement.classList.add("dark-mode");
+    }
+  </script>
+</body>
+</html>

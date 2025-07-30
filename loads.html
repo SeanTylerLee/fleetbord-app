@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Prevent zoom on input focus -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Saved Loads</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .container {
+      padding: 1rem;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 1rem;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px; /* Prevent iOS zoom */
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .btn {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .load-box {
+      background: #f8f8f8;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .load-box .actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .load-box .pushed {
+      color: red;
+      font-weight: bold;
+    }
+
+    button {
+      font-size: 16px; /* Prevent zoom */
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="header.jpg" alt="Header" />
+  </header>
+
+  <div class="container">
+    <h2>Manage Saved Loads</h2>
+
+    <!-- Add Load Form -->
+    <label>Customer:</label><input type="text" id="customer">
+    <label>Rate:</label><input type="number" id="rate">
+    <label>Fuel Surcharge:</label><input type="number" id="fuel">
+    <label>Load Location:</label><input type="text" id="loadLoc">
+    <label>Unload Location:</label><input type="text" id="unloadLoc">
+    <label>Salesman:</label><input type="text" id="salesman">
+    <label>Dispatch Notes:</label><textarea id="notes"></textarea>
+    <label>Dispatch Date:</label><input type="datetime-local" id="dispatchDate">
+    <label>Due Date:</label><input type="datetime-local" id="dueDate">
+    <label>Pickup Map Pin:</label><input type="url" id="pickupPin">
+    <label>Delivery Map Pin:</label><input type="url" id="deliveryPin">
+
+    <button class="btn" onclick="addLoad()">💾 Save Load</button>
+
+    <!-- Existing Loads -->
+    <div id="savedLoads"></div>
+  </div>
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    if (!currentUser || currentUser.role !== "admin") location.href = "login.html";
+
+    const loadList = document.getElementById("savedLoads");
+
+    function addLoad() {
+      const load = {
+        id: Date.now(),
+        customer: getVal("customer"),
+        rate: getVal("rate"),
+        fuel: getVal("fuel"),
+        loadLoc: getVal("loadLoc"),
+        unloadLoc: getVal("unloadLoc"),
+        salesman: getVal("salesman"),
+        notes: getVal("notes"),
+        dispatchDate: getVal("dispatchDate"),
+        dueDate: getVal("dueDate"),
+        pickupPin: getVal("pickupPin"),
+        deliveryPin: getVal("deliveryPin"),
+        pushed: false
+      };
+      const loads = JSON.parse(localStorage.getItem("savedLoads") || "[]");
+      loads.push(load);
+      localStorage.setItem("savedLoads", JSON.stringify(loads));
+      renderLoads();
+    }
+
+    function getVal(id) {
+      return document.getElementById(id).value;
+    }
+
+    function renderLoads() {
+      const loads = JSON.parse(localStorage.getItem("savedLoads") || "[]");
+      loadList.innerHTML = "";
+      loads.forEach((l, i) => {
+        const div = document.createElement("div");
+        div.className = "load-box";
+        div.innerHTML = `
+          <strong>${l.customer}</strong> ${l.pushed ? '<span class="pushed">(Pushed)</span>' : ""}<br>
+          Rate: $${l.rate} | Fuel: $${l.fuel}<br>
+          ${l.loadLoc} ➡️ ${l.unloadLoc}<br>
+          Salesman: ${l.salesman}<br>
+          Dispatch: ${l.dispatchDate}<br>
+          Due: ${l.dueDate}<br>
+          Notes: ${l.notes}<br>
+          ${l.pickupPin ? `<a href="${l.pickupPin}" target="_blank">📍 Pickup Map</a><br>` : ""}
+          ${l.deliveryPin ? `<a href="${l.deliveryPin}" target="_blank">📍 Delivery Map</a><br>` : ""}
+          <div class="actions">
+            <button onclick="editLoad(${i})">✏️ Edit</button>
+            <button onclick="deleteLoad(${i})">🗑️ Delete</button>
+            <button onclick="togglePush(${i})">${l.pushed ? "❌ Unpush" : "🚩 Push"}</button>
+          </div>
+        `;
+        loadList.appendChild(div);
+      });
+    }
+
+    function editLoad(index) {
+      const loads = JSON.parse(localStorage.getItem("savedLoads") || "[]");
+      const l = loads[index];
+      document.getElementById("customer").value = l.customer;
+      document.getElementById("rate").value = l.rate;
+      document.getElementById("fuel").value = l.fuel;
+      document.getElementById("loadLoc").value = l.loadLoc;
+      document.getElementById("unloadLoc").value = l.unloadLoc;
+      document.getElementById("salesman").value = l.salesman;
+      document.getElementById("notes").value = l.notes;
+      document.getElementById("dispatchDate").value = l.dispatchDate;
+      document.getElementById("dueDate").value = l.dueDate;
+      document.getElementById("pickupPin").value = l.pickupPin;
+      document.getElementById("deliveryPin").value = l.deliveryPin;
+      loads.splice(index, 1);
+      localStorage.setItem("savedLoads", JSON.stringify(loads));
+      renderLoads();
+    }
+
+    function deleteLoad(index) {
+      const loads = JSON.parse(localStorage.getItem("savedLoads") || "[]");
+      if (confirm("Delete this load?")) {
+        loads.splice(index, 1);
+        localStorage.setItem("savedLoads", JSON.stringify(loads));
+        renderLoads();
+      }
+    }
+
+    function togglePush(index) {
+      const loads = JSON.parse(localStorage.getItem("savedLoads") || "[]");
+      loads[index].pushed = !loads[index].pushed;
+      localStorage.setItem("savedLoads", JSON.stringify(loads));
+      renderLoads();
+    }
+
+    renderLoads();
+  </script>
+</body>
+</html>

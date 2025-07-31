@@ -1,1 +1,54 @@
-<!DOCTYPE html><html><head><title>Admin Dashboard</title></head><body><h1>Dashboard</h1></body></html>
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <header>
+    <img src="images/header.jpg" alt="FieldFlex" class="header-img">
+  </header>
+
+  <main class="container">
+    <h2>Admin Dashboard</h2>
+    <div id="summary"></div>
+  </main>
+
+  <script>
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) return;
+      firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+        if (!doc.exists || doc.data().role !== "admin") {
+          document.body.innerHTML = "<h2>Access Denied</h2>";
+          return;
+        }
+
+        const summary = document.getElementById("summary");
+
+        Promise.all([
+          firebase.firestore().collection("users").get(),
+          firebase.firestore().collection("dispatches").get(),
+          firebase.firestore().collection("jobForms").get(),
+          firebase.firestore().collection("dvirReports").get(),
+          firebase.firestore().collection("messages").get(),
+        ]).then(([usersSnap, dispatchesSnap, formsSnap, dvirSnap, messagesSnap]) => {
+          summary.innerHTML = `
+            <p><strong>Total Users:</strong> ${usersSnap.size}</p>
+            <p><strong>Total Dispatches:</strong> ${dispatchesSnap.size}</p>
+            <p><strong>Submitted Forms:</strong> ${formsSnap.size}</p>
+            <p><strong>DVIR Reports:</strong> ${dvirSnap.size}</p>
+            <p><strong>Messages Sent:</strong> ${messagesSnap.size}</p>
+          `;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,1 +1,82 @@
-<!DOCTYPE html><html><head><title>Forms</title></head><body><h1>Forms</h1></body></html>
+<!-- forms.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Forms</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <header>
+    <img src="images/header.jpg" alt="FieldFlex" class="header-img" />
+  </header>
+
+  <main class="container">
+    <h2>Submit Job Form</h2>
+    <form id="jobForm">
+      <input type="text" id="jobId" placeholder="Job ID" required />
+      <textarea id="details" placeholder="Job Details" required></textarea>
+      <canvas id="signaturePad" width="300" height="150" style="border:1px solid #ccc;"></canvas>
+      <button type="button" onclick="clearSignature()">Clear Signature</button>
+      <button type="submit">Submit Form</button>
+    </form>
+    <p id="formStatus" style="margin-top: 10px;"></p>
+  </main>
+
+  <script>
+    let signaturePad;
+    window.onload = () => {
+      const canvas = document.getElementById("signaturePad");
+      const ctx = canvas.getContext("2d");
+      let drawing = false;
+
+      canvas.addEventListener("mousedown", () => drawing = true);
+      canvas.addEventListener("mouseup", () => drawing = false);
+      canvas.addEventListener("mousemove", (e) => {
+        if (!drawing) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#000";
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
+      });
+
+      signaturePad = canvas;
+    };
+
+    function clearSignature() {
+      const ctx = signaturePad.getContext("2d");
+      ctx.clearRect(0, 0, signaturePad.width, signaturePad.height);
+    }
+
+    document.getElementById("jobForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const jobId = document.getElementById("jobId").value;
+      const details = document.getElementById("details").value;
+      const signatureData = signaturePad.toDataURL();
+
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          firebase.firestore().collection("jobForms").add({
+            userId: user.uid,
+            jobId,
+            details,
+            signature: signatureData,
+            submittedAt: new Date()
+          }).then(() => {
+            document.getElementById("formStatus").textContent = "Form submitted.";
+            document.getElementById("jobForm").reset();
+            clearSignature();
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

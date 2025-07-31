@@ -1,1 +1,62 @@
-<!DOCTYPE html><html><head><title>Safety</title></head><body><h1>Safety</h1></body></html>
+<!-- safety.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Safety</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <header>
+    <img src="images/header.jpg" alt="FieldFlex" class="header-img" />
+  </header>
+
+  <main class="container">
+    <h2>Safety Messages</h2>
+    <div id="messagesContainer"></div>
+  </main>
+
+  <script>
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) return;
+      const uid = user.uid;
+      firebase.firestore().collection("safetyMessages")
+        .orderBy("date", "desc")
+        .onSnapshot(snapshot => {
+          const container = document.getElementById("messagesContainer");
+          container.innerHTML = "";
+          snapshot.forEach(doc => {
+            const msg = doc.data();
+            const div = document.createElement("div");
+            div.className = "card";
+            div.innerHTML = `
+              <h3>${msg.title}</h3>
+              <p>${msg.body}</p>
+              <button onclick="acknowledge('${doc.id}')">Acknowledge</button>
+              <hr/>
+            `;
+            container.appendChild(div);
+          });
+        });
+    });
+
+    function acknowledge(msgId) {
+      firebase.auth().onAuthStateChanged(user => {
+        if (!user) return;
+        firebase.firestore().collection("safetyAcks").add({
+          userId: user.uid,
+          messageId: msgId,
+          acknowledgedAt: new Date()
+        }).then(() => {
+          alert("Acknowledged.");
+        });
+      });
+    }
+  </script>
+</body>
+</html>

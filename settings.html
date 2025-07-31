@@ -1,1 +1,57 @@
-<!DOCTYPE html><html><head><title>Settings</title></head><body><h1>Settings</h1></body></html>
+<!-- settings.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Settings</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <header>
+    <img src="images/header.jpg" alt="FieldFlex" class="header-img" />
+  </header>
+
+  <main class="container">
+    <h2>Settings</h2>
+    <label for="darkToggle">Dark Mode</label>
+    <input type="checkbox" id="darkToggle" />
+
+    <button onclick="logout()">Logout</button>
+    <button onclick="clearStorage()">Clear Local Storage</button>
+  </main>
+
+  <script>
+    const toggle = document.getElementById("darkToggle");
+
+    toggle.checked = localStorage.getItem("theme") === "dark";
+    setTheme(toggle.checked);
+
+    toggle.addEventListener("change", () => {
+      const isDark = toggle.checked;
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+      setTheme(isDark);
+    });
+
+    function setTheme(isDark) {
+      document.body.style.background = isDark ? "#111" : "#fff";
+      document.body.style.color = isDark ? "#eee" : "#000";
+    }
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        localStorage.clear();
+        window.location.href = "login.html";
+      });
+    }
+
+    function clearStorage() {
+      localStorage.clear();
+      alert("Local storage cleared.");
+    }
+  </script>
+</body>
+</html>

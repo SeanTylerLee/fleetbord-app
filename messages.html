@@ -1,1 +1,93 @@
-<!DOCTYPE html><html><head><title>Messages</title></head><body><h1>Messages</h1></body></html>
+<!-- messages.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Messages</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <header>
+    <img src="images/header.jpg" alt="FieldFlex" class="header-img" />
+  </header>
+
+  <main class="container">
+    <h2>Messaging</h2>
+    <select id="recipientSelect"></select>
+    <div id="chatBox" class="chat-box"></div>
+    <input type="text" id="messageInput" placeholder="Type message..." />
+    <button onclick="sendMessage()">Send</button>
+  </main>
+
+  <script>
+    let currentUser = null;
+    let recipientId = "";
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadRecipients();
+      }
+    });
+
+    function loadRecipients() {
+      const select = document.getElementById("recipientSelect");
+      firebase.firestore().collection("users").get().then(snapshot => {
+        snapshot.forEach(doc => {
+          if (doc.id !== currentUser.uid) {
+            const option = document.createElement("option");
+            option.value = doc.id;
+            option.textContent = doc.data().name || doc.data().email;
+            select.appendChild(option);
+          }
+        });
+        recipientId = select.value;
+        loadMessages();
+        select.addEventListener("change", () => {
+          recipientId = select.value;
+          loadMessages();
+        });
+      });
+    }
+
+    function loadMessages() {
+      const chatBox = document.getElementById("chatBox");
+      chatBox.innerHTML = "";
+      const threadId = [currentUser.uid, recipientId].sort().join("_");
+      firebase.firestore().collection("messages")
+        .where("threadId", "==", threadId)
+        .orderBy("timestamp")
+        .onSnapshot(snapshot => {
+          chatBox.innerHTML = "";
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const div = document.createElement("div");
+            div.className = data.senderId === currentUser.uid ? "bubble-right" : "bubble-left";
+            div.innerHTML = `<p>${data.text}</p><small>${new Date(data.timestamp.toDate()).toLocaleTimeString()}</small>`;
+            chatBox.appendChild(div);
+          });
+          chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    }
+
+    function sendMessage() {
+      const text = document.getElementById("messageInput").value.trim();
+      if (text === "") return;
+      const threadId = [currentUser.uid, recipientId].sort().join("_");
+      firebase.firestore().collection("messages").add({
+        threadId,
+        senderId: currentUser.uid,
+        recipientId,
+        text,
+        timestamp: new Date()
+      });
+      document.getElementById("messageInput").value = "";
+    }
+  </script>
+</body>
+</html>

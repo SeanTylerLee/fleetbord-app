@@ -1,1 +1,59 @@
-<!DOCTYPE html><html><head><title>Login</title></head><body><h1>Login Page</h1></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>FieldFlex Login</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="firebase-config.js"></script>
+</head>
+<body>
+  <header>
+    <img src="images/header.jpg" alt="FieldFlex" class="header-img" />
+  </header>
+
+  <main class="container">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <p id="loginStatus" style="color: red; margin-top: 10px;"></p>
+  </main>
+
+  <script>
+    function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const status = document.getElementById("loginStatus");
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          const uid = userCredential.user.uid;
+          firebase.firestore().collection("users").doc(uid).get()
+            .then(doc => {
+              if (!doc.exists) {
+                status.textContent = "User role not found.";
+                return;
+              }
+              const role = doc.data().role;
+              localStorage.setItem("role", role);
+              localStorage.setItem("uid", uid);
+              switch (role) {
+                case "admin": window.location.href = "dashboard.html"; break;
+                case "dispatcher": window.location.href = "dispatch.html"; break;
+                case "driver": window.location.href = "jobs.html"; break;
+                case "mechanic": window.location.href = "dvir.html"; break;
+                case "office": window.location.href = "safety.html"; break;
+                default: status.textContent = "Unknown role.";
+              }
+            });
+        })
+        .catch(error => {
+          status.textContent = error.message;
+        });
+    }
+  </script>
+</body>
+</html>

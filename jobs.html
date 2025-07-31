@@ -1,1 +1,63 @@
-<!DOCTYPE html><html><head><title>Jobs</title></head><body><h1>Jobs</h1></body></html>
+<!-- jobs.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>My Jobs</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <header>
+    <img src="images/header.jpg" alt="FieldFlex" class="header-img" />
+  </header>
+
+  <main class="container">
+    <h2>My Assigned Loads</h2>
+    <div id="jobsContainer"></div>
+  </main>
+
+  <script>
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        const uid = user.uid;
+        firebase.firestore().collection("dispatches")
+          .where("driverId", "==", uid)
+          .orderBy("timestamp", "desc")
+          .onSnapshot(snapshot => {
+            const jobsContainer = document.getElementById("jobsContainer");
+            jobsContainer.innerHTML = "";
+
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              const job = document.createElement("div");
+              job.classList.add("card");
+              job.innerHTML = `
+                <p><strong>Customer:</strong> ${data.customer}</p>
+                <p><strong>Pickup:</strong> ${data.pickup}</p>
+                <p><strong>Delivery:</strong> ${data.delivery}</p>
+                <p><strong>Rate:</strong> ${data.rate}</p>
+                <p><strong>Status:</strong> ${data.status}</p>
+                <button onclick="updateStatus('${doc.id}', 'Arrived')">Mark Arrived</button>
+                <button onclick="updateStatus('${doc.id}', 'Loaded')">Mark Loaded</button>
+                <button onclick="updateStatus('${doc.id}', 'Unloaded')">Mark Unloaded</button>
+              `;
+              jobsContainer.appendChild(job);
+            });
+          });
+      }
+    });
+
+    function updateStatus(docId, status) {
+      firebase.firestore().collection("dispatches").doc(docId).update({
+        status: status,
+        [`${status.toLowerCase()}At`]: new Date()
+      });
+    }
+  </script>
+</body>
+</html>

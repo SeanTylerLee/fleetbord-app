@@ -1,1 +1,86 @@
-<!DOCTYPE html><html><head><title>DVIR</title></head><body><h1>DVIR</h1></body></html>
+<!-- dvir.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>DVIR</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <header>
+    <img src="images/header.jpg" alt="FieldFlex" class="header-img" />
+  </header>
+
+  <main class="container">
+    <h2>Daily Vehicle Inspection Report</h2>
+    <form id="dvirForm">
+      <input type="text" id="unitNumber" placeholder="Unit Number" required />
+      <input type="text" id="odometer" placeholder="Odometer" required />
+      <textarea id="issues" placeholder="List any issues..."></textarea>
+      <canvas id="dvirSignature" width="300" height="150" style="border:1px solid #ccc;"></canvas>
+      <button type="button" onclick="clearDvirSig()">Clear Signature</button>
+      <button type="submit">Submit DVIR</button>
+    </form>
+    <p id="dvirStatus" style="margin-top: 10px;"></p>
+  </main>
+
+  <script>
+    let dvirPad;
+
+    window.onload = () => {
+      const canvas = document.getElementById("dvirSignature");
+      const ctx = canvas.getContext("2d");
+      let drawing = false;
+
+      canvas.addEventListener("mousedown", () => drawing = true);
+      canvas.addEventListener("mouseup", () => drawing = false);
+      canvas.addEventListener("mousemove", (e) => {
+        if (!drawing) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#000";
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
+      });
+
+      dvirPad = canvas;
+    };
+
+    function clearDvirSig() {
+      const ctx = dvirPad.getContext("2d");
+      ctx.clearRect(0, 0, dvirPad.width, dvirPad.height);
+    }
+
+    document.getElementById("dvirForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const unitNumber = document.getElementById("unitNumber").value;
+      const odometer = document.getElementById("odometer").value;
+      const issues = document.getElementById("issues").value;
+      const signature = dvirPad.toDataURL();
+
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          firebase.firestore().collection("dvirReports").add({
+            userId: user.uid,
+            unitNumber,
+            odometer,
+            issues,
+            signature,
+            submittedAt: new Date()
+          }).then(() => {
+            document.getElementById("dvirStatus").textContent = "DVIR submitted.";
+            document.getElementById("dvirForm").reset();
+            clearDvirSig();
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

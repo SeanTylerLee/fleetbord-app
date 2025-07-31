@@ -1,1 +1,97 @@
-body { font-family: sans-serif; background: #fff; }
+/* styles.css */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--bg, #ECEBEB);
+  color: var(--text, #000);
+}
+
+.container {
+  padding: 1rem;
+}
+
+.header-img {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+input, textarea, select, button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #005bb5;
+}
+
+.chat-box {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #f9f9f9;
+}
+
+.bubble-left {
+  background-color: #e0e0e0;
+  padding: 8px;
+  border-radius: 10px;
+  margin: 5px 0;
+  max-width: 70%;
+}
+
+.bubble-right {
+  background-color: #007aff;
+  color: white;
+  padding: 8px;
+  border-radius: 10px;
+  margin: 5px 0;
+  max-width: 70%;
+  margin-left: auto;
+}
+
+.card {
+  background: #f0f0f0;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+}
+
+.nav-list li {
+  margin: 10px 0;
+}
+
+.nav-list a {
+  display: block;
+  padding: 12px;
+  background: #007aff;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.nav-list a:hover {
+  background: #005bb5;
+}

@@ -1,1 +1,77 @@
-<!DOCTYPE html><html><head><title>Time Clock</title></head><body><h1>Time Clock</h1></body></html>
+<!-- time.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Time Clock</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <header>
+    <img src="images/header.jpg" alt="FieldFlex" class="header-img" />
+  </header>
+
+  <main class="container">
+    <h2>Clock In / Clock Out</h2>
+    <button onclick="clockIn()">Clock In</button>
+    <button onclick="clockOut()">Clock Out</button>
+    <p id="clockStatus" style="margin-top: 10px;"></p>
+  </main>
+
+  <script>
+    function getLocation(callback) {
+      if (!navigator.geolocation) {
+        callback("Geolocation not supported.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          callback(null, {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        () => callback("Unable to retrieve location.")
+      );
+    }
+
+    function clockIn() {
+      firebase.auth().onAuthStateChanged(user => {
+        if (!user) return;
+        getLocation((err, location) => {
+          firebase.firestore().collection("timeLogs").add({
+            userId: user.uid,
+            type: "clockin",
+            timestamp: new Date(),
+            location: location || null
+          }).then(() => {
+            document.getElementById("clockStatus").textContent = "Clocked in successfully.";
+          });
+        });
+      });
+    }
+
+    function clockOut() {
+      firebase.auth().onAuthStateChanged(user => {
+        if (!user) return;
+        getLocation((err, location) => {
+          firebase.firestore().collection("timeLogs").add({
+            userId: user.uid,
+            type: "clockout",
+            timestamp: new Date(),
+            location: location || null
+          }).then(() => {
+            document.getElementById("clockStatus").textContent = "Clocked out successfully.";
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>

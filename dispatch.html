@@ -1,1 +1,81 @@
-<!DOCTYPE html><html><head><title>Dispatch</title></head><body><h1>Dispatch</h1></body></html>
+<!-- dispatch.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Dispatch</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <header>
+    <img src="images/header.jpg" alt="FieldFlex" class="header-img" />
+  </header>
+
+  <main class="container">
+    <h2>Dispatch Load</h2>
+    <form id="dispatchForm">
+      <input type="text" id="customer" placeholder="Customer" required />
+      <input type="text" id="pickup" placeholder="Pickup Location" required />
+      <input type="text" id="delivery" placeholder="Delivery Location" required />
+      <input type="text" id="rate" placeholder="Rate" required />
+      <textarea id="notes" placeholder="Notes"></textarea>
+      <label>Select Drivers:</label>
+      <div id="driversList"></div>
+      <button type="submit">Dispatch</button>
+    </form>
+    <div id="statusMsg" style="margin-top: 10px;"></div>
+  </main>
+
+  <script>
+    const driversList = document.getElementById("driversList");
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        firebase.firestore().collection("users")
+          .where("role", "==", "driver")
+          .get()
+          .then(snapshot => {
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              const label = document.createElement("label");
+              label.innerHTML = `<input type="checkbox" value="${doc.id}"> ${data.name || data.email}`;
+              driversList.appendChild(label);
+            });
+          });
+      }
+    });
+
+    document.getElementById("dispatchForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const customer = document.getElementById("customer").value;
+      const pickup = document.getElementById("pickup").value;
+      const delivery = document.getElementById("delivery").value;
+      const rate = document.getElementById("rate").value;
+      const notes = document.getElementById("notes").value;
+
+      const selectedDrivers = Array.from(driversList.querySelectorAll("input:checked")).map(cb => cb.value);
+
+      selectedDrivers.forEach(driverId => {
+        firebase.firestore().collection("dispatches").add({
+          customer,
+          pickup,
+          delivery,
+          rate,
+          notes,
+          driverId,
+          timestamp: new Date(),
+          status: "Pending"
+        });
+      });
+
+      document.getElementById("statusMsg").textContent = "Load dispatched successfully.";
+      document.getElementById("dispatchForm").reset();
+    });
+  </script>
+</body>
+</html>

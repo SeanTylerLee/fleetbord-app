@@ -1,1 +1,17 @@
-{ "name": "FieldFlex", "short_name": "FieldFlex", "start_url": "index.html", "display": "standalone" }
+// manifest.json
+{
+  "name": "FieldFlex",
+  "short_name": "FieldFlex",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "images/icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
